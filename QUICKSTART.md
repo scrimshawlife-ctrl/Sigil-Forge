@@ -1,6 +1,6 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.6.0.**
+Run from the skill root (clone or install dir). **Current version: 0.7.0.**
 
 ```bash
 # 1. Smoke-check the skill tree
@@ -24,6 +24,15 @@ python3 scripts/sigil_forge.py wallpaper \
   --mode focus \
   --theme mercurial \
   --style "dark architectural minimalism"
+
+# One-shot construct + wallpaper:
+# python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge \
+#   --wallpaper --surface phone_lock --wp-mode focus --theme mercurial
+
+# Host AI background (after generating from wallpaper/background-prompt-*.json):
+# python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
+#   --surface phone_lock --background-method ai_generated \
+#   --background /path/to/ai-bg.png --provider host_file
 
 # Or multi-surface defaults:
 # python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id>

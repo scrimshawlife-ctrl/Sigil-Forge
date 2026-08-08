@@ -99,6 +99,8 @@
         "provider": { "type": ["string", "null"] },
         "model": { "type": ["string", "null"] },
         "prompt_path": { "type": ["string", "null"] },
+        "provider_command": { "type": ["string", "null"] },
+        "background_source": { "type": ["string", "null"] },
         "glyph_composite_method": {
           "type": "string",
           "enum": ["svg_overlay", "vector_render"]

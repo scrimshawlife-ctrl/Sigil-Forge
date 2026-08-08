@@ -8,12 +8,11 @@ from typing import Any
 
 from wallpaper.composite import (
     composite_glyph_on_background,
-    load_operator_background,
-    procedural_background,
     write_wallpaper_png,
 )
 from wallpaper.embed import embed_binding
 from wallpaper.prompt import build_background_prompt
+from wallpaper.providers import enrich_prompt_package, resolve_background
 from wallpaper.seed import file_sha256
 from wallpaper.spec import SCHEMA_VERSION, build_wallpaper_spec, load_forge_run
 from wallpaper.verify_wallpaper import verify_wallpaper
@@ -31,6 +30,10 @@ def build_wallpaper(
     style_preset: str | None = None,
     background_method: str = "procedural",
     background_path: Path | str | None = None,
+    provider: str | None = None,
+    provider_command: str | None = None,
+    model: str | None = None,
+    require_ai: bool = False,
     embedded_payload: str = "intent_digest",
     out_name: str | None = None,
 ) -> dict[str, Any]:
@@ -57,41 +60,54 @@ def build_wallpaper(
     receipts_dir = run_dir / "receipts"
     receipts_dir.mkdir(parents=True, exist_ok=True)
 
-    # Prompts (for AI path; always written for provenance)
-    prompt_pkg = build_background_prompt(spec, style_preset=style_preset)
-    prompt_path = wp_dir / f"background-prompt-{surface}.json"
-    prompt_path.write_text(json.dumps(prompt_pkg, indent=2) + "\n", encoding="utf-8")
-    spec["generation"]["prompt_path"] = str(prompt_path)
-
     w, h = spec["canvas"]["width"], spec["canvas"]["height"]
     seed = int(spec["generation"]["seed"])
     complexity = float(spec["presentation"]["background_complexity"])
     theme = str(spec["presentation"]["symbolic_theme"])
 
-    # Background
+    # Prompts (for AI path; always written for provenance)
+    prompt_pkg = build_background_prompt(spec, style_preset=style_preset)
     bg_role = f"background-{surface}"
     bg_file = wp_dir / f"background-{surface}.png"
-    if background_method == "operator_supplied" and background_path:
-        bp = Path(background_path)
-        rgb = load_operator_background(bp, w, h)
-        if rgb is None:
-            # fall back procedural but note
-            rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
-            spec["generation"]["background_method"] = "procedural"
-            spec.setdefault("notes", []).append(
-                "operator_background_unusable_fallback_procedural"
-            )
-        else:
-            spec["generation"]["background_method"] = "operator_supplied"
-    elif background_method == "ai_generated":
-        # Offline: write prompt only; use procedural stand-in until host supplies image
-        rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
-        spec["generation"]["background_method"] = "procedural"
-        spec.setdefault("notes", []).append(
-            "ai_generated_requested_procedural_standin_until_host_provides_background"
-        )
-    else:
-        rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
+    prompt_pkg = enrich_prompt_package(
+        prompt_pkg,
+        width=w,
+        height=h,
+        seed=seed,
+        surface=surface,
+        out_hint=str(bg_file),
+    )
+    prompt_path = wp_dir / f"background-prompt-{surface}.json"
+    prompt_path.write_text(json.dumps(prompt_pkg, indent=2) + "\n", encoding="utf-8")
+    spec["generation"]["prompt_path"] = str(prompt_path)
+
+    # Background via offline procedural / operator / host AI provider
+    bg = resolve_background(
+        background_method=background_method,
+        width=w,
+        height=h,
+        seed=seed,
+        complexity=complexity,
+        theme=theme,
+        surface=surface,
+        prompt_path=prompt_path,
+        bg_file=bg_file,
+        background_path=background_path,
+        provider=provider,
+        provider_command=provider_command,
+        model=model,
+        require_ai=require_ai,
+    )
+    rgb = bg.rgb
+    spec["generation"]["background_method"] = bg.background_method
+    spec["generation"]["provider"] = bg.provider
+    spec["generation"]["model"] = bg.model
+    if bg.command_ran:
+        spec["generation"]["provider_command"] = bg.command_ran
+    if bg.source_path:
+        spec["generation"]["background_source"] = bg.source_path
+    if bg.notes:
+        spec.setdefault("notes", []).extend(bg.notes)
 
     bg_sha = write_wallpaper_png(bg_file, w, h, rgb)
 
@@ -169,12 +185,17 @@ def build_wallpaper(
         "surface": surface,
         "wallpaper": str(out_file),
         "background": str(bg_file),
+        "background_method": bg.background_method,
+        "provider": bg.provider,
+        "prompt": str(prompt_path),
         "spec": str(spec_path),
         "receipt": str(receipt_path),
         "receipt_status": receipt.get("status"),
         "geometry_preserved": receipt.get("geometry_preserved"),
+        "notes": list(bg.notes),
         "schema_version": SCHEMA_VERSION,
     }
+
 
 
 def build_wallpapers_for_run(

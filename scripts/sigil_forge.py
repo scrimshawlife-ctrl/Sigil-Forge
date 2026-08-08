@@ -50,6 +50,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/ontology.py",
         "scripts/planetary_seals.py",
         "scripts/wallpaper/pipeline.py",
+        "scripts/wallpaper/providers.py",
         "schemas/wallpaper-spec.schema.json",
         "schemas/wallpaper-receipt.schema.json",
         "scripts/validate_hermes_skill.py",
@@ -203,27 +204,69 @@ def cmd_construct(args: argparse.Namespace) -> int:
     except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 1
+
+    wallpaper_results = None
+    if bool(getattr(args, "wallpaper", False)):
+        run_dir = packet.get("artifacts", {}).get("run_dir")
+        if not run_dir:
+            print(
+                json.dumps({"ok": False, "error": "construct missing run_dir for --wallpaper"}),
+                file=sys.stderr,
+            )
+            return 1
+        try:
+            wallpaper_results = _run_wallpapers(Path(run_dir), args)
+        except Exception as exc:  # noqa: BLE001
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error": f"wallpaper after construct failed: {exc}",
+                        "intent_digest": packet.get("intent_digest"),
+                        "run_id": packet.get("artifacts", {}).get("run_id"),
+                    }
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        if not all(r.get("ok") for r in wallpaper_results):
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error": "wallpaper verification failed",
+                        "intent_digest": packet["intent_digest"],
+                        "run_id": packet.get("artifacts", {}).get("run_id"),
+                        "wallpapers": wallpaper_results,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 1
+
     # Print compact summary to stdout (full packet on --json)
     if args.json:
+        if wallpaper_results is not None:
+            packet = dict(packet)
+            packet["wallpapers"] = wallpaper_results
         print(json.dumps(packet, indent=2, sort_keys=True))
     else:
-        print(
-            json.dumps(
-                {
-                    "ok": True,
-                    "intent_digest": packet["intent_digest"],
-                    "run_id": packet.get("artifacts", {}).get("run_id"),
-                    "svg": packet.get("artifacts", {}).get("svg"),
-                    "packet": packet.get("artifacts", {}).get("packet_json"),
-                    "channels_applied": [
-                        c["id"]
-                        for c in packet.get("channels", [])
-                        if c.get("status") == "applied"
-                    ],
-                },
-                indent=2,
-            )
-        )
+        summary: dict = {
+            "ok": True,
+            "intent_digest": packet["intent_digest"],
+            "run_id": packet.get("artifacts", {}).get("run_id"),
+            "svg": packet.get("artifacts", {}).get("svg"),
+            "packet": packet.get("artifacts", {}).get("packet_json"),
+            "channels_applied": [
+                c["id"]
+                for c in packet.get("channels", [])
+                if c.get("status") == "applied"
+            ],
+        }
+        if wallpaper_results is not None:
+            summary["wallpapers"] = wallpaper_results
+        print(json.dumps(summary, indent=2))
     return 0
 
 
@@ -401,45 +444,59 @@ def cmd_doctor(_: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
-def cmd_wallpaper(args: argparse.Namespace) -> int:
-    """Compose device wallpapers from a verified forge run (immutable glyph)."""
+def _wallpaper_kwargs(args: argparse.Namespace) -> dict:
+    """Shared kwargs for wallpaper pipeline from CLI namespace."""
+    # Wallpaper presentation mode: wallpaper cmd uses --mode; construct uses --wp-mode
+    # (construct already owns --mode for creative|practice framing).
+    wp_mode = getattr(args, "wp_mode", None) or getattr(args, "mode", None) or "focus"
+    # When construct --mode is creative/practice, ignore it for wallpapers
+    if wp_mode in ("creative", "practice"):
+        wp_mode = getattr(args, "wp_mode", None) or "focus"
+    return {
+        "mode": wp_mode,
+        "intensity": getattr(args, "intensity", "balanced") or "balanced",
+        "placement": getattr(args, "placement", None),
+        "symbolic_theme": getattr(args, "theme", None) or "neutral",
+        "visual_direction": getattr(args, "style", None)
+        or "dark architectural minimalism",
+        "style_preset": getattr(args, "preset", None),
+        "background_method": getattr(args, "background_method", None) or "procedural",
+        "background_path": Path(args.background) if getattr(args, "background", None) else None,
+        "provider": getattr(args, "provider", None),
+        "provider_command": getattr(args, "provider_command", None),
+        "model": getattr(args, "model", None),
+        "require_ai": bool(getattr(args, "require_ai", False)),
+        "embedded_payload": getattr(args, "embed", None) or "intent_digest",
+    }
+
+
+def _run_wallpapers(run_dir: Path, args: argparse.Namespace) -> list[dict]:
     from wallpaper.pipeline import build_wallpaper, build_wallpapers_for_run
 
+    kwargs = _wallpaper_kwargs(args)
+    if getattr(args, "surface", None):
+        return [
+            build_wallpaper(
+                run_dir,
+                surface=str(args.surface).replace("-", "_"),
+                **kwargs,
+            )
+        ]
+    surfaces = [
+        s.strip().replace("-", "_")
+        for s in (getattr(args, "surfaces", None) or "").split(",")
+        if s.strip()
+    ]
+    if not surfaces:
+        surfaces = ["phone_lock", "phone_home", "desktop"]
+    return build_wallpapers_for_run(run_dir, surfaces=surfaces, **kwargs)
+
+
+def cmd_wallpaper(args: argparse.Namespace) -> int:
+    """Compose device wallpapers from a verified forge run (immutable glyph)."""
     run_dir = Path(args.run)
     try:
-        if args.surface:
-            results = [
-                build_wallpaper(
-                    run_dir,
-                    surface=args.surface.replace("-", "_"),
-                    mode=args.mode,
-                    intensity=args.intensity,
-                    placement=args.placement,
-                    symbolic_theme=args.theme,
-                    visual_direction=args.style or "dark architectural minimalism",
-                    style_preset=args.preset,
-                    background_method=args.background_method,
-                    background_path=Path(args.background) if args.background else None,
-                    embedded_payload=args.embed,
-                )
-            ]
-        else:
-            surfaces = [s.strip().replace("-", "_") for s in (args.surfaces or "").split(",") if s.strip()]
-            if not surfaces:
-                surfaces = ["phone_lock", "phone_home", "desktop"]
-            results = build_wallpapers_for_run(
-                run_dir,
-                surfaces=surfaces,
-                mode=args.mode,
-                intensity=args.intensity,
-                placement=args.placement,
-                symbolic_theme=args.theme,
-                visual_direction=args.style or "dark architectural minimalism",
-                style_preset=args.preset,
-                background_method=args.background_method,
-                background_path=Path(args.background) if args.background else None,
-                embedded_payload=args.embed,
-            )
+        results = _run_wallpapers(run_dir, args)
     except Exception as exc:  # noqa: BLE001
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 1
@@ -532,6 +589,113 @@ def cmd_eval(_: argparse.Namespace) -> int:
     return 0 if ok_all else 1
 
 
+def _add_wallpaper_options(parser: argparse.ArgumentParser, *, require_run: bool) -> None:
+    """Shared wallpaper presentation + host AI provider options."""
+    if require_run:
+        parser.add_argument(
+            "--run",
+            required=True,
+            help="Path to forge run directory (contains glyph.svg + forge-packet.json)",
+        )
+    parser.add_argument(
+        "--surface",
+        default=None,
+        help="Single surface: phone_lock|phone_home|tablet|desktop|desktop_ultrawide",
+    )
+    parser.add_argument(
+        "--surfaces",
+        default=None,
+        help="Comma-separated surfaces (default: phone_lock,phone_home,desktop)",
+    )
+    # construct already owns --mode for creative|practice framing.
+    # Wallpaper cmd: --mode; construct one-shot: --wp-mode → wp_mode.
+    if require_run:
+        parser.add_argument(
+            "--mode",
+            dest="wp_mode",
+            default="focus",
+            choices=("stealth", "ambient", "focus", "ritual", "immersive"),
+            help="Wallpaper presentation mode",
+        )
+    else:
+        parser.add_argument(
+            "--wp-mode",
+            dest="wp_mode",
+            default="focus",
+            choices=("stealth", "ambient", "focus", "ritual", "immersive"),
+            help="Wallpaper presentation mode (with --wallpaper)",
+        )
+    parser.add_argument(
+        "--intensity",
+        default="balanced",
+        choices=("subtle", "balanced", "strong"),
+    )
+    parser.add_argument(
+        "--placement",
+        default=None,
+        choices=(
+            "center",
+            "upper_third",
+            "lower_third",
+            "left_field",
+            "right_field",
+            "custom",
+        ),
+    )
+    parser.add_argument("--theme", default="neutral", help="symbolic_theme")
+    parser.add_argument(
+        "--style",
+        default=None,
+        help="visual direction for background prompt",
+    )
+    parser.add_argument(
+        "--preset",
+        default=None,
+        choices=("obsidian", "solar", "lunar", "cyber", "parchment"),
+    )
+    parser.add_argument(
+        "--background-method",
+        default="procedural",
+        choices=("procedural", "ai_generated", "operator_supplied"),
+        help="Background source (default procedural; ai_generated uses host provider)",
+    )
+    parser.add_argument(
+        "--background",
+        default=None,
+        help="Host/operator background PNG path (ai_generated or operator_supplied)",
+    )
+    parser.add_argument(
+        "--provider",
+        default=None,
+        help="Provider id recorded in spec (host_file|host_command|operator|…)",
+    )
+    parser.add_argument(
+        "--provider-command",
+        default=None,
+        help=(
+            "Shell template for host AI background. Placeholders: "
+            "{prompt_path} {out_path} {width} {height} {seed} {surface}. "
+            "Env alternate: SIGIL_FORGE_BG_COMMAND"
+        ),
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Optional model name recorded in wallpaper-spec.generation.model",
+    )
+    parser.add_argument(
+        "--require-ai",
+        action="store_true",
+        help="Fail if ai_generated/operator background cannot be resolved (no stand-in)",
+    )
+    parser.add_argument(
+        "--embed",
+        default="intent_digest",
+        choices=("none", "intent_digest", "channel_digest"),
+        help="Wallpaper LSB binding payload (never plaintext intent)",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="sigil-forge")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -622,6 +786,13 @@ def main(argv: list[str] | None = None) -> int:
         help="Fill thin interop.intent_token / sigil_glyph export fields",
     )
     pc.add_argument(
+        "--wallpaper",
+        action="store_true",
+        help="After construct, compose wallpapers for the new run (one-shot)",
+    )
+    # Wallpaper options (active when --wallpaper is set; shared with wallpaper cmd)
+    _add_wallpaper_options(pc, require_run=False)
+    pc.add_argument(
         "--phonetic",
         action="store_true",
         help="Emit phoneme-sequence.json (phonetic_sigil channel)",
@@ -689,59 +860,7 @@ def main(argv: list[str] | None = None) -> int:
         "wallpaper",
         help="Compose wallpapers from a forge run (canonical glyph + atmosphere)",
     )
-    pw.add_argument(
-        "--run",
-        required=True,
-        help="Path to forge run directory (contains glyph.svg + forge-packet.json)",
-    )
-    pw.add_argument(
-        "--surface",
-        default=None,
-        help="Single surface: phone_lock|phone_home|tablet|desktop|desktop_ultrawide",
-    )
-    pw.add_argument(
-        "--surfaces",
-        default=None,
-        help="Comma-separated surfaces (default: phone_lock,phone_home,desktop)",
-    )
-    pw.add_argument(
-        "--mode",
-        default="focus",
-        choices=("stealth", "ambient", "focus", "ritual", "immersive"),
-    )
-    pw.add_argument(
-        "--intensity",
-        default="balanced",
-        choices=("subtle", "balanced", "strong"),
-    )
-    pw.add_argument(
-        "--placement",
-        default=None,
-        choices=("center", "upper_third", "lower_third", "left_field", "right_field", "custom"),
-    )
-    pw.add_argument("--theme", default="neutral", help="symbolic_theme")
-    pw.add_argument("--style", default=None, help="visual direction for background prompt")
-    pw.add_argument(
-        "--preset",
-        default=None,
-        choices=("obsidian", "solar", "lunar", "cyber", "parchment"),
-    )
-    pw.add_argument(
-        "--background-method",
-        default="procedural",
-        choices=("procedural", "ai_generated", "operator_supplied"),
-    )
-    pw.add_argument(
-        "--background",
-        default=None,
-        help="Operator-supplied background PNG (with operator_supplied method)",
-    )
-    pw.add_argument(
-        "--embed",
-        default="intent_digest",
-        choices=("none", "intent_digest", "channel_digest"),
-        help="Wallpaper LSB binding payload (never plaintext intent)",
-    )
+    _add_wallpaper_options(pw, require_run=True)
 
     args = p.parse_args(argv)
     if args.cmd == "help":
