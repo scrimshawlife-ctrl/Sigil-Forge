@@ -133,6 +133,7 @@ def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any
     text = path.read_text(encoding="utf-8")
     got = extract_svg(text)
     digest = _normalize_digest(got.get("intent_digest"))
+    sigil_root = _normalize_digest(got.get("sigil_root"))
     channels = list(got.get("channels_detected") or [])
     metrics = list(got.get("metrics") or [])
     epsilon_bits = list(got.get("epsilon_bits") or [])
@@ -196,7 +197,10 @@ def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any
         "channels_checked": channels,
         "artifact": str(path),
         "kind": "svg",
+        "stego_format": "v2" if sigil_root else "v1",
     }
+    if sigil_root:
+        result["sigil_root"] = sigil_root
     if metrics:
         result["metrics"] = metrics
     if epsilon_bits:
@@ -208,9 +212,15 @@ def _verify_png(path: Path, expected_digest: str | None = None) -> dict[str, Any
     data = path.read_bytes()
     channels: list[str] = []
     try:
-        # SF1 magic + 32-byte digest = 36 bytes minimum
-        raw = extract_lsb(data, 4 + DIGEST_LEN)
-        if raw[:4] != MAGIC:
+        from stego_envelope import SF11_MAGIC, unpack_envelope
+
+        # Peek magic: SF1 needs 36 bytes; SF11 needs 74
+        peek = extract_lsb(data, 4)
+        if peek == SF11_MAGIC:
+            raw = extract_lsb(data, 4 + 1 + 1 + 32 + 32 + 4)
+        elif peek == MAGIC:
+            raw = extract_lsb(data, 4 + DIGEST_LEN)
+        else:
             return _apply_expected(
                 _fail(
                     path=path,
@@ -220,9 +230,11 @@ def _verify_png(path: Path, expected_digest: str | None = None) -> dict[str, Any
                 ),
                 expected_digest,
             )
-        digest_bytes, _sealed = unpack_payload(raw)
-        digest_hex = digest_bytes.hex()
+        env = unpack_envelope(raw)
+        digest_hex = env.get("intent_digest")
         channels.append("png_lsb")
+        if env.get("format") == "SF11":
+            channels.append("sf11_root")
         if not _digest_format_ok(digest_hex):
             return _apply_expected(
                 _fail(
@@ -243,7 +255,10 @@ def _verify_png(path: Path, expected_digest: str | None = None) -> dict[str, Any
             "channels_checked": channels,
             "artifact": str(path),
             "kind": "png",
+            "stego_format": env.get("format"),
         }
+        if env.get("sigil_root"):
+            result["sigil_root"] = env["sigil_root"]
         return _apply_expected(result, expected_digest)
     except Exception as exc:  # noqa: BLE001 — verify reports failure
         return _apply_expected(

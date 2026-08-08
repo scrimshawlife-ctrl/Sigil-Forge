@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.12.0</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
+  <strong>v0.12.1</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
 </p>
 
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
@@ -28,7 +28,7 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
 | **Ops** | construct, verify, open, receipts, PROPOSED ledger, `ledger promote`, `policy check`, doctor, eval, check |
 | **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
-| **Proof of Intent** | Salted `intent_commitment`, intent capsule, Merkle `sigil_root` (v0.12); ZK optional later |
+| **Proof of Intent** | Salted commitment, capsule, Merkle `sigil_root`, SF11 carriers, `inspect` (v0.12.1); ZK later |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
@@ -249,7 +249,8 @@ Channels: [references/channels-and-steganography.md](references/channels-and-ste
 
 ```text
 construct   Forge multi-channel sigil + packet
-verify      Recover intent digest from SVG/PNG
+verify      Recover intent digest (+ sigil_root when SF11/v2)
+inspect     Public carrier inspection (digest/root; no plaintext)
 wizard      Guided interview (--next / --apply / sessions)
 wallpaper   Immutable glyph + atmosphere composite
 open        Decrypt sealed_intent from forge-packet.json

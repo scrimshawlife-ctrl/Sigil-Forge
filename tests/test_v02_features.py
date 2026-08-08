@@ -42,11 +42,21 @@ def test_layout_raster_png_lsb_roundtrip(tmp_path: Path):
     assert "layout_raster" in by_id["png_lsb"]["detail"]
 
     raw = Path(png_path).read_bytes()
-    payload = extract_lsb(raw, 4 + 32)
-    assert payload[:4] == MAGIC
-    dig, sealed = unpack_payload(payload)
-    assert dig.hex() == packet["intent_digest"]
-    assert sealed is None
+    # v0.12.1+: SF11 when sigil_root present; SF1 legacy still ok
+    peek = extract_lsb(raw, 4)
+    if peek == b"SF11":
+        from stego_envelope import unpack_envelope
+
+        payload = extract_lsb(raw, 4 + 1 + 1 + 32 + 32 + 4)
+        env = unpack_envelope(payload)
+        assert env["intent_digest"] == packet["intent_digest"]
+        assert env["sigil_root"] == packet.get("sigil_root")
+    else:
+        payload = extract_lsb(raw, 4 + 32)
+        assert payload[:4] == MAGIC
+        dig, sealed = unpack_payload(payload)
+        assert dig.hex() == packet["intent_digest"]
+        assert sealed is None
 
     v = verify_run(png_path)
     assert v["ok"] is True

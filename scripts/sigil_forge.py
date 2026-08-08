@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | "
+        "commands: construct | verify | inspect | wallpaper | wizard | open | learn | ledger | "
         "policy | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
@@ -62,6 +62,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/artifact_root.py",
         "scripts/forge_manifest.py",
         "scripts/intent_capsule.py",
+        "scripts/stego_envelope.py",
+        "scripts/inspect_artifact.py",
         "references/planetary-character-corpus.json",
         "references/planetary-plate-strokes.json",
         "schemas/wallpaper-spec.schema.json",
@@ -130,6 +132,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "artifact_root",
         "forge_manifest",
         "intent_capsule",
+        "stego_envelope",
+        "inspect_artifact",
         "packet",
         "policy_lint",
     )
@@ -306,6 +310,15 @@ def cmd_verify(args: argparse.Namespace) -> int:
         Path(args.artifact),
         expected_digest=getattr(args, "expected_digest", None),
     )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result.get("ok") else 1
+
+
+def cmd_inspect(args: argparse.Namespace) -> int:
+    """Inspect public carrier for digest / sigil_root (no plaintext intent)."""
+    from inspect_artifact import inspect_path
+
+    result = inspect_path(args.artifact)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("ok") else 1
 
@@ -1164,6 +1177,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Optional 64-hex digest that recovered value must match",
     )
 
+    pi = sub.add_parser(
+        "inspect",
+        help="Inspect carrier for intent_digest / sigil_root (no plaintext)",
+    )
+    pi.add_argument("artifact", help="Path to glyph.svg, glyph.png, wallpaper, or run dir")
+
     po = sub.add_parser(
         "open",
         help="Decrypt sealed_intent from forge-packet.json",
@@ -1367,6 +1386,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_construct(args)
     if args.cmd == "verify":
         return cmd_verify(args)
+    if args.cmd == "inspect":
+        return cmd_inspect(args)
     if args.cmd == "open":
         return cmd_open(args)
     if args.cmd == "learn":
