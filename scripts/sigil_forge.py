@@ -385,19 +385,81 @@ def cmd_learn(args: argparse.Namespace) -> int:
 
 
 def cmd_ledger(args: argparse.Namespace) -> int:
-    """List recent learning-ledger entries (PROPOSED observations)."""
-    from receipt import default_ledger_path, read_ledger
+    """List / export PROPOSED ledger entries or human-gated promote to proposals."""
+    from receipt import (
+        default_canon_proposals_path,
+        default_ledger_path,
+        export_proposed,
+        promote_entry,
+        read_ledger,
+    )
 
-    path = Path(args.ledger) if args.ledger else default_ledger_path()
-    entries = read_ledger(path, limit=int(args.limit))
+    ledger_cmd = getattr(args, "ledger_cmd", None) or "list"
+    path = Path(args.ledger) if getattr(args, "ledger", None) else default_ledger_path()
+    limit = int(getattr(args, "limit", 20) or 20)
+
+    if ledger_cmd in ("list", "export"):
+        if ledger_cmd == "export":
+            entries = export_proposed(limit=limit, ledger_path=path)
+        else:
+            entries = read_ledger(path, limit=limit)
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "ledger": str(path),
+                    "count": len(entries),
+                    "entries": entries,
+                    "mode": ledger_cmd,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if ledger_cmd == "promote":
+        out = (
+            Path(args.out)
+            if getattr(args, "out", None)
+            else default_canon_proposals_path()
+        )
+        try:
+            proposal = promote_entry(
+                int(args.index),
+                confirm=str(getattr(args, "i_confirm", "") or ""),
+                ledger_path=path,
+                out_path=out,
+                limit=limit,
+            )
+        except (ValueError, TypeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "ledger": str(path),
+                    "proposals": str(out),
+                    "canon_status": "HUMAN_PROMOTED",
+                    "proposal": proposal,
+                    "note": "Learning ledger unchanged (PROPOSED); references/ not mutated",
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
     print(
         json.dumps(
-            {"ok": True, "ledger": str(path), "count": len(entries), "entries": entries},
+            {"ok": False, "error": f"unknown ledger subcommand: {ledger_cmd}"},
             indent=2,
             sort_keys=True,
-        )
+        ),
+        file=sys.stderr,
     )
-    return 0
+    return 2
 
 
 def cmd_policy(args: argparse.Namespace) -> int:
@@ -1079,9 +1141,55 @@ def main(argv: list[str] | None = None) -> int:
         help="Ledger path (default: out/sigil-forge/learning-ledger.jsonl)",
     )
 
-    pld = sub.add_parser("ledger", help="List recent learning-ledger entries")
+    pld = sub.add_parser(
+        "ledger",
+        help="List / export PROPOSED ledger entries or human-gated promote",
+    )
     pld.add_argument("--ledger", default=None, help="Ledger path override")
-    pld.add_argument("--limit", default=20, help="Max entries (default 20)")
+    pld.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Max entries / promote index window (default 20)",
+    )
+    pld_sub = pld.add_subparsers(dest="ledger_cmd", required=False)
+    pld_sub.add_parser("list", help="List recent learning-ledger entries (default)")
+    pld_sub.add_parser(
+        "export",
+        help="Export PROPOSED entries only (JSON on stdout)",
+    )
+    pld_promote = pld_sub.add_parser(
+        "promote",
+        help="Human-gated promote to canon-proposals.jsonl (requires --i-confirm PROMOTE)",
+    )
+    pld_promote.add_argument(
+        "--index",
+        type=int,
+        required=True,
+        help="Index into recent PROPOSED window (0-based)",
+    )
+    pld_promote.add_argument(
+        "--i-confirm",
+        dest="i_confirm",
+        required=True,
+        help='Exact string PROMOTE required; agent must not invent this',
+    )
+    pld_promote.add_argument(
+        "--ledger",
+        default=None,
+        help="Ledger path override",
+    )
+    pld_promote.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Window size for --index (default 20)",
+    )
+    pld_promote.add_argument(
+        "--out",
+        default=None,
+        help="Canon proposals JSONL path (default out/sigil-forge/canon-proposals.jsonl)",
+    )
 
     pp = sub.add_parser(
         "policy",
