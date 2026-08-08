@@ -411,5 +411,14 @@ def extract(svg: str) -> dict[str, Any]:
     if geom_bits:
         result["channels_detected"].append("path_epsilon")
         result["epsilon_bit_count"] = len(geom_bits)
+        result["epsilon_bits"] = geom_bits
 
     return result
+
+
+def expected_epsilon_bits(digest_hex: str, n: int) -> list[int]:
+    """Digest-derived bits that path_epsilon embeds into the first n floats."""
+    bits = _digest_bits(digest_hex)
+    if not bits or n <= 0:
+        return []
+    return [bits[i % len(bits)] for i in range(n)]

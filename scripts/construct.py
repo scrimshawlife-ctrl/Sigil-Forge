@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +19,19 @@ from spare import reduce_letters
 from stego_png import embed_lsb, pack_payload
 from stego_svg import embed as stego_svg_embed
 from svg_export import layout_to_svg
+
+# Env passphrase avoids argv exposure (process list / shell history).
+PASSPHRASE_ENV = "SIGIL_FORGE_PASSPHRASE"
+
+
+def resolve_passphrase(explicit: str | None = None) -> str | None:
+    """CLI/explicit passphrase wins; else ``SIGIL_FORGE_PASSPHRASE`` env."""
+    if explicit is not None and str(explicit) != "":
+        return str(explicit)
+    env = os.environ.get(PASSPHRASE_ENV)
+    if env is not None and env != "":
+        return env
+    return None
 
 SCHEMA_VERSION = "1.0"
 
@@ -133,8 +149,13 @@ def run(
     """
     if mode not in ("creative", "practice"):
         raise ValueError(f"mode must be 'creative' or 'practice', got {mode!r}")
+
+    passphrase = resolve_passphrase(passphrase)
     if seal_packet and not passphrase:
-        raise ValueError("seal_packet=True requires passphrase")
+        raise ValueError(
+            "seal_packet=True requires passphrase "
+            f"(--passphrase or ${PASSPHRASE_ENV})"
+        )
 
     ok, reason = check_intent(intent)
     if not ok:
@@ -238,80 +259,93 @@ def run(
     # embeds them, and short substrings false-positive against hex/metadata.
     _assert_svg_privacy(stego_svg, normalized=normalized, spare=spare)
 
-    # --- paths: write glyph artifacts first (already stego'd) ---
+    # --- atomic run dir: stage under out_root, promote only after full success ---
     root = Path(out_root) if out_root is not None else default_out_dir()
+    root.mkdir(parents=True, exist_ok=True)
     rid = make_run_id(digest)
-    rdir = make_run_dir(root, rid)
-    rdir.mkdir(parents=True, exist_ok=True)
-
-    svg_path = rdir / "glyph.svg"
-    svg_path.write_text(stego_svg, encoding="utf-8")
-
-    png_path_str, png_channel = _try_png_lsb(
-        stego_svg, digest, rdir / "glyph.png"
+    final_dir = make_run_dir(root, rid)
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".sf-staging-{rid}-", dir=str(root))
     )
-    extras = [
-        png_channel,
-        _ch("gen_seed", "skipped", "no_ai_polish"),
-    ]
 
-    channels = _merge_channels(craft_channels, list(stego_channels), extras)
-
-    methods = {
-        "spare": {
-            "reduction": "vowels_and_duplicate_collapse_v1",
-            "letter_count": len(spare),
-        },
-        "kamea": {
-            "planet": square_name,
-            "order": order,
-            "cipher": "agrippa_reduced_v1",
-        },
-    }
-
-    packet_json_path = rdir / "forge-packet.json"
-    packet_md_path = rdir / "forge-packet.md"
-    artifacts: dict[str, Any] = {
-        "svg": str(svg_path),
-        "png": png_path_str,
-        "run_dir": str(rdir),
-        "run_id": rid,
-        "packet_json": str(packet_json_path),
-        "packet_md": str(packet_md_path),
-    }
-
-    # Prefer path relative to skill root for verify hint when possible
-    verify_target = str(svg_path)
-    verify_cmd = f"python3 scripts/sigil_forge.py verify {verify_target}"
-
-    include_normalized = not seal_packet
-    packet = build_packet(
-        mode=mode,
-        intent_digest=digest,
-        channels=channels,
-        methods=methods,
-        artifacts=artifacts,
-        crypto=crypto,
-        verify_cmd=verify_cmd,
-        normalized_intent=normalized if include_normalized else None,
-        sealed_blob=sealed_blob if passphrase else None,
-        include_normalized=include_normalized,
-    )
-    packet["schema_version"] = packet.get("schema_version") or SCHEMA_VERSION
-
-    # Validate before writing packet files — no failed-validation artifacts.
-    schema_path = skill_root() / "schemas" / "forge-packet.schema.json"
     try:
-        validate_packet(packet, schema_path=schema_path)
-    except Exception as exc:  # noqa: BLE001
-        # Structural failures are hard; jsonschema issues still hard if import works
-        if "structural" in str(exc).lower():
-            raise
-        # If only optional schema path missing, ignore
-        if not schema_path.is_file():
-            validate_packet(packet, schema_path=None)
-        else:
-            raise
+        svg_path = staging / "glyph.svg"
+        svg_path.write_text(stego_svg, encoding="utf-8")
 
-    write_packet_files(packet, rdir)
-    return packet
+        png_path_str, png_channel = _try_png_lsb(
+            stego_svg, digest, staging / "glyph.png"
+        )
+        extras = [
+            png_channel,
+            _ch("gen_seed", "skipped", "no_ai_polish"),
+        ]
+
+        channels = _merge_channels(craft_channels, list(stego_channels), extras)
+
+        methods = {
+            "spare": {
+                "reduction": "vowels_and_duplicate_collapse_v1",
+                "letter_count": len(spare),
+            },
+            "kamea": {
+                "planet": square_name,
+                "order": order,
+                "cipher": "agrippa_reduced_v1",
+            },
+        }
+
+        # Artifact paths point at the final location (post-promote).
+        final_svg = final_dir / "glyph.svg"
+        final_png = final_dir / "glyph.png" if png_path_str else None
+        packet_json_path = final_dir / "forge-packet.json"
+        packet_md_path = final_dir / "forge-packet.md"
+        artifacts: dict[str, Any] = {
+            "svg": str(final_svg),
+            "png": str(final_png) if final_png else None,
+            "run_dir": str(final_dir),
+            "run_id": rid,
+            "packet_json": str(packet_json_path),
+            "packet_md": str(packet_md_path),
+        }
+
+        verify_target = str(final_svg)
+        verify_cmd = f"python3 scripts/sigil_forge.py verify {verify_target}"
+
+        include_normalized = not seal_packet
+        packet = build_packet(
+            mode=mode,
+            intent_digest=digest,
+            channels=channels,
+            methods=methods,
+            artifacts=artifacts,
+            crypto=crypto,
+            verify_cmd=verify_cmd,
+            normalized_intent=normalized if include_normalized else None,
+            sealed_blob=sealed_blob if passphrase else None,
+            include_normalized=include_normalized,
+        )
+        packet["schema_version"] = packet.get("schema_version") or SCHEMA_VERSION
+
+        # Validate before promote — incomplete runs never leave a public run dir.
+        schema_path = skill_root() / "schemas" / "forge-packet.schema.json"
+        try:
+            validate_packet(packet, schema_path=schema_path)
+        except Exception as exc:  # noqa: BLE001
+            if "structural" in str(exc).lower():
+                raise
+            if not schema_path.is_file():
+                validate_packet(packet, schema_path=None)
+            else:
+                raise
+
+        write_packet_files(packet, staging)
+
+        # Promote staging → final (replace any prior run with same id).
+        if final_dir.exists():
+            shutil.rmtree(final_dir)
+        staging.rename(final_dir)
+        staging = None  # ownership transferred
+        return packet
+    finally:
+        if staging is not None and staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)

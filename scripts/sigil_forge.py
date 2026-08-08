@@ -156,14 +156,16 @@ def cmd_check(_: argparse.Namespace) -> int:
 
 
 def cmd_construct(args: argparse.Namespace) -> int:
-    from construct import run as construct_run
+    from construct import resolve_passphrase, run as construct_run
 
+    # Explicit --passphrase wins over SIGIL_FORGE_PASSPHRASE when both set.
+    passphrase = resolve_passphrase(args.passphrase)
     try:
         packet = construct_run(
             args.intent,
             mode=args.mode,
             out_root=Path(args.out) if args.out else None,
-            passphrase=args.passphrase,
+            passphrase=passphrase,
             square=args.square,
             seal_packet=bool(args.seal_packet),
         )
@@ -228,8 +230,8 @@ def main(argv: list[str] | None = None) -> int:
         "--passphrase",
         default=None,
         help=(
-            "Optional seal passphrase (WARNING: visible in process list; "
-            "prefer env/interactive in production)"
+            "Optional seal passphrase (WARNING: visible in process list / shell "
+            "history; prefer env SIGIL_FORGE_PASSPHRASE)"
         ),
     )
     pc.add_argument(
