@@ -34,13 +34,17 @@ From a clone without installing:
 python3 scripts/sigil_forge.py check
 ```
 
-## Wizard (Hermes-friendly)
+## Wizard (Hermes step-by-step)
 
 ```bash
-# Agent loads interview steps, asks the user, then applies answers
-python3 scripts/sigil_forge.py wizard --script
-python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
-python3 scripts/sigil_forge.py wizard --list-corpus   # planetary intelligence/spirit names
+# Recommended: quick path + step runner (one question per turn)
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+python3 scripts/sigil_forge.py wizard --next --session <id> \
+  --answers-json '{"intent":"I maintain calm focus"}'
+# …repeat --next until done…
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+
+python3 scripts/sigil_forge.py wizard --list-corpus   # planetary names
 ```
 
 See [references/wizard.md](references/wizard.md).

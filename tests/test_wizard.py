@@ -1,4 +1,4 @@
-"""Hermes forge wizard: script, validate, apply."""
+"""Hermes forge wizard: script, next runner, paths, sessions, apply."""
 
 from __future__ import annotations
 
@@ -10,7 +10,11 @@ from pathlib import Path
 from wizard import (
     answers_to_construct_kwargs,
     apply_answers,
+    create_session,
     default_answers,
+    next_step,
+    session_next,
+    steps_for_path,
     validate_answers,
     wizard_script,
 )
@@ -19,14 +23,82 @@ ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "sigil_forge.py"
 
 
-def test_wizard_script_has_steps():
-    script = wizard_script()
-    assert script["wizard_version"]
+def test_wizard_script_has_steps_and_loop():
+    script = wizard_script("quick")
+    assert script["wizard_version"] >= "2"
+    assert "loop" in script
+    assert script["path"] == "quick"
     ids = [s["id"] for s in script["steps"]]
-    assert "intent" in ids
-    assert "mode" in ids
+    assert ids[0] == "intent"
+    assert "kamea_encoding" not in ids  # quick path
+    assert "help" in script["steps"][0]
+
+
+def test_full_path_includes_craft_steps():
+    ids = [s["id"] for s in steps_for_path("full")]
+    assert "kamea_encoding" in ids
     assert "planetary_seal" in ids
-    assert "agent_rules" in script
+    assert "planetary_geometry" in ids
+
+
+def test_next_starts_with_intent():
+    nxt = next_step({}, path="quick")
+    assert nxt["ok"] is True
+    assert nxt["done"] is False
+    assert nxt["step"]["id"] == "intent"
+    assert nxt["step"]["help"]
+
+
+def test_next_after_intent_mode_quick():
+    nxt = next_step({"intent": "I maintain calm focus"}, path="quick")
+    assert nxt["done"] is False
+    assert nxt["step"]["id"] == "mode"
+
+
+def test_next_early_safety_refusal():
+    nxt = next_step({"intent": "I will murder my neighbor tomorrow"}, path="quick")
+    assert nxt["refused"] is True
+    assert nxt["done"] is True
+    assert "safety" in nxt["error"]
+
+
+def test_next_skips_planetary_geometry_when_none():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "kamea_encoding": "hebrew_gematria",
+        "square": "auto",
+        "planetary_seal": "none",
+    }
+    nxt = next_step(answers, path="full")
+    assert nxt["done"] is False
+    # should not ask planetary_geometry
+    assert nxt["step"]["id"] != "planetary_geometry"
+    assert nxt["step"]["id"] == "spare_mode"
+
+
+def test_next_asks_geometry_when_seal_set():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "kamea_encoding": "hebrew_gematria",
+        "square": "auto",
+        "planetary_seal": "intelligence_character",
+    }
+    nxt = next_step(answers, path="full")
+    assert nxt["step"]["id"] == "planetary_geometry"
+
+
+def test_next_done_fills_defaults_quick():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "wallpaper": False,
+    }
+    nxt = next_step(answers, path="quick")
+    assert nxt["done"] is True
+    assert nxt["ok"] is True
+    assert nxt["answers"]["kamea_encoding"] == "hebrew_gematria"
 
 
 def test_validate_requires_intent():
@@ -42,7 +114,7 @@ def test_validate_safety_refusal():
 
 
 def test_validate_happy_path_defaults():
-    r = validate_answers({"intent": "I maintain calm focus"})
+    r = validate_answers({"intent": "I maintain calm focus"}, path="quick")
     assert r["ok"] is True
     assert r["answers"]["mode"] == "creative"
     assert r["answers"]["kamea_encoding"] == "hebrew_gematria"
@@ -56,6 +128,7 @@ def test_answers_to_kwargs_planetary():
             "kamea_encoding": "latin_mod9_v1",
             "square": "jupiter",
             "planetary_seal": "intelligence_character",
+            "planetary_geometry": "plate",
             "spare_mode": "letter_monogram",
             "phonetic": False,
             "polish": False,
@@ -68,9 +141,9 @@ def test_answers_to_kwargs_planetary():
     )
     assert mapped["construct"]["planetary_seal"] is True
     assert mapped["construct"]["planetary_seal_kind"] == "intelligence_character"
+    assert mapped["construct"]["planetary_geometry"] == "plate"
     assert mapped["construct"]["square"] == "jupiter"
     assert mapped["wallpaper"]["enabled"] is True
-    assert mapped["wallpaper"]["surface"] == "desktop"
 
 
 def test_apply_answers_constructs(tmp_path: Path):
@@ -84,6 +157,7 @@ def test_apply_answers_constructs(tmp_path: Path):
             "wallpaper": False,
         },
         out_root=tmp_path,
+        path="quick",
     )
     assert result["ok"] is True, result
     assert result["svg"]
@@ -101,14 +175,31 @@ def test_apply_with_wallpaper(tmp_path: Path):
             "wp_theme": "mercurial",
         },
         out_root=tmp_path,
+        path="quick",
     )
     assert result["ok"] is True, result
     assert result.get("wallpaper", {}).get("ok") is True
 
 
+def test_session_next_loop(tmp_path: Path, monkeypatch):
+    # sessions write under default_out_dir parent — fine for real skill root
+    doc = create_session(path="quick")
+    sid = doc["session_id"]
+    n1 = session_next(sid)
+    assert n1["step"]["id"] == "intent"
+    n2 = session_next(sid, merge_answers={"intent": "I maintain calm focus"})
+    assert n2["step"]["id"] == "mode"
+    n3 = session_next(
+        sid,
+        merge_answers={"mode": "creative", "wallpaper": False},
+    )
+    assert n3["done"] is True
+    assert n3["ok"] is True
+
+
 def test_wizard_cli_script():
     r = subprocess.run(
-        [sys.executable, str(CLI), "wizard", "--script"],
+        [sys.executable, str(CLI), "wizard", "--script", "--path", "quick"],
         capture_output=True,
         text=True,
         cwd=str(ROOT),
@@ -116,6 +207,28 @@ def test_wizard_cli_script():
     assert r.returncode == 0, r.stderr
     data = json.loads(r.stdout)
     assert data["steps"]
+    assert data["loop"]
+
+
+def test_wizard_cli_next():
+    r = subprocess.run(
+        [
+            sys.executable,
+            str(CLI),
+            "wizard",
+            "--next",
+            "--path",
+            "quick",
+            "--answers-json",
+            json.dumps({"intent": "I maintain calm focus"}),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    out = json.loads(r.stdout)
+    assert out["step"]["id"] == "mode"
 
 
 def test_wizard_cli_apply(tmp_path: Path):
@@ -127,6 +240,7 @@ def test_wizard_cli_apply(tmp_path: Path):
                 "kamea_encoding": "latin_mod9_v1",
                 "planetary_seal": "intelligence_character",
                 "square": "jupiter",
+                "planetary_geometry": "plate",
             }
         ),
         encoding="utf-8",
@@ -138,6 +252,8 @@ def test_wizard_cli_apply(tmp_path: Path):
             "wizard",
             "--apply",
             str(ans),
+            "--path",
+            "full",
             "--out",
             str(tmp_path / "out"),
         ],
@@ -149,6 +265,20 @@ def test_wizard_cli_apply(tmp_path: Path):
     out = json.loads(r.stdout)
     assert out["ok"] is True
     assert Path(out["svg"]).is_file()
+
+
+def test_wizard_cli_session_new():
+    r = subprocess.run(
+        [sys.executable, str(CLI), "wizard", "--session-new", "--path", "quick"],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    out = json.loads(r.stdout)
+    assert out["ok"] is True
+    assert out["session"]["session_id"]
+    assert out["next"]["step"]["id"] == "intent"
 
 
 def test_default_answers_template():

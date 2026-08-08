@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.9.0** (this file tracks shipped vs remaining).
+**Current release: v0.10.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -18,6 +18,7 @@ compression, name paths, planetary characters, and entity seals.
 | v0.7 | Host AI background provider (file + shell command), enriched prompt packages, `construct --wallpaper` one-shot |
 | v0.8 | Planetary character corpus (name_on_kamea intel/spirit) + Hermes `wizard` guided interview |
 | v0.9 | Stroke-faithful plate digitizations (multi-stroke); geometry auto plate→name→reconstruct |
+| v0.10 | Wizard step runner (`--next`), quick/full paths, sessions, per-step help |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
@@ -28,7 +29,7 @@ compression, name paths, planetary characters, and entity seals.
 - Bind-runes: **modern_derivation**
 - Spare family modes + phonetic JSON carrier
 - Ontology + `references/source-manifest.yaml`
-- Hermes **wizard**: `wizard --script` / `--apply` (see `references/wizard.md`)
+- Hermes **wizard**: `--next` step runner, `--path quick|full`, sessions, `--apply` (see `references/wizard.md`)
 
 ### Wallpapers (v0.6–0.7)
 - Surfaces: `phone_lock`, `phone_home`, `tablet`, `desktop`, `desktop_ultrawide`
