@@ -1,0 +1,112 @@
+{
+  "text": "Raphael",
+  "square": "sol",
+  "encoding": "hebrew_gematria",
+  "original_numeric_sequence": [
+    200,
+    1,
+    80,
+    1,
+    5,
+    30
+  ],
+  "reduced_numeric_sequence": [
+    2,
+    1,
+    8,
+    1,
+    5,
+    30
+  ],
+  "reduction_operations": [
+    {
+      "kind": "digit_sum",
+      "input": 200,
+      "output": 2,
+      "detail": "sum([2, 0, 0]) for square max 36"
+    },
+    {
+      "kind": "digit_sum",
+      "input": 80,
+      "output": 8,
+      "detail": "sum([8, 0]) for square max 36"
+    }
+  ],
+  "path": [
+    [
+      4.5,
+      5.5
+    ],
+    [
+      5.5,
+      0.5
+    ],
+    [
+      4.5,
+      1.5
+    ],
+    [
+      5.5,
+      0.5
+    ],
+    [
+      1.5,
+      5.5
+    ],
+    [
+      5.5,
+      1.5
+    ]
+  ],
+  "cell_check": [
+    {
+      "x": 4.5,
+      "y": 5.5,
+      "row": 5,
+      "col": 4,
+      "value": 2,
+      "expected": 2
+    },
+    {
+      "x": 5.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 5,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 4.5,
+      "y": 1.5,
+      "row": 1,
+      "col": 4,
+      "value": 8,
+      "expected": 8
+    },
+    {
+      "x": 5.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 5,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 1.5,
+      "y": 5.5,
+      "row": 5,
+      "col": 1,
+      "value": 5,
+      "expected": 5
+    },
+    {
+      "x": 5.5,
+      "y": 1.5,
+      "row": 1,
+      "col": 5,
+      "value": 30,
+      "expected": 30
+    }
+  ],
+  "claimed_historical_status": "historically_aligned_agrippan_style"
+}

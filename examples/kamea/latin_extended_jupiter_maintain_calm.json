@@ -1,0 +1,190 @@
+{
+  "text": "maintain calm",
+  "square": "jupiter",
+  "encoding": "latin_extended",
+  "original_numeric_sequence": [
+    13,
+    1,
+    9,
+    14,
+    20,
+    1,
+    9,
+    14,
+    3,
+    1,
+    12,
+    13
+  ],
+  "reduced_numeric_sequence": [
+    13,
+    1,
+    9,
+    14,
+    2,
+    1,
+    9,
+    14,
+    3,
+    1,
+    12,
+    13
+  ],
+  "reduction_operations": [
+    {
+      "kind": "digit_sum",
+      "input": 20,
+      "output": 2,
+      "detail": "sum([2, 0]) for square max 16"
+    }
+  ],
+  "path": [
+    [
+      3.5,
+      3.5
+    ],
+    [
+      3.5,
+      0.5
+    ],
+    [
+      0.5,
+      1.5
+    ],
+    [
+      1.5,
+      0.5
+    ],
+    [
+      1.5,
+      3.5
+    ],
+    [
+      3.5,
+      0.5
+    ],
+    [
+      0.5,
+      1.5
+    ],
+    [
+      1.5,
+      0.5
+    ],
+    [
+      2.5,
+      3.5
+    ],
+    [
+      3.5,
+      0.5
+    ],
+    [
+      3.5,
+      1.5
+    ],
+    [
+      3.5,
+      3.5
+    ]
+  ],
+  "cell_check": [
+    {
+      "x": 3.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 3,
+      "value": 13,
+      "expected": 13
+    },
+    {
+      "x": 3.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 3,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1.5,
+      "row": 1,
+      "col": 0,
+      "value": 9,
+      "expected": 9
+    },
+    {
+      "x": 1.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 1,
+      "value": 14,
+      "expected": 14
+    },
+    {
+      "x": 1.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 1,
+      "value": 2,
+      "expected": 2
+    },
+    {
+      "x": 3.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 3,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1.5,
+      "row": 1,
+      "col": 0,
+      "value": 9,
+      "expected": 9
+    },
+    {
+      "x": 1.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 1,
+      "value": 14,
+      "expected": 14
+    },
+    {
+      "x": 2.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 2,
+      "value": 3,
+      "expected": 3
+    },
+    {
+      "x": 3.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 3,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 3.5,
+      "y": 1.5,
+      "row": 1,
+      "col": 3,
+      "value": 12,
+      "expected": 12
+    },
+    {
+      "x": 3.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 3,
+      "value": 13,
+      "expected": 13
+    }
+  ],
+  "claimed_historical_status": "modern_adaptation"
+}

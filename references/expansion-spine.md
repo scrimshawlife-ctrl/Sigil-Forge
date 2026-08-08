@@ -1,77 +1,47 @@
 # Expansion spine
 
-Version: **v1 documented targets** (not required for v1 completeness).
+**Current release: v0.5.0** (this file tracks shipped vs remaining).
 
-Sigil-Forge ships as a **lean Hermes skill** with schemas and a thin CLI so growth
-does not require a rewrite. Implement these only after the v1 forge loop is solid.
+Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
+channels, and an explicit method ontology so “sigil” never collapses intent
+compression, name paths, planetary characters, and entity seals.
 
-## Packaging principle
+## Shipped
 
-| Now (v1) | Later |
-|----------|--------|
-| Lean skill tree under install dir | Same root; additive modules |
-| `construct` / `verify` / `check` | `forge`, `doctor`, `eval`, `receipt` jobs |
-| Fixed channel set | Additional craft channels with new IDs |
-| Empty-ok `interop` | Richer handoff fields |
+| Version | Highlights |
+|---------|------------|
+| v0.1–0.2 | Construct/verify/check, Spare monogram, kamea, stego, offline PNG, polish prompt, open |
+| v0.3 | `bind_runes`, `rose_cross_path`, run receipts, learning ledger |
+| v0.4 | Kamea multi-encoding + provenance, ontology, Spare family, Hebrew Rose Cross, planetary traditional seals |
+| v0.5 | Transliteration upgrade, kamea goldens, intelligence/spirit reconstructions, phonetic channel, doctor/eval, optional Argon2id, interop fields, source manifest |
 
-## Planned extension points
+### Craft / methods
+- Encodings: `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` (compat)
+- Rose Cross: 22 Hebrew petals + markers
+- Planetary: traditional seal, intelligence (odds→evens), spirit (reverse)
+- Bind-runes: **modern_derivation**
+- Spare family modes + phonetic JSON carrier
+- Ontology + `references/source-manifest.yaml`
 
-### CLI
+### Ops
+- CLI: construct, verify, open, learn, ledger, doctor, eval, check
+- Receipts + PROPOSED ledger
+- `validate_hermes_skill.py`
 
-- Full job surface: `do forge|doctor|eval|receipt` (names indicative).  
-- `doctor`: environment, raster backends, schema presence.  
-- `eval`: lightweight agent evals (refuse-harmful, mode tone, offline success).
+## Remaining / optional later
+- Full manuscript-accurate intelligence/spirit *grimoire* character corpus (beyond kamea-derived reconstructions)
+- Audio/MIDI for mantric carriers
+- Multi-frame storyboard carriers
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
+- Deeper geometric multi-channel steganalysis
 
-### Receipts and learning
-
-- Append-only **run receipts** beyond the forge packet.  
-- Optional **learning ledger**: method preference observations, **proposal-only** —
-  never auto-promote to canon without the human.
-
-### Crypto upgrades
-
-- Stronger KDF (e.g. **Argon2id**) for passphrase sealing.  
-- Keep algorithm identifiers versioned in packet `crypto` fields.
-
-### Craft channels
-
-- **Shipped (v0.3):** `bind_runes`, `rose_cross_path` (see methods-*.md).  
-- Later: multi-frame carriers, additional historical alphabets.  
-- Each new channel: stable `id`, applied/skipped reporting, privacy review.
-  Do **not** silently repurpose Enochian seal semantics.
-
-### Receipts and learning (shipped v0.3)
-
-- Run receipts: `run-receipt.json` + append-only `run-receipts.jsonl`.  
-- Learning ledger: `learn` / `ledger` CLI — **PROPOSED only**, never auto-canon.
-
-### Interop
-
-- Optional Orchestra dual-naming export (`intent_token` / `sigil_glyph`) without
-  collapsing Enochian authority seals into Spare intent glyphs.  
-- Provider prompt adapters (Kubrick-style) and ComfyUI workflow export when present.  
-- Fields remain optional and empty-ok for standalone use.
-
-### AI polish
-
-- Geometry-locked prompt builder (`prompt_polish` / Task 14 direction).  
-- Seed from digest; negative prompts forbid readable text that breaks privacy.  
-- Re-stego or presentation-only policy when raster verify would fail.
+## Explicit non-goals
+- Goetic / Enochian / authority seals in the **default** forge
+- Deterministic freehand automatic drawing claimed as pure geometry
+- Auto-promoting learning ledger to canon
 
 ## Compatibility rules
-
-1. **Do not break** forge-packet required keys without a `schema_version` bump.  
-2. New channels append; old verifiers ignore unknown IDs gracefully or report unknown.  
-3. Keep offline path working without new optional dependencies.  
-4. Still never mutate `references/` at run time.
-
-## Explicit non-goals (still)
-
-- Required multi-provider adapter matrix on day one.  
-- Full ritual liturgy or results-magic outcome engine.  
-- Unlimited channel sprawl per single run.
-
-## Related
-
-- Runtime: `hermes-runtime-contract.md`  
-- Design §14: `docs/superpowers/specs/2026-08-07-sigil-forge-design.md`
+1. Do not break forge-packet required keys without `schema_version` bump.  
+2. New channels append; unknown IDs report applied/skipped honestly.  
+3. Offline path works without optional pip packages.  
+4. Never mutate `references/` at run time.

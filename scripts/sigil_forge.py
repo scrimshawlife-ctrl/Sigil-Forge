@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | open | learn | ledger | check | help\n"
+        "commands: construct | verify | open | learn | ledger | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -192,6 +192,10 @@ def cmd_construct(args: argparse.Namespace) -> int:
             planetary_seal=bool(getattr(args, "planetary_seal", False)),
             planetary_seal_kind=getattr(args, "planetary_seal_kind", None)
             or "traditional_seal",
+            prefer_argon2=bool(getattr(args, "argon2", False)),
+            interop=bool(getattr(args, "interop", False)),
+            phonetic=bool(getattr(args, "phonetic", False))
+            or (getattr(args, "spare_mode", None) == "phonetic_mantric"),
         )
     except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
@@ -340,6 +344,144 @@ def cmd_ledger(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_doctor(_: argparse.Namespace) -> int:
+    """Environment + skill health (superset of check for operators)."""
+    import importlib
+    import platform
+
+    from crypto_payload import argon2_available
+    from paths import skill_root
+
+    root = skill_root()
+    missing = [
+        p
+        for p in (
+            "VERSION",
+            "SKILL.md",
+            "scripts/construct.py",
+            "scripts/kamea.py",
+            "schemas/sigil-method.schema.json",
+            "references/source-manifest.yaml",
+        )
+        if not (root / p).is_file()
+    ]
+    module_errors: list[str] = []
+    for name in ("construct", "kamea", "ontology", "planetary_seals", "phonetic"):
+        try:
+            importlib.import_module(name)
+        except Exception as exc:  # noqa: BLE001
+            module_errors.append(f"{name}: {exc}")
+    report: dict = {
+        "ok": not missing and not module_errors,
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "skill_root": str(root),
+        "version": (root / "VERSION").read_text(encoding="utf-8").strip()
+        if (root / "VERSION").is_file()
+        else None,
+        "argon2_available": argon2_available(),
+        "layout_raster": True,
+        "missing": missing,
+        "module_errors": module_errors,
+        "hermes_skill_dir_env": __import__("os").environ.get("HERMES_SKILL_DIR"),
+    }
+    try:
+        from layout_raster import layout_to_png_bytes
+
+        png = layout_to_png_bytes([(10.0, 10.0), (90.0, 90.0)], [])
+        report["layout_raster_bytes"] = len(png)
+    except Exception as exc:  # noqa: BLE001
+        report["layout_raster"] = False
+        report["layout_raster_error"] = str(exc)
+        report["ok"] = False
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["ok"] else 1
+
+
+def cmd_eval(_: argparse.Namespace) -> int:
+    """Offline behavioral evals for method corpus honesty."""
+    import tempfile
+
+    from construct import run as construct_run
+    from safety import check_intent
+
+    cases: list[dict] = []
+    ok_all = True
+
+    def rec(name: str, passed: bool, detail: str = "") -> None:
+        nonlocal ok_all
+        cases.append({"name": name, "ok": passed, "detail": detail})
+        if not passed:
+            ok_all = False
+
+    # refuse harmful
+    ok_h, _ = check_intent("I will murder my neighbor tomorrow")
+    rec("refuse_harmful", not ok_h)
+
+    # allow calm
+    ok_c, _ = check_intent("I maintain calm focus")
+    rec("allow_calm", ok_c)
+
+    with tempfile.TemporaryDirectory(prefix="sf-eval-") as td:
+        tdp = Path(td)
+        # hebrew encoding labeled
+        p1 = construct_run(
+            "Michael",
+            out_root=tdp / "h",
+            square="jupiter",
+            kamea_encoding="hebrew_gematria",
+        )
+        rec(
+            "hebrew_encoding_label",
+            p1["methods"]["kamea"]["encoding_system"] == "hebrew_gematria",
+        )
+        rec("ontology_present", bool(p1.get("ontology")))
+        # mod9 labeled
+        p2 = construct_run(
+            "I maintain calm focus",
+            out_root=tdp / "m",
+            square="luna",
+            kamea_encoding="latin_mod9_v1",
+        )
+        rec(
+            "mod9_encoding_label",
+            p2["methods"]["kamea"]["encoding_system"] == "latin_mod9_v1",
+        )
+        # dual craft empty
+        try:
+            construct_run(
+                "aeiou you",
+                out_root=tdp / "e",
+                kamea_encoding="latin_mod9_v1",
+            )
+            rec("empty_dual_craft", False, "expected NOT_COMPUTABLE")
+        except ValueError as exc:
+            rec("empty_dual_craft", str(exc).startswith("NOT_COMPUTABLE"))
+        # pictorial spare
+        p3 = construct_run(
+            "I maintain calm focus",
+            out_root=tdp / "p",
+            spare_mode="pictorial",
+            kamea_encoding="latin_mod9_v1",
+        )
+        rec(
+            "spare_pictorial_not_computable",
+            p3["methods"]["spare"].get("semantic_verification") == "NOT_COMPUTABLE",
+        )
+        # phonetic
+        p4 = construct_run(
+            "I maintain calm focus",
+            out_root=tdp / "ph",
+            phonetic=True,
+            kamea_encoding="latin_mod9_v1",
+        )
+        by = {c["id"]: c for c in p4["channels"]}
+        rec("phonetic_channel", by.get("phonetic_sigil", {}).get("status") == "applied")
+
+    print(json.dumps({"ok": ok_all, "cases": cases}, indent=2, sort_keys=True))
+    return 0 if ok_all else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="sigil-forge")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -419,6 +561,21 @@ def main(argv: list[str] | None = None) -> int:
         choices=("traditional_seal", "intelligence_character", "spirit_character"),
         help="Planetary character class (default: traditional_seal)",
     )
+    pc.add_argument(
+        "--argon2",
+        action="store_true",
+        help="Prefer Argon2id KDF when sealing if argon2 package is installed",
+    )
+    pc.add_argument(
+        "--interop",
+        action="store_true",
+        help="Fill thin interop.intent_token / sigil_glyph export fields",
+    )
+    pc.add_argument(
+        "--phonetic",
+        action="store_true",
+        help="Emit phoneme-sequence.json (phonetic_sigil channel)",
+    )
 
     pv = sub.add_parser("verify", help="Verify artifact recovers intent digest")
     pv.add_argument("artifact", help="Path to glyph.svg or glyph.png")
@@ -475,6 +632,9 @@ def main(argv: list[str] | None = None) -> int:
     pld.add_argument("--ledger", default=None, help="Ledger path override")
     pld.add_argument("--limit", default=20, help="Max entries (default 20)")
 
+    sub.add_parser("doctor", help="Environment and skill health report")
+    sub.add_parser("eval", help="Offline behavioral eval suite")
+
     args = p.parse_args(argv)
     if args.cmd == "help":
         return cmd_help(args)
@@ -490,6 +650,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_learn(args)
     if args.cmd == "ledger":
         return cmd_ledger(args)
+    if args.cmd == "doctor":
+        return cmd_doctor(args)
+    if args.cmd == "eval":
+        return cmd_eval(args)
     return 2
 
 
