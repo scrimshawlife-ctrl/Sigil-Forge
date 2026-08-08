@@ -5,7 +5,7 @@ description: >
   the user asks to be guided/wizard through sigil creation. Offline multi-channel
   construction; dual creative/practice framing; no efficacy claims. Prefer wizard
   --next step runner for new users.
-version: 0.12.2
+version: 0.12.3
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -167,6 +167,8 @@ disclosure). Expert operators may skip to construct.
    ```bash
    export SIGIL_FORGE_PASSPHRASE='…'
    python3 scripts/sigil_forge.py open path/to/forge-packet.json
+   # Proof-of-Intent capsule (commitment-bound witness):
+   python3 scripts/sigil_forge.py open --capsule path/to/intent-capsule.json --json
    ```
 
    **Done when:** plaintext recovered or auth failure reported.
@@ -227,6 +229,9 @@ python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
 python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
   --surface phone_lock --background-method ai_generated --background /path/ai-bg.png
 python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
+python3 scripts/sigil_forge.py open --capsule out/sigil-forge/<run-id>/intent-capsule.json --json
+python3 scripts/sigil_forge.py inspect out/sigil-forge/<run-id>/glyph.svg
+python3 scripts/sigil_forge.py verify-proof out/sigil-forge/<run-id> --passphrase '…'
 python3 scripts/sigil_forge.py learn --class channel_preference \
   --summary "bind_runes + rose_cross_path coherent" --channels bind_runes,rose_cross_path
 python3 scripts/sigil_forge.py ledger --limit 20

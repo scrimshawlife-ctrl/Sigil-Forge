@@ -7,11 +7,13 @@ from typing import Any
 from proofs.local_knowledge import LocalCapsuleProvider
 from proofs.noir_provider import NoirProvider
 from proofs.none_provider import NoneProvider
+from proofs.risc0_provider import Risc0Provider
 
 _PROVIDERS = {
     "none": NoneProvider,
     "local_capsule": LocalCapsuleProvider,
     "noir": NoirProvider,
+    "risc0": Risc0Provider,
 }
 
 

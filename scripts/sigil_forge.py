@@ -335,7 +335,7 @@ def cmd_verify_proof(args: argparse.Namespace) -> int:
 
 
 def cmd_open(args: argparse.Namespace) -> int:
-    """Decrypt sealed_intent from a forge-packet.json using passphrase/env."""
+    """Decrypt sealed_intent (packet) or sealed witness (intent capsule)."""
     from construct import resolve_passphrase
     from crypto_payload import open_intent
 
@@ -344,21 +344,9 @@ def cmd_open(args: argparse.Namespace) -> int:
         print(json.dumps({"ok": False, "error": f"not found: {path}"}), file=sys.stderr)
         return 1
     try:
-        packet = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
-        return 1
-    sealed = packet.get("sealed_intent")
-    if not isinstance(sealed, dict):
-        print(
-            json.dumps(
-                {
-                    "ok": False,
-                    "error": "packet has no sealed_intent (construct without seal?)",
-                }
-            ),
-            file=sys.stderr,
-        )
         return 1
     passphrase = resolve_passphrase(args.passphrase)
     if not passphrase:
@@ -367,6 +355,54 @@ def cmd_open(args: argparse.Namespace) -> int:
                 {
                     "ok": False,
                     "error": "passphrase required (--passphrase or SIGIL_FORGE_PASSPHRASE)",
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 1
+
+    # Capsule mode: open intent-capsule.json sealed witness
+    if getattr(args, "capsule", False):
+        from intent_capsule import open_capsule
+
+        try:
+            witness = open_capsule(data, passphrase)
+        except Exception as exc:  # noqa: BLE001
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+        intent_text = witness.get("intent") or witness.get("normalized_intent") or ""
+        if args.json:
+            # Authorized disclosure only — never log elsewhere
+            print(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "source": "intent_capsule",
+                        "intent": witness.get("intent"),
+                        "normalized_intent": witness.get("normalized_intent"),
+                        "intent_digest": (data.get("compatibility") or {}).get(
+                            "intent_digest"
+                        ),
+                        "commitment": data.get("commitment"),
+                        "public_bindings": data.get("public_bindings"),
+                    },
+                    indent=2,
+                )
+            )
+        else:
+            print(intent_text)
+        return 0
+
+    sealed = data.get("sealed_intent")
+    if not isinstance(sealed, dict):
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": (
+                        "packet has no sealed_intent "
+                        "(construct without seal? use --capsule for intent-capsule.json)"
+                    ),
                 }
             ),
             file=sys.stderr,
@@ -382,8 +418,9 @@ def cmd_open(args: argparse.Namespace) -> int:
             json.dumps(
                 {
                     "ok": True,
+                    "source": "forge_packet",
                     "intent": text,
-                    "intent_digest": packet.get("intent_digest"),
+                    "intent_digest": data.get("intent_digest"),
                 },
                 indent=2,
             )
@@ -1160,7 +1197,10 @@ def main(argv: list[str] | None = None) -> int:
         "--proof",
         default="none",
         choices=("none", "commitment", "zk-knowledge", "zk-forge"),
-        help="Proof-of-intent mode (commitment needs passphrase; zk-forge not yet)",
+        help=(
+            "Proof-of-intent mode (commitment needs passphrase; "
+            "zk-forge uses optional risc0 adapter, skips if unavailable)"
+        ),
     )
     pc.add_argument(
         "--interop",
@@ -1207,11 +1247,16 @@ def main(argv: list[str] | None = None) -> int:
 
     po = sub.add_parser(
         "open",
-        help="Decrypt sealed_intent from forge-packet.json",
+        help="Decrypt sealed_intent (packet) or sealed witness (--capsule)",
     )
     po.add_argument(
         "packet",
-        help="Path to forge-packet.json (with sealed_intent)",
+        help="Path to forge-packet.json or intent-capsule.json (with --capsule)",
+    )
+    po.add_argument(
+        "--capsule",
+        action="store_true",
+        help="Open intent-capsule.json sealed witness (commitment-bound)",
     )
     po.add_argument(
         "--passphrase",
