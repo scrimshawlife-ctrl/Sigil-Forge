@@ -8,6 +8,12 @@
   <strong>v0.12.6</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
 </p>
 
+<p align="center">
+  <a href="https://scrimshawlife-ctrl.github.io/Sigil-Forge/"><strong>Project site →</strong></a>
+  ·
+  <a href="https://scrimshawlife-ctrl.github.io/Sigil-Forge/">scrimshawlife-ctrl.github.io/Sigil-Forge</a>
+</p>
+
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, **Proof of Intent** surfaces (commitment, capsule, `sigil_root`), and a guided **wizard** for Hermes agents.
 
 Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** — no image API required.
