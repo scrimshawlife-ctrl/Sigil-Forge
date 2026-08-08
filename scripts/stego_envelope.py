@@ -1,4 +1,4 @@
-"""Versioned stego envelopes: SF1 (digest) and SF11 (digest + sigil_root).
+"""Versioned stego envelopes: SF1, SF11, SF12 (wallpaper vault).
 
 SF1 (v0.10 compat):
   magic SF1\\0 (4) + digest (32) [+ sealed optional]
@@ -7,7 +7,9 @@ SF11 (v0.12.1):
   magic SF11 (4) + version u8=1 + flags u8
   + intent_digest (32) + sigil_root (32) + crc32(u32 BE of body before crc)
 
-Public carriers never embed plaintext intent.
+SF12 (v0.13 wallpaper product):
+  magic SF12 + ver + flags + digest32 + root32 + sealed_len + zlib(sealed AES blob) + crc
+  Public digests only; full intent/methods in encrypted vault (passphrase).
 """
 
 from __future__ import annotations
@@ -91,6 +93,10 @@ def unpack_envelope(payload: bytes) -> dict[str, Any]:
             "sigil_root": root.hex() if flags & SF11_FLAG_ROOT else None,
             "sealed": None,
         }
+    if magic == b"SF12":
+        from wallpaper.vault import unpack_sf12
+
+        return unpack_sf12(payload)
     raise ValueError(f"unknown stego magic {magic!r}")
 
 

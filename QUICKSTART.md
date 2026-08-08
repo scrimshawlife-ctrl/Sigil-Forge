@@ -1,44 +1,33 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.12.6.**
+Run from the skill root (clone or install dir). **Current version: 0.13.0.**
 
-Hermes packaging: this is a **skill** (`SKILL.md` + offline CLI), **not** a plugin.  
-Default install: `~/.hermes/skills/sigil-forge`.
+**Product:** wallpaper PNG with intent + methods sealed in-image (SF12 vault).  
+Hermes packaging: **skill** (not plugin). Default install: `~/.hermes/skills/sigil-forge`.
 
 ```bash
-# 1. Smoke-check the skill tree (files, modules, Hermes frontmatter, dry PoI construct)
+# 1. Smoke-check
 python3 scripts/sigil_forge.py check
-# Optional: python3 scripts/sigil_forge.py doctor
-# Optional: python3 scripts/sigil_forge.py eval
 
-# 1b. Hermes wizard — quick path (preferred for new users)
-python3 scripts/sigil_forge.py wizard --session-new --path quick
-# python3 scripts/sigil_forge.py wizard --next --session <id> --answers-json '{"intent":"…"}'
-# python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
-
-# 1c. Full path + Proof of Intent (capsule)
-# export SIGIL_FORGE_PASSPHRASE='…'
-# answers JSON: {"intent":"…","proof":"commitment","kdf":"auto",…}
-# python3 scripts/sigil_forge.py wizard --apply answers.json --path full --out out/sigil-forge
-
-# 2. Construct a creative forge packet + master glyph
+# 2. Product path — forge + wallpaper vault (passphrase required for sealed intent)
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
+  --wallpaper --surface phone_lock \
+  --embed vault \
   --out out/sigil-forge
 
-# 3. Verify + inspect (digest / SF11 root; no plaintext)
-python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
-python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
-python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
+# 3. Open the deliverable (wallpaper), not the packet
+python3 scripts/sigil_forge.py open --wallpaper \
+  out/sigil-forge/*/wallpaper/phone-lock.png --json
 
-# 4. Compose device wallpapers (immutable glyph + atmosphere)
-#    Replace <run-id> with the directory name under out/sigil-forge/
-python3 scripts/sigil_forge.py wallpaper \
-  --run out/sigil-forge/<run-id> \
-  --surface phone_lock \
-  --mode focus \
-  --theme mercurial \
-  --style "dark architectural minimalism"
+# 4. Optional: wizard for guided intake
+# python3 scripts/sigil_forge.py wizard --session-new --path quick
+
+# 5. Workspace-only construct (glyph + packet) then wallpaper later
+# python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge
+# python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
+#   --surface phone_lock --embed vault
 
 # One-shot construct + wallpaper:
 # python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge \

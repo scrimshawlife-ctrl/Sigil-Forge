@@ -5,7 +5,7 @@ description: >
   the user asks to be guided/wizard through sigil creation. Offline multi-channel
   construction; dual creative/practice framing; no efficacy claims. Prefer wizard
   --next step runner for new users.
-version: 0.12.6
+version: 0.13.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -39,8 +39,12 @@ triggers:
 
 Standalone **Hermes skill** (not a plugin). Hermes loads this directory;
 `SKILL.md` is the behavior contract. Deterministic construction lives under
-`scripts/`; the agent owns intake, mode framing, safety judgment, and optional
-host image polish. Install: `bash install.sh` → `~/.hermes/skills/sigil-forge`.
+`scripts/`; the agent owns intake, mode framing, and presentation choices.
+
+**Product:** the **wallpaper PNG** is the end deliverable. Corpus methods forge
+immutable glyph geometry; intent + method provenance are **encrypted into the
+image** (SF12 vault). Packets are workspace. Install: `bash install.sh` →
+`~/.hermes/skills/sigil-forge`.
 
 ## Overview
 
@@ -140,8 +144,10 @@ Expert operators may skip to construct.
 4. **Dual-mode notes** — Apply profile tone only to narrative / `framing_notes`.
    Construction is identical across modes.
    **Done when:** framing matches mode; no efficacy language.
-5. **Deliver** — Paths + channel summary. Public media must not contain plaintext intent.
-   **Done when:** operator has packet path and SVG path; privacy holds.
+5. **Deliver** — Prefer the **wallpaper path** as the product handoff. Public
+   pixels must not contain plaintext intent; sealed vault needs passphrase.
+   **Done when:** wallpaper exists with vault embedded (or honest public-only
+   digests) and geometry_preserved.
 6. **Optional polish** — Geometry-locked host image tools only after master exists.
    Prefer construct `--polish` or `prompt_polish.build_prompt`. Master remains verify source.
    **Done when:** if polish used, `polish_prompt.json` exists and `gen_seed` is `applied`.

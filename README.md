@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.12.6</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
+  <strong>v0.13.0</strong> · Hermes skill · offline-first · wallpaper product · MIT
 </p>
 
 <p align="center">
@@ -14,13 +14,20 @@
   <a href="https://scrimshawlife-ctrl.github.io/Sigil-Forge/">scrimshawlife-ctrl.github.io/Sigil-Forge</a>
 </p>
 
-**Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, **Proof of Intent** surfaces (commitment, capsule, `sigil_root`), and a guided **wizard** for Hermes agents.
+**Sigil-Forge** encodes a statement of intent into a **layered sigil image**.  
+Corpus methods (Spare, kamea, Rose Cross, bind-runes, planetary plates) forge
+**immutable glyph geometry**. The **end product is the wallpaper**: atmosphere +
+glyph composite with intent, methods, digests, and Proof-of-Intent surfaces
+**encrypted into the PNG** (SF12 LSB vault). Packets and capsules remain operator
+workspace — not the handoff object.
 
-Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** — no image API required.
+Default framing is a **creative / focus tool**. Optional **`practice`** mode
+changes tone only. Construction is **offline-first** — no image API required.
 
-> Methods are craft history, symbolic compression, and data embedding — not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
+> Methods are craft history, symbolic compression, and steganographic layering —
+> not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
 
-**Packaging:** this is a **Hermes skill** (`SKILL.md` + offline CLI under `~/.hermes/skills/sigil-forge`), **not** a Hermes plugin. Agents load progressive refs on demand; geometry always comes from `scripts/`.
+**Packaging:** Hermes **skill** (`SKILL.md` + CLI → `~/.hermes/skills/sigil-forge`), not a plugin.
 
 ---
 
@@ -33,11 +40,12 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 | **Encodings** | `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` |
 | **Planetary** | Traditional seal + intelligence/spirit; plate → name_on_kamea → reconstruct |
 | **Stego** | SVG multi-channel + PNG LSB (digest-only; SF1 + SF11 dual verify) |
+| **Product** | **Wallpaper PNG** — composite + SF12 sealed vault (intent + methods in-image) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, verify, verify-proof, inspect, open (`--capsule`), policy, ledger, doctor, eval, check |
-| **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
-| **Proof of Intent** | Salted commitment, capsule, Merkle `sigil_root`, SF11, knowledge proofs; optional Noir/risc0 |
-| **Hermes packaging** | Skill (not plugin); lean install; `check`/`doctor`/`eval` gates; progressive refs |
+| **Ops** | construct, wallpaper, verify, inspect, open (`--wallpaper` / `--capsule`), policy, ledger, doctor, eval, check |
+| **Privacy** | Public digests only; private vault needs passphrase; no plaintext in visible media |
+| **Proof of Intent** | Commitment + `sigil_root` in vault; SF11/SF12 stego; optional Noir/risc0 |
+| **Hermes packaging** | Skill (not plugin); lean install; progressive refs |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
@@ -127,7 +135,29 @@ Details: [references/wizard.md](references/wizard.md) · agent contract: [SKILL.
 
 ---
 
-## Expert construct
+## Product path — wallpaper as deliverable
+
+```bash
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
+
+# One-shot: forge corpus geometry → wallpaper with sealed vault
+python3 scripts/sigil_forge.py construct \
+  --intent "I maintain calm focus" \
+  --wallpaper --surface phone_lock --wp-mode focus \
+  --embed vault \
+  --out out/sigil-forge
+
+# Handoff object = wallpaper PNG (not the packet)
+python3 scripts/sigil_forge.py open --wallpaper \
+  out/sigil-forge/*/wallpaper/phone-lock.png --json
+```
+
+Without a passphrase, wallpaper still composites and may embed public digests
+(`sf11`); the **encrypted vault** requires a passphrase.
+
+---
+
+## Expert construct (workspace)
 
 ```bash
 python3 scripts/sigil_forge.py construct \
@@ -137,8 +167,8 @@ python3 scripts/sigil_forge.py construct \
   --out out/sigil-forge
 
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
-python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
-python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
+python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
+  --surface phone_lock --embed vault
 ```
 
 ### Useful flags
@@ -180,13 +210,15 @@ export SIGIL_FORGE_PASSPHRASE='operator-secret'
 | `zk-knowledge` | Yes | Local attestation + optional Noir (skips if no `nargo`) |
 | `zk-forge` | No | Optional risc0/zkVM path (skips if guest unavailable) |
 
-Open sealed packet or commitment-bound capsule:
+Open sealed product / workspace:
 
 ```bash
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
+# Product carrier (preferred)
+python3 scripts/sigil_forge.py open --wallpaper out/sigil-forge/*/wallpaper/phone-lock.png --json
+# Workspace packet / capsule
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
 python3 scripts/sigil_forge.py open --capsule out/sigil-forge/*/intent-capsule.json --json
-python3 scripts/sigil_forge.py verify-proof out/sigil-forge/*/ --passphrase "$SIGIL_FORGE_PASSPHRASE"
 ```
 
 Artifacts land under `out/sigil-forge/<run-id>/`. Run ids use timestamp + digest prefix so paths avoid full intent text.
