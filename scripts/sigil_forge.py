@@ -56,10 +56,19 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/planetary_corpus.py",
         "scripts/plate_strokes.py",
         "scripts/policy_lint.py",
+        "scripts/crypto_domains.py",
+        "scripts/commitment.py",
+        "scripts/derivation.py",
+        "scripts/artifact_root.py",
+        "scripts/forge_manifest.py",
+        "scripts/intent_capsule.py",
         "references/planetary-character-corpus.json",
         "references/planetary-plate-strokes.json",
         "schemas/wallpaper-spec.schema.json",
         "schemas/wallpaper-receipt.schema.json",
+        "schemas/intent-capsule.schema.json",
+        "schemas/artifact-root.schema.json",
+        "schemas/forge-manifest.schema.json",
         "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
@@ -115,6 +124,12 @@ def cmd_check(_: argparse.Namespace) -> int:
         "plate_strokes",
         "wizard",
         "crypto_payload",
+        "crypto_domains",
+        "commitment",
+        "derivation",
+        "artifact_root",
+        "forge_manifest",
+        "intent_capsule",
         "packet",
         "policy_lint",
     )
@@ -209,6 +224,8 @@ def cmd_construct(args: argparse.Namespace) -> int:
             or "traditional_seal",
             planetary_geometry=getattr(args, "planetary_geometry", None) or "auto",
             prefer_argon2=bool(getattr(args, "argon2", False)),
+            kdf=getattr(args, "kdf", None),
+            proof=getattr(args, "proof", None) or "none",
             interop=bool(getattr(args, "interop", False)),
             phonetic=bool(getattr(args, "phonetic", False))
             or (getattr(args, "spare_mode", None) == "phonetic_mantric"),
@@ -1108,6 +1125,18 @@ def main(argv: list[str] | None = None) -> int:
         "--argon2",
         action="store_true",
         help="Prefer Argon2id KDF when sealing if argon2 package is installed",
+    )
+    pc.add_argument(
+        "--kdf",
+        default=None,
+        choices=("auto", "argon2id", "pbkdf2-sha256"),
+        help="Sealing KDF (default: pbkdf2 unless --argon2; auto prefers Argon2id)",
+    )
+    pc.add_argument(
+        "--proof",
+        default="none",
+        choices=("none", "commitment", "zk-knowledge", "zk-forge"),
+        help="Proof-of-intent mode (commitment needs passphrase; zk-forge not yet)",
     )
     pc.add_argument(
         "--interop",

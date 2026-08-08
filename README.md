@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.11.0</strong> · Hermes skill · offline-first · verifiable · MIT
+  <strong>v0.12.0</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
 </p>
 
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
@@ -28,6 +28,7 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
 | **Ops** | construct, verify, open, receipts, PROPOSED ledger, `ledger promote`, `policy check`, doctor, eval, check |
 | **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
+| **Proof of Intent** | Salted `intent_commitment`, intent capsule, Merkle `sigil_root` (v0.12); ZK optional later |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
@@ -129,6 +130,8 @@ python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
 # Privacy (prefer env over --passphrase — argv is visible in ps)
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 --seal-packet
+--kdf auto                    # Argon2id if installed, else PBKDF2
+--proof commitment            # capsule + sigil_root (requires passphrase)
 
 # Polish prompt package only (no image API)
 --polish --polish-style "ink on parchment"

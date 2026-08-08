@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/intent-capsule.schema.json",
+  "title": "Sigil-Forge Intent Capsule",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "crypto_version",
+    "commitment",
+    "compatibility",
+    "sealed_witness"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "crypto_version": { "type": "integer", "minimum": 1 },
+    "commitment": {
+      "type": "object",
+      "required": ["scheme", "value", "domain"],
+      "properties": {
+        "scheme": { "type": "string" },
+        "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "domain": { "type": "string" }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["intent_digest"],
+      "properties": {
+        "intent_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "sealed_witness": {
+      "type": "object",
+      "required": ["algorithm", "kdf", "ciphertext_b64", "nonce_b64", "salt_b64"],
+      "properties": {
+        "algorithm": { "type": "string" },
+        "kdf": { "type": "string" },
+        "ciphertext_b64": { "type": "string" },
+        "nonce_b64": { "type": "string" },
+        "salt_b64": { "type": "string" }
+      }
+    },
+    "public_bindings": { "type": "object", "additionalProperties": true }
+  }
+}

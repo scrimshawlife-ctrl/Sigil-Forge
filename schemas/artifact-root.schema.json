@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/artifact-root.schema.json",
+  "title": "Sigil-Forge Artifact Root",
+  "type": "object",
+  "required": ["schema_version", "sigil_root", "leaves"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "domain": { "type": "string" },
+    "sigil_root": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "leaves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "properties": {
+          "type": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    }
+  }
+}
