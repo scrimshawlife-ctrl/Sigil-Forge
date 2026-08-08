@@ -1,6 +1,6 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.12.5.**
+Run from the skill root (clone or install dir). **Current version: 0.12.6.**
 
 Hermes packaging: this is a **skill** (`SKILL.md` + offline CLI), not a plugin.
 
