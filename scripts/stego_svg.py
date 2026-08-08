@@ -218,8 +218,19 @@ def _insert_metadata(svg: str, payload_b64: str) -> str:
     return svg[:insert_at] + "\n  " + meta_block + svg[insert_at:]
 
 
-def _build_payload(digest_hex: str, method_bitmap: int) -> str:
-    obj = {"v": 1, "d": digest_hex.lower().strip(), "m": int(method_bitmap)}
+def _build_payload(
+    digest_hex: str,
+    method_bitmap: int,
+    *,
+    sigil_root: str | None = None,
+) -> str:
+    from stego_envelope import svg_metadata_payload
+
+    obj = svg_metadata_payload(
+        intent_digest=digest_hex,
+        method_bitmap=int(method_bitmap),
+        sigil_root=sigil_root,
+    )
     raw = json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
     return base64.b64encode(raw).decode("ascii")
 
@@ -320,13 +331,18 @@ def embed(
     # --- svg_metadata last so bitmap reflects sibling channels ---
     try:
         bitmap |= MB_SVG_METADATA
-        payload_b64 = _build_payload(digest_hex, bitmap)
+        sigil_root = extras.get("sigil_root")
+        if isinstance(sigil_root, str) and not sigil_root.strip():
+            sigil_root = None
+        payload_b64 = _build_payload(digest_hex, bitmap, sigil_root=sigil_root)
         out = _insert_metadata(out, payload_b64)
+        ver = 2 if sigil_root else 1
         channels.append(
             _status(
                 "svg_metadata",
                 "applied",
-                f"sf:payload v=1 m={bitmap}",
+                f"sf:payload v={ver} m={bitmap}"
+                + (f" root={str(sigil_root)[:12]}…" if sigil_root else ""),
             )
         )
     except Exception as exc:  # noqa: BLE001
@@ -380,6 +396,9 @@ def extract(svg: str) -> dict[str, Any]:
                     pass
             if "v" in obj:
                 result["version"] = obj["v"]
+            r = obj.get("r")
+            if isinstance(r, str) and r:
+                result["sigil_root"] = r.lower()
             result["channels_detected"].append("svg_metadata")
 
     # metric_quantize detection
@@ -414,6 +433,28 @@ def extract(svg: str) -> dict[str, Any]:
         result["epsilon_bits"] = geom_bits
 
     return result
+
+
+def inject_sigil_root(svg: str, sigil_root: str) -> str:
+    """Update sf:payload to v2 including sigil_root without touching geometry."""
+    root = (sigil_root or "").strip().lower()
+    if len(root) != 64:
+        raise ValueError("sigil_root must be 64 hex chars")
+    m = re.search(
+        r"(<sf:payload\b[^>]*>)(.*?)(</sf:payload>)",
+        svg,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not m:
+        # No payload — leave unchanged (caller may re-embed)
+        return svg
+    obj = _parse_payload_b64(m.group(2))
+    if not obj:
+        return svg
+    d = obj.get("d") or ""
+    bitmap = int(obj.get("m") or 0)
+    payload_b64 = _build_payload(str(d), bitmap, sigil_root=root)
+    return svg[: m.start(2)] + payload_b64 + svg[m.end(2) :]
 
 
 def expected_epsilon_bits(digest_hex: str, n: int) -> list[int]:

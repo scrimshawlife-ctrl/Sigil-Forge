@@ -702,6 +702,29 @@ def run(
         artifacts["forge_manifest"] = str(final_dir / "forge-manifest.json")
         artifacts["artifact_root"] = str(final_dir / "artifact-root.json")
 
+        # SF11 / v2 carrier bind: inject root into SVG metadata + PNG LSB (after root known)
+        try:
+            from stego_envelope import pack_sf11
+            from stego_svg import inject_sigil_root
+
+            svg_path = staging / "glyph.svg"
+            if svg_path.is_file():
+                svg_text = svg_path.read_text(encoding="utf-8")
+                svg_path.write_text(
+                    inject_sigil_root(svg_text, sigil_root), encoding="utf-8"
+                )
+            png_path = staging / "glyph.png"
+            if png_path.is_file():
+                from stego_png import embed_lsb, read_rgb_png, write_rgb_png
+
+                raw_png = png_path.read_bytes()
+                w, h, rgb = read_rgb_png(raw_png)
+                clean = write_rgb_png(w, h, rgb)
+                payload = pack_sf11(intent_digest=digest, sigil_root=sigil_root)
+                png_path.write_bytes(embed_lsb(clean, payload))
+        except Exception:  # noqa: BLE001 — carriers optional; root still in packet
+            pass
+
         packet = build_packet(
             mode=mode,
             intent_digest=digest,

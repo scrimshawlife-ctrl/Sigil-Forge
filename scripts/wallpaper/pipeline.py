@@ -177,6 +177,41 @@ def build_wallpaper(
         source_glyph_path=forge["glyph_svg"],
         forbidden_phrases=forbidden,
     )
+    # Proof-of-Intent binding fields (additive; never plaintext intent)
+    packet_ic = packet.get("intent_commitment") or {}
+    if isinstance(packet_ic, dict):
+        receipt["intent_commitment"] = packet_ic.get("value") or packet_ic.get(
+            "commitment"
+        )
+    else:
+        receipt["intent_commitment"] = None
+    receipt["intent_digest"] = packet.get("intent_digest") or spec["source"].get(
+        "intent_digest"
+    )
+    receipt["sigil_root"] = packet.get("sigil_root")
+    # Prefer embedding SF11 when root known
+    if receipt.get("sigil_root") and receipt.get("intent_digest"):
+        try:
+            from stego_envelope import pack_sf11
+            from stego_png import embed_lsb, read_rgb_png, write_rgb_png
+
+            w, h, rgb = read_rgb_png(out_file.read_bytes())
+            clean = write_rgb_png(w, h, rgb)
+            payload = pack_sf11(
+                intent_digest=str(receipt["intent_digest"]),
+                sigil_root=str(receipt["sigil_root"]),
+            )
+            out_file.write_bytes(embed_lsb(clean, payload))
+            out_sha = file_sha256(str(out_file))
+            receipt["output_digest"] = out_sha
+            # update artifacts sha for wallpaper role
+            for a in artifacts:
+                if a.get("role", "").startswith("wallpaper-"):
+                    a["sha256"] = out_sha
+            emb = out_sha
+        except Exception:
+            pass
+
     receipt_path = receipts_dir / f"wallpaper-receipt-{surface}.json"
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -192,6 +227,8 @@ def build_wallpaper(
         "receipt": str(receipt_path),
         "receipt_status": receipt.get("status"),
         "geometry_preserved": receipt.get("geometry_preserved"),
+        "intent_commitment": receipt.get("intent_commitment"),
+        "sigil_root": receipt.get("sigil_root"),
         "notes": list(bg.notes),
         "schema_version": SCHEMA_VERSION,
     }
