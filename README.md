@@ -70,10 +70,25 @@ python3 scripts/sigil_forge.py wallpaper \
   --mode focus \
   --theme mercurial \
   --style "dark architectural minimalism"
+
+# One-shot: construct + wallpaper
+python3 scripts/sigil_forge.py construct \
+  --intent "I maintain calm focus" \
+  --out out/sigil-forge \
+  --wallpaper --surface phone_lock --wp-mode focus
+
+# Host AI background (skill never redraws the glyph)
+python3 scripts/sigil_forge.py wallpaper \
+  --run out/sigil-forge/<run-id> \
+  --surface phone_lock \
+  --background-method ai_generated \
+  --background /path/to/ai-bg.png \
+  --provider host_file
 ```
 
-Canonical `glyph.svg` is never AI-redrawn; backgrounds are procedural (offline)
-or operator/AI-supplied, then composited deterministically.
+Canonical `glyph.svg` is never AI-redrawn; backgrounds are procedural (offline),
+operator-supplied, or host-generated via file / `SIGIL_FORGE_BG_COMMAND`, then
+composited deterministically.
 
 More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL.md) · [wallpaper-framework.md](references/wallpaper-framework.md)
 
@@ -87,6 +102,7 @@ More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL
 | Stego carriers | SVG multi-channel + PNG LSB (digest-only on public PNG) |
 | Optional polish_prompt.json | Geometry-locked host image prompt + `gen_seed` |
 | Wallpapers | Device-aware composites under `wallpaper/` + `wallpaper-receipt` |
+| Host AI backgrounds | Prompt packages + `--background` / `--provider-command` (optional) |
 | Learning ledger | PROPOSED observations via `learn` / `ledger` (never auto-canon) |
 
 Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).  

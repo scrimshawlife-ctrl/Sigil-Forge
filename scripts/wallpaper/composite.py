@@ -208,6 +208,33 @@ def load_operator_background(path: Path, width: int, height: int) -> bytes | Non
     return None
 
 
+def resize_rgb_nearest(
+    rgb: bytes,
+    src_w: int,
+    src_h: int,
+    dst_w: int,
+    dst_h: int,
+) -> bytes:
+    """Nearest-neighbor resize of contiguous RGB buffer (stdlib only)."""
+    if src_w < 1 or src_h < 1 or dst_w < 1 or dst_h < 1:
+        raise ValueError("invalid dimensions for resize")
+    if len(rgb) != src_w * src_h * 3:
+        raise ValueError("rgb length does not match source dimensions")
+    if src_w == dst_w and src_h == dst_h:
+        return rgb
+    out = bytearray(dst_w * dst_h * 3)
+    for y in range(dst_h):
+        sy = min(src_h - 1, (y * src_h) // dst_h)
+        for x in range(dst_w):
+            sx = min(src_w - 1, (x * src_w) // dst_w)
+            si = (sy * src_w + sx) * 3
+            di = (y * dst_w + x) * 3
+            out[di] = rgb[si]
+            out[di + 1] = rgb[si + 1]
+            out[di + 2] = rgb[si + 2]
+    return bytes(out)
+
+
 def write_wallpaper_png(path: Path, width: int, height: int, rgb: bytes) -> str:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -22,7 +22,7 @@ INTENT → CANONICAL SIGIL → PRESENTATION SPEC → BACKGROUND → COMPOSITE �
 # 1) forge master
 python3 scripts/sigil_forge.py construct --intent "…" --out out/sf
 
-# 2) wallpapers from run
+# 2) wallpapers from run (procedural offline)
 python3 scripts/sigil_forge.py wallpaper \
   --run out/sf/<run-id> \
   --surface phone_lock \
@@ -30,9 +30,27 @@ python3 scripts/sigil_forge.py wallpaper \
   --intensity balanced \
   --theme mercurial \
   --style "dark architectural minimalism"
+
+# One-shot construct + wallpaper
+python3 scripts/sigil_forge.py construct \
+  --intent "…" --out out/sf --wallpaper --surface phone_lock --wp-mode focus
+
+# Host AI background (pre-rendered file)
+python3 scripts/sigil_forge.py wallpaper \
+  --run out/sf/<run-id> --surface phone_lock \
+  --background-method ai_generated \
+  --background /path/to/ai-bg.png \
+  --provider host_file --model "local-sd"
+
+# Host AI background (shell provider; optional)
+# export SIGIL_FORGE_BG_COMMAND='my-gen --prompt {prompt_path} --out {out_path} ...'
+python3 scripts/sigil_forge.py wallpaper \
+  --run out/sf/<run-id> --surface phone_lock \
+  --background-method ai_generated --require-ai
 ```
 
 Outputs under `run/wallpaper/` and `run/receipts/`.
+See [wallpaper-prompt-contract.md](wallpaper-prompt-contract.md) for host wiring.
 
 ## Orthogonal dimensions
 
@@ -50,7 +68,8 @@ Outputs under `run/wallpaper/` and `run/receipts/`.
 **Forbidden:** add/remove strokes, move internal vertices, AI redraw of glyph.
 
 Background generation uses prompts that **explicitly forbid inventing the sigil**.
-Procedural backgrounds ship offline; AI/operator backgrounds are optional inputs.
+Procedural backgrounds ship offline; operator PNG and host AI (file or shell
+command) are optional. The skill does not call cloud image APIs itself.
 
 ## Schemas
 

@@ -3,7 +3,7 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.6.0
+version: 0.7.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -44,7 +44,8 @@ Sigil-Forge turns a statement of intent into:
 2. A **local forge packet** with method ontology, channels, crypto policy, and verify command.
 3. **Steganographic carriers** (digest/channel bits — not plaintext intent by default).
 4. Optional **wallpapers**: device-aware composition of the **immutable** glyph over
-   atmosphere (procedural or host-supplied). The model never redraws canonical geometry.
+   atmosphere (procedural, operator PNG, or host AI via file/command). The model never
+   redraws canonical geometry.
 
 Default framing is a **creative / focus tool**. Optional **`practice`** mode changes
 tone only. Methods are craft + encoding — never proof of metaphysics.
@@ -96,7 +97,7 @@ Each step ends with a checkable completion criterion.
 
    Optional: `--kamea-encoding latin_mod9_v1|latin_extended|hebrew_gematria`,
    `--spare-mode letter_monogram|pictorial|…`, `--planetary-seal`,
-   `--seal-packet`, `--polish`, `--square venus`.
+   `--seal-packet`, `--polish`, `--square venus`, `--wallpaper` (one-shot compose).
    **Done when:** run dir contains `glyph.svg`, `forge-packet.json` with
    `ontology` + kamea `encoding_system` provenance, and every channel
    `applied` or `skipped(reason)`.
@@ -116,16 +117,20 @@ Each step ends with a checkable completion criterion.
    ```
 
    **Done when:** `ok: true` and digest matches packet (or honest failure detail).
-8. **Optional wallpapers** — Only after master verify:
+8. **Optional wallpapers** — Only after master verify (or via `construct --wallpaper`):
 
    ```bash
    python3 scripts/sigil_forge.py wallpaper \
      --run out/sigil-forge/<run-id> \
      --surface phone_lock --mode focus --theme mercurial
+   # Host AI atmosphere (never redraw glyph):
+   # --background-method ai_generated --background /path/ai-bg.png --provider host_file
+   # or SIGIL_FORGE_BG_COMMAND with {prompt_path} {out_path} {width} {height} {seed}
    ```
 
    **Done when:** `wallpaper/` + `receipts/wallpaper-receipt-*.json` exist;
-   receipt `geometry_preserved: true`; `glyph.svg` digest unchanged.
+   receipt `geometry_preserved: true`; `glyph.svg` digest unchanged;
+   if AI requested, prompt package present and method/provider recorded honestly.
 9. **Open sealed intent** (if sealed):
 
    ```bash
@@ -178,9 +183,13 @@ python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge
 python3 scripts/sigil_forge.py construct --intent "…" --phonetic --interop --out out/sf
 python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
+python3 scripts/sigil_forge.py construct --intent "…" --wallpaper --surface phone_lock \
+  --wp-mode focus --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
   --surface phone_lock --mode focus --theme mercurial
+python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
+  --surface phone_lock --background-method ai_generated --background /path/ai-bg.png
 python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
 python3 scripts/sigil_forge.py learn --class channel_preference \
   --summary "bind_runes + rose_cross_path coherent" --channels bind_runes,rose_cross_path
@@ -188,8 +197,9 @@ python3 scripts/sigil_forge.py ledger --limit 20
 python3 scripts/validate_hermes_skill.py   # frontmatter / Hermes hygiene
 ```
 
-Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`. Prefer env over `--passphrase`
-(argv is visible in process lists). Construct uses atomic staging then promote.
+Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`
+(host AI background shell template). Prefer env over `--passphrase` (argv is
+visible in process lists). Construct uses atomic staging then promote.
 
 ## One-Shot Recipes
 
@@ -239,6 +249,21 @@ python3 scripts/sigil_forge.py wallpaper --run "$RUN" --surfaces phone_lock,phon
 **Done when:** wallpapers under `wallpaper/`; receipts `status: verified`;
 `glyph.svg` hash unchanged.
 
+### Host AI wallpaper background (two-phase)
+
+```bash
+# Phase 1: prompt package (+ procedural stand-in offline)
+python3 scripts/sigil_forge.py wallpaper --run "$RUN" --surface phone_lock \
+  --background-method ai_generated --theme mercurial
+# Phase 2: after host generates PNG from wallpaper/background-prompt-phone_lock.json
+python3 scripts/sigil_forge.py wallpaper --run "$RUN" --surface phone_lock \
+  --background-method ai_generated --background /path/to/ai-bg.png \
+  --provider host_file --model "local-sd"
+```
+
+**Done when:** `generation.background_method` is `ai_generated`; provider recorded;
+receipt `geometry_preserved: true`; prompt package forbids glyph invention.
+
 ## Common Pitfalls
 
 1. **Inventing geometry** — monogram/kamea points come only from `scripts/`.
@@ -264,6 +289,7 @@ python3 scripts/sigil_forge.py wallpaper --run "$RUN" --surfaces phone_lock,phon
 - [ ] Framing matches mode; **no efficacy claims**
 - [ ] If polished: `polish_prompt.json` + `gen_seed` applied; master still verifies
 - [ ] If wallpaper: receipts `geometry_preserved: true`; no plaintext intent; glyph digest unchanged
+- [ ] If AI wallpaper: prompt package present; method/provider honest (no silent fake AI)
 - [ ] `python3 scripts/sigil_forge.py check` → `ok: true`
 - [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release)
 
