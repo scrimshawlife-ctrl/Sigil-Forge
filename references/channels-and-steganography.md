@@ -50,8 +50,8 @@ default. Stego exists for operator sovereignty and multi-encoding — not covert
 |----|--------|-------------|-------|
 | `svg_metadata` | SVG | Namespaced private metadata: receipt/digest/method bitmap | Not plaintext intent |
 | `path_epsilon` | SVG geometry | ±EPS coordinate LSB-analogue from digest bits | Sub-visual; may skip if no floats |
-| `path_order` | SVG structure | Segment/stroke order residual nibbles | After monogram collapse |
-| `metric_quantize` | SVG metrics | Quantized angles/lengths/node counts | Preserve one coherent glyph |
+| `path_order` | SVG structure | Construction-order / manifest binding (monogram group before kamea); order_token derived from digest | Not residual stroke-order encoding of spare letters |
+| `metric_quantize` | SVG attrs | `data-sf-metric` digest nibble attributes on path groups (first 8 / next 8 hex) | Not free-form angle/length encoding |
 | `png_lsb` | PNG | Digest-only LSB payload when raster exists | Skipped: `no_raster_backend`, raster/embed errors |
 | `gen_seed` | (AI polish) | Seed derived from digest | v1 construct: `skipped(no_ai_polish)` until polish used |
 

@@ -2,99 +2,267 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
 from stego_png import DIGEST_LEN, MAGIC, extract_lsb, unpack_payload
 from stego_svg import extract as extract_svg
 
+_DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
 
-def _verify_svg(path: Path) -> dict[str, Any]:
+
+def _normalize_digest(value: Any) -> str | None:
+    """Return lowercased digest string or None if missing/invalid type."""
+    if not isinstance(value, str) or not value:
+        return None
+    return value.strip().lower()
+
+
+def _digest_format_ok(digest: str | None) -> bool:
+    return bool(digest) and _DIGEST_RE.fullmatch(digest or "") is not None
+
+
+def _cross_check_metrics(digest: str, metrics: list[str]) -> str | None:
+    """When data-sf-metric attrs exist, require digest nibble prefixes.
+
+    stego_svg writes digest[:8] then digest[8:16] on monogram/kamea groups.
+    Returns error detail, or None when ok / nothing to check.
+    """
+    if not metrics:
+        return None
+    expected_slots = (digest[:8], digest[8:16])
+    allowed = {s for s in expected_slots if s}
+    for i, raw in enumerate(metrics):
+        m = (raw or "").strip().lower()
+        if not m or not re.fullmatch(r"[0-9a-f]+", m):
+            return f"data-sf-metric[{i}] is not hex: {raw!r}"
+        # Exact 8-nibble values must equal first-8 or next-8 of digest.
+        if len(m) == 8:
+            if m not in allowed:
+                return (
+                    f"data-sf-metric[{i}]={m!r} is not a digest nibble prefix "
+                    f"(first 8={digest[:8]!r}, next 8={digest[8:16]!r})"
+                )
+            # Prefer document order: slot i matches expected_slots[i] when both full.
+            if i < len(expected_slots) and len(metrics) >= 2 and m != expected_slots[i]:
+                return (
+                    f"data-sf-metric[{i}]={m!r} does not match digest "
+                    f"nibble prefix {expected_slots[i]!r}"
+                )
+        else:
+            # Shorter residual must still be a prefix of first-8 or next-8.
+            if not any(slot.startswith(m) for slot in expected_slots):
+                return (
+                    f"data-sf-metric[{i}]={m!r} is not a prefix of digest "
+                    f"nibble slots {digest[:8]!r}/{digest[8:16]!r}"
+                )
+    return None
+
+
+def _fail(
+    *,
+    path: Path,
+    kind: str,
+    detail: str,
+    digest: str | None = None,
+    channels: list[str] | None = None,
+    **extra: Any,
+) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "ok": False,
+        "intent_digest": digest,
+        "channels_checked": list(channels or []),
+        "artifact": str(path),
+        "kind": kind,
+        "detail": detail,
+    }
+    out.update(extra)
+    return out
+
+
+def _apply_expected(
+    result: dict[str, Any], expected_digest: str | None
+) -> dict[str, Any]:
+    """Compare recovered digest to operator-provided expected digest."""
+    if expected_digest is None:
+        return result
+    exp = _normalize_digest(expected_digest)
+    result["expected_digest"] = exp
+    if not _digest_format_ok(exp):
+        result["ok"] = False
+        result["detail"] = (
+            f"invalid --expected-digest (need ^[0-9a-f]{{64}}$), "
+            f"got {expected_digest!r}"
+        )
+        return result
+    if not result.get("ok"):
+        return result
+    got = result.get("intent_digest")
+    if got != exp:
+        result["ok"] = False
+        result["detail"] = (
+            f"digest mismatch: recovered {got!r} != expected {exp!r}"
+        )
+    return result
+
+
+def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
     got = extract_svg(text)
-    digest = got.get("intent_digest")
+    digest = _normalize_digest(got.get("intent_digest"))
     channels = list(got.get("channels_detected") or [])
-    ok = bool(digest) and isinstance(digest, str) and len(digest) == 64
-    return {
-        "ok": ok,
-        "intent_digest": digest.lower() if isinstance(digest, str) and digest else None,
+    metrics = list(got.get("metrics") or [])
+
+    if not digest:
+        return _apply_expected(
+            _fail(
+                path=path,
+                kind="svg",
+                detail="no intent_digest recovered from SVG stego",
+                channels=channels,
+            ),
+            expected_digest,
+        )
+
+    if not _digest_format_ok(digest):
+        return _apply_expected(
+            _fail(
+                path=path,
+                kind="svg",
+                detail=(
+                    f"intent_digest failed format ^[0-9a-f]{{64}}$, got {digest!r}"
+                ),
+                digest=digest,
+                channels=channels,
+            ),
+            expected_digest,
+        )
+
+    metric_err = _cross_check_metrics(digest, metrics)
+    if metric_err:
+        return _apply_expected(
+            _fail(
+                path=path,
+                kind="svg",
+                detail=metric_err,
+                digest=digest,
+                channels=channels,
+                metrics=metrics,
+            ),
+            expected_digest,
+        )
+
+    result: dict[str, Any] = {
+        "ok": True,
+        "intent_digest": digest,
         "channels_checked": channels,
         "artifact": str(path),
         "kind": "svg",
     }
+    if metrics:
+        result["metrics"] = metrics
+    return _apply_expected(result, expected_digest)
 
 
-def _verify_png(path: Path) -> dict[str, Any]:
+def _verify_png(path: Path, expected_digest: str | None = None) -> dict[str, Any]:
     data = path.read_bytes()
     channels: list[str] = []
-    digest_hex: str | None = None
     try:
         # SF1 magic + 32-byte digest = 36 bytes minimum
         raw = extract_lsb(data, 4 + DIGEST_LEN)
         if raw[:4] != MAGIC:
-            return {
-                "ok": False,
-                "intent_digest": None,
-                "channels_checked": channels,
-                "artifact": str(path),
-                "kind": "png",
-                "detail": "bad PNG LSB magic",
-            }
-        # Try full payload with optional sealed (probe remaining capacity later)
-        # Re-extract full fixed header first; sealed optional.
-        digest, _sealed = unpack_payload(raw)
-        digest_hex = digest.hex()
+            return _apply_expected(
+                _fail(
+                    path=path,
+                    kind="png",
+                    detail="bad PNG LSB magic",
+                    channels=channels,
+                ),
+                expected_digest,
+            )
+        digest_bytes, _sealed = unpack_payload(raw)
+        digest_hex = digest_bytes.hex()
         channels.append("png_lsb")
-        return {
+        if not _digest_format_ok(digest_hex):
+            return _apply_expected(
+                _fail(
+                    path=path,
+                    kind="png",
+                    detail=(
+                        f"intent_digest failed format ^[0-9a-f]{{64}}$, "
+                        f"got {digest_hex!r}"
+                    ),
+                    digest=digest_hex,
+                    channels=channels,
+                ),
+                expected_digest,
+            )
+        result: dict[str, Any] = {
             "ok": True,
             "intent_digest": digest_hex,
             "channels_checked": channels,
             "artifact": str(path),
             "kind": "png",
         }
+        return _apply_expected(result, expected_digest)
     except Exception as exc:  # noqa: BLE001 — verify reports failure
-        return {
-            "ok": False,
-            "intent_digest": None,
-            "channels_checked": channels,
-            "artifact": str(path),
-            "kind": "png",
-            "detail": f"png extract failed: {exc}",
-        }
+        return _apply_expected(
+            _fail(
+                path=path,
+                kind="png",
+                detail=f"png extract failed: {exc}",
+                channels=channels,
+            ),
+            expected_digest,
+        )
 
 
-def run(artifact_path: Path | str) -> dict[str, Any]:
+def run(
+    artifact_path: Path | str,
+    expected_digest: str | None = None,
+) -> dict[str, Any]:
     """Verify artifact recovers digest.
 
     Returns ``{ok, intent_digest, channels_checked, ...}``.
+    When checks fail, ``ok`` is False and ``detail`` explains why.
+
+    ``expected_digest`` (optional): require recovered digest to equal this
+    64-hex string (CLI ``--expected-digest``).
     """
     path = Path(artifact_path)
     if not path.is_file():
-        return {
-            "ok": False,
-            "intent_digest": None,
-            "channels_checked": [],
-            "artifact": str(path),
-            "detail": "file not found",
-        }
+        return _apply_expected(
+            {
+                "ok": False,
+                "intent_digest": None,
+                "channels_checked": [],
+                "artifact": str(path),
+                "detail": "file not found",
+            },
+            expected_digest,
+        )
     suffix = path.suffix.lower()
     if suffix == ".svg":
-        return _verify_svg(path)
+        return _verify_svg(path, expected_digest)
     if suffix == ".png":
-        return _verify_png(path)
+        return _verify_png(path, expected_digest)
     # Try SVG text first (some paths lack extension)
     try:
         head = path.read_bytes()[:256]
         if b"<svg" in head.lower() or b"<?xml" in head:
-            return _verify_svg(path)
+            return _verify_svg(path, expected_digest)
         if head.startswith(b"\x89PNG"):
-            return _verify_png(path)
+            return _verify_png(path, expected_digest)
     except OSError:
         pass
-    return {
-        "ok": False,
-        "intent_digest": None,
-        "channels_checked": [],
-        "artifact": str(path),
-        "detail": f"unsupported artifact type: {suffix or 'unknown'}",
-    }
+    return _apply_expected(
+        {
+            "ok": False,
+            "intent_digest": None,
+            "channels_checked": [],
+            "artifact": str(path),
+            "detail": f"unsupported artifact type: {suffix or 'unknown'}",
+        },
+        expected_digest,
+    )

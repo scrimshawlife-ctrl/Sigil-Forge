@@ -152,8 +152,8 @@ claim full embed.
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
 | `svg_metadata` | Namespaced SVG metadata (digest / method bits) |
 | `path_epsilon` | Sub-visual coordinate perturbations from digest bits |
-| `path_order` | Stroke/segment order residual encoding |
-| `metric_quantize` | Quantized metrics encoding residual digits |
+| `path_order` | Construction-order / manifest binding (monogram group before kamea) |
+| `metric_quantize` | `data-sf-metric` digest nibble attributes on path groups |
 | `png_lsb` | Raster LSB when PNG available (digest-only payload in v1) |
 | `gen_seed` | AI polish seed channel (skipped until polish used) |
 
@@ -172,6 +172,7 @@ python3 scripts/sigil_forge.py construct \
   --out out/sigil-forge
 
 # Practice mode + passphrase seal (omit plaintext intent with --seal-packet)
+# WARNING: --passphrase appears in the process list (ps/argv); prefer env/interactive when possible.
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode practice \
@@ -204,8 +205,10 @@ prefix (paths avoid full intent text).
   digest-only — do not imply full intent is stego’d into the PNG.
 - **PNG may be skipped** (`no_raster_backend`, filter/capacity errors) — still a
   successful forge if SVG + packet exist.
-- **Empty Spare reduction** can still produce digest + kamea path; if craft
-  channels fail entirely, surface rewrite guidance rather than a fake glyph.
+- **Empty dual craft** (no monogram and no kamea points, e.g. all-vowel intent)
+  raises `NOT_COMPUTABLE:` with rewrite guidance — do not invent geometry.
+- **`--passphrase` appears in the process list** (shell argv); treat as
+  sensitive and prefer safer delivery when available.
 - **Do not collapse Enochian / authority seals** into Spare-style intent glyphs.
 - **Never mutate `references/`** or promote artifacts to “canon” without the human.
 - **Stego is for operator sovereignty**, not assisting covert harm — safety first.

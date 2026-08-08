@@ -183,6 +183,17 @@ def run(
     square_name = layout.square_name
     order = len(KAMEA_SQUARES[square_name])
 
+    # Dual craft empty → fail closed (no fake empty glyph)
+    if (not layout.monogram_points and not layout.kamea_points) or (
+        not spare and not layout.kamea_points
+    ):
+        raise ValueError(
+            "NOT_COMPUTABLE: no monogram or kamea craft geometry after letter "
+            "reduction (e.g. all-vowel / no surviving consonants). Rewrite the "
+            "intent in present tense with consonants that survive Spare "
+            "reduction (drop vowels/y and duplicate letters), then re-run construct."
+        )
+
     if layout.monogram_points:
         craft_channels.append(
             _ch(

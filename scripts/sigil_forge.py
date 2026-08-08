@@ -197,7 +197,10 @@ def cmd_construct(args: argparse.Namespace) -> int:
 def cmd_verify(args: argparse.Namespace) -> int:
     from verify import run as verify_run
 
-    result = verify_run(Path(args.artifact))
+    result = verify_run(
+        Path(args.artifact),
+        expected_digest=getattr(args, "expected_digest", None),
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("ok") else 1
 
@@ -221,7 +224,14 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Output root (default: out/sigil-forge under skill root)",
     )
-    pc.add_argument("--passphrase", default=None, help="Optional seal passphrase")
+    pc.add_argument(
+        "--passphrase",
+        default=None,
+        help=(
+            "Optional seal passphrase (WARNING: visible in process list; "
+            "prefer env/interactive in production)"
+        ),
+    )
     pc.add_argument(
         "--square",
         default=None,
@@ -240,6 +250,11 @@ def main(argv: list[str] | None = None) -> int:
 
     pv = sub.add_parser("verify", help="Verify artifact recovers intent digest")
     pv.add_argument("artifact", help="Path to glyph.svg or glyph.png")
+    pv.add_argument(
+        "--expected-digest",
+        default=None,
+        help="Optional 64-hex digest that recovered value must match",
+    )
 
     args = p.parse_args(argv)
     if args.cmd == "help":

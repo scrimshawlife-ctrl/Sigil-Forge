@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -99,3 +100,45 @@ def test_construct_with_passphrase_seals(tmp_path: Path):
     v = verify_run(Path(packet["artifacts"]["svg"]))
     assert v["ok"] is True
     assert v["intent_digest"] == packet["intent_digest"]
+
+
+def test_all_vowel_intent_not_computable(tmp_path: Path):
+    """All-vowel / no-consonant Spare reduction → NOT_COMPUTABLE (empty dual craft)."""
+    with pytest.raises(ValueError, match=r"^NOT_COMPUTABLE:") as ei:
+        construct_run("aeiou you", out_root=tmp_path)
+    assert "rewrite" in str(ei.value).lower()
+
+
+def test_verify_expected_digest_and_format(tmp_path: Path):
+    packet = construct_run(
+        "I maintain calm focus while shipping Sigil-Forge",
+        mode="creative",
+        out_root=tmp_path,
+        square="saturn",
+    )
+    svg = Path(packet["artifacts"]["svg"])
+    digest = packet["intent_digest"]
+    assert re.fullmatch(r"[0-9a-f]{64}", digest)
+
+    ok = verify_run(svg, expected_digest=digest)
+    assert ok["ok"] is True
+    assert ok["intent_digest"] == digest
+
+    bad = verify_run(svg, expected_digest="0" * 64)
+    assert bad["ok"] is False
+    assert "mismatch" in (bad.get("detail") or "").lower()
+
+    invalid = verify_run(svg, expected_digest="not-a-digest")
+    assert invalid["ok"] is False
+    assert "expected-digest" in (invalid.get("detail") or "").lower() or "invalid" in (
+        invalid.get("detail") or ""
+    ).lower()
+
+    # Metric cross-check: data-sf-metric values are digest nibble prefixes
+    text = svg.read_text(encoding="utf-8")
+    assert digest[:8] in text
+    assert digest[8:16] in text
+    v = verify_run(svg)
+    assert v["ok"] is True
+    if v.get("metrics"):
+        assert digest[:8] in v["metrics"] or v["metrics"][0] == digest[:8]
