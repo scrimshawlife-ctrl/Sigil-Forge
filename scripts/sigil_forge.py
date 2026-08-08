@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | doctor | eval | check | help\n"
+        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | "
+        "policy | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -397,6 +398,54 @@ def cmd_ledger(args: argparse.Namespace) -> int:
         )
     )
     return 0
+
+
+def cmd_policy(args: argparse.Namespace) -> int:
+    """Lint text for efficacy claims and authority-seal requests (CI / agents)."""
+    from policy_lint import detect_authority_seal_request, lint_efficacy_text
+
+    if getattr(args, "policy_cmd", None) != "check":
+        print(
+            json.dumps(
+                {"ok": False, "error": "unknown policy subcommand"},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+
+    if args.text is not None:
+        text = args.text
+    elif args.file is not None:
+        text = Path(args.file).read_text(encoding="utf-8")
+    else:
+        print(
+            json.dumps(
+                {"ok": False, "error": "policy check requires --text or --file"},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+
+    eff = lint_efficacy_text(text)
+    auth, fam = detect_authority_seal_request(text)
+    ok = not eff and not auth
+    print(
+        json.dumps(
+            {
+                "ok": ok,
+                "efficacy_hits": eff,
+                "authority_seal_request": auth,
+                "authority_family": fam,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if ok else 1
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:
@@ -1034,6 +1083,27 @@ def main(argv: list[str] | None = None) -> int:
     pld.add_argument("--ledger", default=None, help="Ledger path override")
     pld.add_argument("--limit", default=20, help="Max entries (default 20)")
 
+    pp = sub.add_parser(
+        "policy",
+        help="Product policy tools (efficacy / authority-seal lint)",
+    )
+    pp_sub = pp.add_subparsers(dest="policy_cmd", required=True)
+    ppc = pp_sub.add_parser(
+        "check",
+        help="Lint text for efficacy claims and authority-seal requests",
+    )
+    ppc_src = ppc.add_mutually_exclusive_group(required=True)
+    ppc_src.add_argument(
+        "--text",
+        default=None,
+        help="Inline text to lint",
+    )
+    ppc_src.add_argument(
+        "--file",
+        default=None,
+        help="Path to UTF-8 text file to lint",
+    )
+
     sub.add_parser("doctor", help="Environment and skill health report")
     sub.add_parser("eval", help="Offline behavioral eval suite")
 
@@ -1129,6 +1199,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_learn(args)
     if args.cmd == "ledger":
         return cmd_ledger(args)
+    if args.cmd == "policy":
+        return cmd_policy(args)
     if args.cmd == "doctor":
         return cmd_doctor(args)
     if args.cmd == "eval":
