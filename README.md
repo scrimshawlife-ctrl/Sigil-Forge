@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.10.0</strong> · Hermes skill · offline-first · verifiable · MIT
+  <strong>v0.11.0</strong> · Hermes skill · offline-first · verifiable · MIT
 </p>
 
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.

@@ -22,12 +22,16 @@ _EFFICACY = [
 _AUTHORITY = [
     (r"\benochian\b", "enochian_seal"),
     (r"\bwatchtower\b", "enochian_seal"),
+    (r"\bsigillum\s+dei\b", "enochian_seal"),
     (r"\bgoetic\b", "goetic_seal"),
     (r"\bgoetia\b", "goetic_seal"),
     (r"\bars\s+goetia\b", "goetic_seal"),
+    (r"\blesser\s+key\b", "goetic_seal"),
     (r"\bsolomonic (spirit )?seal\b", "goetic_seal"),
+    (r"\bdemonic\s+seal\b", "goetic_seal"),
     (r"\bauthority seal\b", "authority_seal"),
     (r"\bspirit seal of binding\b", "authority_seal"),
+    (r"\bspirit seal of\b", "authority_seal"),
 ]
 
 EFFICACY_PATTERNS = [re.compile(p, re.I) for p in _EFFICACY]
