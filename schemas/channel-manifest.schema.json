@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/channel-manifest.schema.json",
+  "title": "Sigil-Forge channel manifest",
+  "description": "List of encoding channels with applied|skipped status.",
+  "type": "object",
+  "required": ["channels"],
+  "additionalProperties": false,
+  "properties": {
+    "channels": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/channel" }
+    }
+  },
+  "definitions": {
+    "channel": {
+      "type": "object",
+      "required": ["id", "status", "detail"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Channel identifier (e.g. spare_monogram, svg_metadata, png_lsb)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["applied", "skipped"]
+        },
+        "detail": {
+          "type": "string",
+          "description": "Human-readable reason or parameters."
+        }
+      }
+    }
+  }
+}

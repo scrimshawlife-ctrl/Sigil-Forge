@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/construction-result.schema.json",
+  "title": "Sigil-Forge construction result",
+  "description": "Result of construct.run — forge packet fields plus engine paths.",
+  "allOf": [
+    { "$ref": "forge-packet.schema.json" }
+  ],
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "intent_digest",
+    "channels",
+    "methods",
+    "artifacts",
+    "crypto",
+    "verify",
+    "framing_notes"
+  ],
+  "properties": {
+    "artifacts": {
+      "type": "object",
+      "required": ["svg"],
+      "additionalProperties": true,
+      "properties": {
+        "svg": { "type": "string", "minLength": 1 },
+        "png": { "type": ["string", "null"] },
+        "run_dir": { "type": "string" },
+        "run_id": { "type": "string" },
+        "packet_json": { "type": "string" },
+        "packet_md": { "type": "string" }
+      }
+    }
+  }
+}
