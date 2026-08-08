@@ -37,7 +37,14 @@ compression, name paths, planetary characters, and entity seals.
 - Bind-runes: **modern_derivation**
 - Spare family modes + phonetic JSON carrier
 - Ontology + `references/source-manifest.yaml`
-- Hermes **wizard**: `--next` step runner, `--path quick|full`, sessions, `--apply` (see `references/wizard.md`)
+- Hermes **wizard** v2.1: `--next` step runner, `--path quick|full`, sessions, `--apply`; full path `proof`/`kdf` (see `references/wizard.md`)
+- Pure **forge_core** compute boundary (`scripts/forge_core.py`); construct is I/O shell
+
+### Proof of Intent (v0.12+)
+- Salted `intent_commitment` + Merkle `sigil_root` + `forge-manifest` on every run
+- Optional `intent-capsule.json` (passphrase); SF11 stego; `inspect` / `verify-proof`
+- Proof modes: `none` | `commitment` | `zk-knowledge` | `zk-forge` (Noir/risc0 skip if unavailable)
+- Agent ref: `references/proof-of-intent.md`
 
 ### Wallpapers (v0.6–0.7)
 - Surfaces: `phone_lock`, `phone_home`, `tablet`, `desktop`, `desktop_ultrawide`

@@ -56,10 +56,11 @@ python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out ou
 2. Use `step.help` / `step.why` if the user is confused.  
 3. Prefer **quick** path unless they ask for craft options.  
 4. On `refused: true` (safety), stop — no artifacts.  
-5. On `done: true`, apply then offer verify.  
+5. On `done: true`, apply then offer verify (+ inspect; open capsule / verify-proof if PoI).  
 6. Never invent monogram/kamea geometry.  
 7. No efficacy claims.  
-8. Progressive disclosure: load this file when guiding; don’t dump all method refs on turn 1.
+8. Progressive disclosure: load this file when guiding; don’t dump all method refs on turn 1.  
+9. If `proof` is `commitment` or `zk-knowledge`, ensure `SIGIL_FORGE_PASSPHRASE` is set before apply.
 
 ## Per-step fields
 
@@ -69,7 +70,8 @@ Each step may include: `id`, `prompt`, `type`, `choices`, `default`, `example`,
 Conditional examples:
 
 - Wallpaper surface/mode/theme only if `wallpaper: true`  
-- `planetary_geometry` only if `planetary_seal != none`
+- `planetary_geometry` only if `planetary_seal != none`  
+- `kdf` only if `seal_packet: true` **or** `proof` in `commitment` / `zk-knowledge`
 
 ## Answers shape
 
