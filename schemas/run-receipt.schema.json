@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/run-receipt.schema.json",
+  "title": "Sigil-Forge run receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "ts",
+    "skill_version",
+    "intent_digest",
+    "channels_applied",
+    "canon_status",
+    "receipt_hash"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "kind": { "type": "string", "const": "sigil_forge_run_receipt" },
+    "ts": { "type": "string" },
+    "skill_version": { "type": "string" },
+    "run_id": { "type": ["string", "null"] },
+    "mode": { "type": ["string", "null"] },
+    "intent_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "channels_applied": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "channels_skipped": { "type": "array" },
+    "methods": { "type": "object" },
+    "crypto_key_policy": { "type": ["string", "null"] },
+    "artifacts": { "type": "object" },
+    "verify_ok": { "type": ["boolean", "null"] },
+    "canon_status": {
+      "type": "string",
+      "enum": ["OBSERVATION", "PROPOSED"]
+    },
+    "receipt_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

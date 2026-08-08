@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | open | check | help\n"
+        "commands: construct | verify | open | learn | ledger | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -44,6 +44,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/stego_png.py",
         "scripts/layout_raster.py",
         "scripts/prompt_polish.py",
+        "scripts/bind_runes.py",
+        "scripts/rose_cross.py",
+        "scripts/receipt.py",
         "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
@@ -90,6 +93,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "stego_png",
         "layout_raster",
         "prompt_polish",
+        "bind_runes",
+        "rose_cross",
+        "receipt",
         "crypto_payload",
         "packet",
     )
@@ -176,6 +182,7 @@ def cmd_construct(args: argparse.Namespace) -> int:
             seal_packet=bool(args.seal_packet),
             write_polish=bool(getattr(args, "polish", False)),
             polish_style=getattr(args, "polish_style", None),
+            write_receipt=not bool(getattr(args, "no_receipt", False)),
         )
     except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
@@ -274,6 +281,56 @@ def cmd_open(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_learn(args: argparse.Namespace) -> int:
+    """Append a PROPOSED learning-ledger observation (never auto-canon)."""
+    from receipt import append_ledger, build_ledger_entry
+
+    channels = []
+    if args.channels:
+        channels = [c.strip() for c in args.channels.split(",") if c.strip()]
+    entry = build_ledger_entry(
+        class_name=args.entry_class,
+        summary=args.summary,
+        run_id=args.run_id,
+        intent_digest=args.digest,
+        channels=channels,
+    )
+    try:
+        path = append_ledger(entry, Path(args.ledger) if args.ledger else None)
+    except Exception as exc:  # noqa: BLE001
+        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+        return 1
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "canon_status": "PROPOSED",
+                "ledger": str(path),
+                "entry": entry,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_ledger(args: argparse.Namespace) -> int:
+    """List recent learning-ledger entries (PROPOSED observations)."""
+    from receipt import default_ledger_path, read_ledger
+
+    path = Path(args.ledger) if args.ledger else default_ledger_path()
+    entries = read_ledger(path, limit=int(args.limit))
+    print(
+        json.dumps(
+            {"ok": True, "ledger": str(path), "count": len(entries), "entries": entries},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="sigil-forge")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -326,6 +383,11 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Optional style hint for polish prompt (with --polish)",
     )
+    pc.add_argument(
+        "--no-receipt",
+        action="store_true",
+        help="Skip writing run-receipt.json and receipt log append",
+    )
 
     pv = sub.add_parser("verify", help="Verify artifact recovers intent digest")
     pv.add_argument("artifact", help="Path to glyph.svg or glyph.png")
@@ -354,6 +416,34 @@ def main(argv: list[str] | None = None) -> int:
         help="Print JSON wrapper instead of raw intent text",
     )
 
+    pl = sub.add_parser(
+        "learn",
+        help="Append PROPOSED learning-ledger observation (never auto-canon)",
+    )
+    pl.add_argument(
+        "--class",
+        dest="entry_class",
+        required=True,
+        help="Observation class (e.g. channel_preference, method_note)",
+    )
+    pl.add_argument("--summary", required=True, help="Short observation text")
+    pl.add_argument("--run-id", default=None, help="Optional run_id to link")
+    pl.add_argument("--digest", default=None, help="Optional intent_digest")
+    pl.add_argument(
+        "--channels",
+        default=None,
+        help="Optional comma-separated channel ids",
+    )
+    pl.add_argument(
+        "--ledger",
+        default=None,
+        help="Ledger path (default: out/sigil-forge/learning-ledger.jsonl)",
+    )
+
+    pld = sub.add_parser("ledger", help="List recent learning-ledger entries")
+    pld.add_argument("--ledger", default=None, help="Ledger path override")
+    pld.add_argument("--limit", default=20, help="Max entries (default 20)")
+
     args = p.parse_args(argv)
     if args.cmd == "help":
         return cmd_help(args)
@@ -365,6 +455,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_verify(args)
     if args.cmd == "open":
         return cmd_open(args)
+    if args.cmd == "learn":
+        return cmd_learn(args)
+    if args.cmd == "ledger":
+        return cmd_ledger(args)
     return 2
 
 

@@ -33,12 +33,14 @@ def resolve_passphrase(explicit: str | None = None) -> str | None:
         return env
     return None
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 
 _CHANNEL_ORDER = (
     "spare_monogram",
     "kamea_path",
     "kamea_square_choice",
+    "bind_runes",
+    "rose_cross_path",
     "intent_digest",
     "optional_ciphertext",
     "svg_metadata",
@@ -177,12 +179,13 @@ def run(
     seal_packet: bool = False,
     write_polish: bool = False,
     polish_style: str | None = None,
+    write_receipt: bool = True,
 ) -> dict[str, Any]:
     """Orchestrate full forge: safety → normalize → digest → seal? → fuse → stego → packet.
 
     Writes under ``out_root/<run-id>/``:
       glyph.svg, glyph.png (when raster ok), forge-packet.json/md,
-      optional polish_prompt.json when ``write_polish``.
+      run-receipt.json (default), optional polish_prompt.json when ``write_polish``.
 
     Returns the forge-packet dict. Raises ValueError on harmful/empty intent.
     """
@@ -289,6 +292,33 @@ def run(
         )
     )
 
+    # Bind-runes + Rose Cross expansion craft channels
+    if layout.bind_polylines and layout.bind_runes:
+        craft_channels.append(
+            _ch(
+                "bind_runes",
+                "applied",
+                f"runes={len(layout.bind_runes)} strokes={len(layout.bind_polylines)}",
+            )
+        )
+    else:
+        craft_channels.append(
+            _ch("bind_runes", "skipped", "no_runes_after_mapping")
+        )
+
+    if layout.rose_points and len(layout.rose_points) >= 2:
+        craft_channels.append(
+            _ch(
+                "rose_cross_path",
+                "applied",
+                f"slots={len(layout.rose_slots)} points={len(layout.rose_points)}",
+            )
+        )
+    else:
+        craft_channels.append(
+            _ch("rose_cross_path", "skipped", "no_rose_path_points")
+        )
+
     # --- SVG + stego ---
     base_svg = layout_to_svg(layout)
     stego_svg, stego_channels = stego_svg_embed(base_svg, digest, spare_letters=spare)
@@ -311,6 +341,7 @@ def run(
         svg_path = staging / "glyph.svg"
         svg_path.write_text(stego_svg, encoding="utf-8")
 
+        # Prefer layout raster including bind/rose geometry
         png_path_str, png_channel = _try_png_lsb(
             stego_svg,
             digest,
@@ -318,6 +349,27 @@ def run(
             monogram_points=list(layout.monogram_points),
             kamea_points=list(layout.kamea_points),
         )
+        # Re-apply with full layout if simple mono/kamea path was used
+        if png_path_str and (layout.bind_polylines or layout.rose_points):
+            try:
+                from layout_raster import layout_to_png_bytes
+                from stego_png import embed_lsb, pack_payload as _pack
+
+                full_png = layout_to_png_bytes(
+                    layout.monogram_points,
+                    layout.kamea_points,
+                    bind_polylines=layout.bind_polylines,
+                    rose_points=layout.rose_points,
+                )
+                stego_full = embed_lsb(full_png, _pack(bytes.fromhex(digest)))
+                (staging / "glyph.png").write_bytes(stego_full)
+                png_channel = _ch(
+                    "png_lsb",
+                    "applied",
+                    "LSB digest-only via layout_raster+bind+rose",
+                )
+            except Exception:  # noqa: BLE001
+                pass
 
         # Optional geometry-locked AI polish prompt (no image API)
         gen_seed_channel = _ch("gen_seed", "skipped", "no_ai_polish")
@@ -365,6 +417,14 @@ def run(
                 "order": order,
                 "cipher": "agrippa_reduced_v1",
             },
+            "bind_runes": {
+                "system": "elder_futhark_stick_v1",
+                "runes": list(layout.bind_runes or []),
+            },
+            "rose_cross": {
+                "system": "latin_22_slot_rose_v1",
+                "slots": list(layout.rose_slots or []),
+            },
         }
 
         # Artifact paths point at the final location (post-promote).
@@ -372,6 +432,7 @@ def run(
         final_png = final_dir / "glyph.png" if png_path_str else None
         packet_json_path = final_dir / "forge-packet.json"
         packet_md_path = final_dir / "forge-packet.md"
+        receipt_path_final = final_dir / "run-receipt.json"
         artifacts: dict[str, Any] = {
             "svg": str(final_svg),
             "png": str(final_png) if final_png else None,
@@ -382,6 +443,8 @@ def run(
         }
         if polish_path_final:
             artifacts["polish_prompt_path"] = polish_path_final
+        if write_receipt:
+            artifacts["receipt_json"] = str(receipt_path_final)
 
         verify_target = str(final_svg)
         verify_cmd = f"python3 scripts/sigil_forge.py verify {verify_target}"
@@ -414,6 +477,25 @@ def run(
                 raise
 
         write_packet_files(packet, staging)
+
+        if write_receipt:
+            from receipt import (
+                append_receipt_log,
+                build_run_receipt,
+                write_receipt_file,
+            )
+
+            version = "0.0.0"
+            vpath = skill_root() / "VERSION"
+            if vpath.is_file():
+                version = vpath.read_text(encoding="utf-8").strip() or version
+            # verify_ok filled after promote when caller re-verifies; leave None
+            receipt = build_run_receipt(packet, skill_version=version, verify_ok=None)
+            write_receipt_file(receipt, staging / "run-receipt.json")
+            try:
+                append_receipt_log(receipt)
+            except OSError:
+                pass
 
         # Promote staging → final (replace any prior run with same id).
         if final_dir.exists():

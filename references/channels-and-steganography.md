@@ -1,6 +1,6 @@
-# Channels and steganography (v1)
+# Channels and steganography (v0.3)
 
-Version: **v1** channel set (fixed; unbounded research per run is a non-goal).
+Version: **v0.3** fixed channel set (unbounded research per run is a non-goal).
 
 Every successful forge **attempts all channels** below. Each is recorded in the
 forge packet as:
@@ -14,14 +14,16 @@ Order in `scripts/construct.py` (`_CHANNEL_ORDER`):
 1. `spare_monogram`  
 2. `kamea_path`  
 3. `kamea_square_choice`  
-4. `intent_digest`  
-5. `optional_ciphertext`  
-6. `svg_metadata`  
-7. `path_epsilon`  
-8. `path_order`  
-9. `metric_quantize`  
-10. `png_lsb`  
-11. `gen_seed`  
+4. `bind_runes`  
+5. `rose_cross_path`  
+6. `intent_digest`  
+7. `optional_ciphertext`  
+8. `svg_metadata`  
+9. `path_epsilon`  
+10. `path_order`  
+11. `metric_quantize`  
+12. `png_lsb`  
+13. `gen_seed`  
 
 ## A. Ancient / classical craft (visible structure)
 
@@ -30,6 +32,10 @@ Order in `scripts/construct.py` (`_CHANNEL_ORDER`):
 | `spare_monogram` | Reduced unique consonants → circular monogram polyline | `no_letters_after_reduction` |
 | `kamea_path` | Letter→number path on selected kamea | `no_path_points` |
 | `kamea_square_choice` | Planet/size: operator `--square` or digest mod 7 | Always applied when construct runs |
+| `bind_runes` | Elder Futhark stick bind fused at center | `no_runes_after_mapping` |
+| `rose_cross_path` | 22-slot rose letter path (latin reduction) | `no_rose_path_points` |
+
+See `methods-bind-runes.md`, `methods-rose-cross.md`. Not Enochian seals.
 
 ## B. Modern cryptographic / digital craft
 
@@ -52,10 +58,10 @@ default. Stego exists for operator sovereignty and multi-encoding — not covert
 | `path_epsilon` | SVG geometry | ±EPS coordinate LSB-analogue from digest bits | Sub-visual; may skip if no floats |
 | `path_order` | SVG structure | Construction-order / manifest binding (monogram group before kamea); order_token derived from digest | Not residual stroke-order encoding of spare letters |
 | `metric_quantize` | SVG attrs | `data-sf-metric` digest nibble attributes on path groups (first 8 / next 8 hex) | Not free-form angle/length encoding |
-| `png_lsb` | PNG | Digest-only LSB payload when raster exists | Skipped: `no_raster_backend`, raster/embed errors |
-| `gen_seed` | (AI polish) | Seed derived from digest | v1 construct: `skipped(no_ai_polish)` until polish used |
+| `png_lsb` | PNG | Digest-only LSB via layout_raster (+bind/rose) | Skipped: raster/embed failures only |
+| `gen_seed` | (AI polish) | Seed derived from digest | `skipped(no_ai_polish)` until `--polish` |
 
-Implementation: `scripts/stego_svg.py`, `scripts/stego_png.py`.
+Implementation: `scripts/stego_svg.py`, `scripts/stego_png.py`, `scripts/layout_raster.py`.
 
 ## Capacity and failure modes
 
@@ -91,6 +97,7 @@ artifact that fails verify.
 
 ## Related
 
-- Method params: `methods-spare.md`, `methods-kamea.md`  
+- Method params: `methods-spare.md`, `methods-kamea.md`, `methods-bind-runes.md`, `methods-rose-cross.md`  
+- Receipts / ledger: `receipts-and-ledger.md`  
 - Crypto defaults: AES-GCM + PBKDF2-HMAC-SHA256 (stdlib-friendly); Argon2id is expansion  
 - Design §5: `docs/superpowers/specs/2026-08-07-sigil-forge-design.md`

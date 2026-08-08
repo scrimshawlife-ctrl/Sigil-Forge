@@ -87,6 +87,8 @@ def layout_to_rgb(
     size: int = DEFAULT_SIZE,
     bg: tuple[int, int, int] = BG,
     fg: tuple[int, int, int] = FG,
+    bind_polylines: Iterable[Iterable[tuple[float, float]]] | None = None,
+    rose_points: Iterable[tuple[float, float]] | None = None,
 ) -> bytes:
     """Return raw RGB bytes (size*size*3) for a layout."""
     if size < 8:
@@ -101,6 +103,11 @@ def layout_to_rgb(
     kamea = list(kamea_points)
     _polyline(buf, size, mono, fg)
     _polyline(buf, size, kamea, fg)
+    if bind_polylines:
+        for poly in bind_polylines:
+            _polyline(buf, size, list(poly), fg)
+    if rose_points:
+        _polyline(buf, size, list(rose_points), fg)
     return bytes(buf)
 
 
@@ -109,7 +116,15 @@ def layout_to_png_bytes(
     kamea_points: Iterable[tuple[float, float]],
     *,
     size: int = DEFAULT_SIZE,
+    bind_polylines: Iterable[Iterable[tuple[float, float]]] | None = None,
+    rose_points: Iterable[tuple[float, float]] | None = None,
 ) -> bytes:
     """Render layout geometry to a filter-0 8-bit RGB PNG (stdlib path)."""
-    rgb = layout_to_rgb(monogram_points, kamea_points, size=size)
+    rgb = layout_to_rgb(
+        monogram_points,
+        kamea_points,
+        size=size,
+        bind_polylines=bind_polylines,
+        rose_points=rose_points,
+    )
     return write_rgb_png(size, size, rgb)
