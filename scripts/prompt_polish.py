@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from policy_lint import assert_no_efficacy
+
 
 def _seed_from_digest(digest: str) -> int:
     """First 8 hex chars of intent digest → integer seed (gen_seed channel)."""
@@ -103,9 +105,17 @@ def build_prompt(layout_summary: dict, style: str | None) -> dict:
         "no rearranging stroke order into a different figure"
     )
 
-    return {
+    package = {
         "prompt": prompt,
         "negative": negative,
         "seed": seed,
         "geometry_lock": geometry_lock,
     }
+    # style is optional on the package; when provided it is also embedded in prompt.
+    if (style or "").strip():
+        package["style"] = (style or "").strip()
+    for key in ("prompt", "negative", "geometry_lock", "style"):
+        val = package.get(key)
+        if isinstance(val, str):
+            assert_no_efficacy(val, field=f"polish.{key}")
+    return package
