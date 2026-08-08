@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.10.0** (this file tracks shipped vs remaining).
+**Current release: v0.11.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -19,6 +19,7 @@ compression, name paths, planetary characters, and entity seals.
 | v0.8 | Planetary character corpus (name_on_kamea intel/spirit) + Hermes `wizard` guided interview |
 | v0.9 | Stroke-faithful plate digitizations (multi-stroke); geometry auto plate→name→reconstruct |
 | v0.10 | Wizard step runner (`--next`), quick/full paths, sessions, per-step help |
+| v0.11 | Policy track: authority-seal exclusion, efficacy lint, human-gated canon proposals |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
@@ -45,6 +46,16 @@ compression, name paths, planetary characters, and entity seals.
 - Receipts + PROPOSED ledger
 - `validate_hermes_skill.py`
 
+### Policy machinery (shipped)
+
+Product policy track (code + docs; release version/tag owned separately):
+
+- **Efficacy lint** — `scripts/policy_lint.py` (`lint_efficacy_text`, `assert_no_efficacy`) on framing notes and polish prompts
+- **Policy check CLI** — `python3 scripts/sigil_forge.py policy check --text|…|--file …` (exit 0 clean / 1 hits)
+- **Authority-seal request exclusion** — construct + wizard fail closed on Goetic/Enochian/authority language; no silent Spare substitute (`AUTHORITY_SEAL_EXCLUDED`)
+- **Human-gated canon proposals** — learning ledger stays `PROPOSED`; `ledger promote --index N --i-confirm PROMOTE` → `canon-proposals.jsonl` only; **no** auto-canon, **no** `references/` mutation
+- Namespace doc: `references/authority-seal-namespace.md`
+
 ## Remaining / optional later
 - Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization)
 - Audio/MIDI for mantric carriers
@@ -52,11 +63,13 @@ compression, name paths, planetary characters, and entity seals.
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
 - Deeper geometric multi-channel steganalysis
 - Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs)
+- Full Goetic/Enochian geometry (separate skill or opt-in namespace module + corpus — not default forge)
 
 ## Explicit non-goals
 - Goetic / Enochian / authority seals in the **default** forge
 - Deterministic freehand automatic drawing claimed as pure geometry
 - Auto-promoting learning ledger to canon
+- Soft-building a “safe fake” authority seal when refused
 
 ## Compatibility rules
 1. Do not break forge-packet required keys without `schema_version` bump.  

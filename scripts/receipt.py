@@ -19,8 +19,11 @@ from paths import skill_root
 
 RECEIPT_SCHEMA_VERSION = "1.0"
 LEDGER_SCHEMA_VERSION = "1.0"
+CANON_PROPOSAL_SCHEMA_VERSION = "1.0.0"
 DEFAULT_LEDGER_NAME = "learning-ledger.jsonl"
 DEFAULT_RECEIPTS_NAME = "run-receipts.jsonl"
+DEFAULT_CANON_PROPOSALS_NAME = "canon-proposals.jsonl"
+PROMOTE_CONFIRM = "PROMOTE"
 
 
 def _utc_now() -> str:
@@ -39,6 +42,13 @@ def default_receipts_path() -> Path:
     if env:
         return Path(env).expanduser()
     return skill_root() / "out" / "sigil-forge" / DEFAULT_RECEIPTS_NAME
+
+
+def default_canon_proposals_path() -> Path:
+    env = os.environ.get("SIGIL_FORGE_CANON_PROPOSALS")
+    if env:
+        return Path(env).expanduser()
+    return skill_root() / "out" / "sigil-forge" / DEFAULT_CANON_PROPOSALS_NAME
 
 
 def build_run_receipt(
@@ -154,3 +164,124 @@ def read_ledger(ledger_path: Path | None = None, limit: int = 50) -> list[dict[s
         except json.JSONDecodeError:
             continue
     return out
+
+
+def list_learning(
+    ledger_path: Path | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """List recent learning-ledger observations (always PROPOSED in the log)."""
+    return read_ledger(ledger_path, limit=limit)
+
+
+def export_proposed(
+    limit: int = 50,
+    ledger_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Return PROPOSED entries from the learning ledger (observation log only)."""
+    return [
+        e
+        for e in read_ledger(ledger_path, limit=limit)
+        if e.get("canon_status") == "PROPOSED"
+    ]
+
+
+def append_learning_entry(
+    *,
+    class_: str | None = None,
+    class_name: str | None = None,
+    summary: str,
+    run_id: str | None = None,
+    intent_digest: str | None = None,
+    channels: list[str] | None = None,
+    extra: dict[str, Any] | None = None,
+    ledger_path: Path | None = None,
+) -> dict[str, Any]:
+    """Build + append a PROPOSED learning entry; returns the entry dict."""
+    name = class_name if class_name is not None else class_
+    if not name:
+        raise ValueError("class_ or class_name is required")
+    entry = build_ledger_entry(
+        class_name=name,
+        summary=summary,
+        run_id=run_id,
+        intent_digest=intent_digest,
+        channels=channels,
+        extra=extra,
+    )
+    append_ledger(entry, ledger_path)
+    return entry
+
+
+def promote_to_canon_proposal(
+    entry: dict[str, Any],
+    *,
+    confirm: str,
+    out_path: Path | None = None,
+    out_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Write an operator-local HUMAN_PROMOTED proposal; never mutates the ledger or references/.
+
+    Requires confirm == 'PROMOTE' (exact). Learning ledger lines stay PROPOSED.
+    """
+    if confirm != PROMOTE_CONFIRM:
+        raise ValueError("human confirm required: pass confirm='PROMOTE'")
+    if entry.get("canon_status") != "PROPOSED":
+        raise ValueError("only PROPOSED entries can be promoted")
+
+    if out_path is None:
+        if out_dir is not None:
+            out_path = Path(out_dir) / DEFAULT_CANON_PROPOSALS_NAME
+        else:
+            out_path = default_canon_proposals_path()
+    else:
+        out_path = Path(out_path)
+
+    proposal: dict[str, Any] = {
+        "schema_version": CANON_PROPOSAL_SCHEMA_VERSION,
+        "kind": "sigil_forge_canon_proposal",
+        "ts": _utc_now(),
+        "canon_status": "HUMAN_PROMOTED",
+        "source_canon_status": "PROPOSED",
+        "entry": entry,
+        "note": "Operator-local proposal only; does not mutate skill references/",
+    }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(proposal, sort_keys=True) + "\n")
+    return proposal
+
+
+def promote_entry(
+    entry_id_or_index: int | str,
+    *,
+    confirm: str,
+    ledger_path: Path | None = None,
+    out_path: Path | None = None,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """Promote a PROPOSED ledger row by index (into export_proposed window) or run_id."""
+    entries = export_proposed(limit=limit, ledger_path=ledger_path)
+    if not entries:
+        raise ValueError("no PROPOSED ledger entries to promote")
+
+    entry: dict[str, Any] | None = None
+    if isinstance(entry_id_or_index, int) or (
+        isinstance(entry_id_or_index, str) and entry_id_or_index.lstrip("-").isdigit()
+    ):
+        idx = int(entry_id_or_index)
+        if idx < 0 or idx >= len(entries):
+            raise ValueError(
+                f"index {idx} out of range (0..{len(entries) - 1}, limit={limit})"
+            )
+        entry = entries[idx]
+    else:
+        key = str(entry_id_or_index)
+        for e in entries:
+            if e.get("run_id") == key:
+                entry = e
+                break
+        if entry is None:
+            raise ValueError(f"no PROPOSED entry with run_id={key!r} in window")
+
+    return promote_to_canon_proposal(entry, confirm=confirm, out_path=out_path)

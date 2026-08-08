@@ -269,22 +269,21 @@ def default_packet_ontology(
     }
 
 
-def assert_not_entity_seal_request(text: str) -> None:
-    """Fail closed if operator language clearly requests excluded entity seals."""
-    t = (text or "").lower()
-    banned = (
-        "goetic",
-        "enochian seal",
-        "enochian tablet",
-        "sigillum dei",
-        "lesser key",
-        "ars goetia",
-        "demonic seal",
-        "spirit seal of",
-    )
-    for b in banned:
-        if b in t:
-            raise ValueError(
-                f"NOT_COMPUTABLE: '{b}' belongs to excluded entity/authority seal "
-                "namespace — not the default intent forge. Use a separate corpus."
-            )
+def assert_not_entity_seal_request(intent: str) -> None:
+    """Fail closed if operator language clearly requests excluded entity seals.
+
+    Uses policy_lint.detect_authority_seal_request so construct and wizard share
+    one authority-seal classifier (no silent Spare/kamea substitution).
+    """
+    from policy_lint import detect_authority_seal_request
+
+    hit, fam = detect_authority_seal_request(intent)
+    if hit:
+        raise ValueError(
+            "AUTHORITY_SEAL_EXCLUDED: "
+            f"family={fam or 'authority_seal'} is not part of the default forge. "
+            "Sigil-Forge builds intent-compression sigils only. "
+            "See references/distinction-enochian.md and "
+            "references/authority-seal-namespace.md. "
+            "Do not silently substitute a Spare/kamea glyph."
+        )

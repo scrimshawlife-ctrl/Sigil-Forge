@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | doctor | eval | check | help\n"
+        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | "
+        "policy | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -54,6 +55,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/wizard.py",
         "scripts/planetary_corpus.py",
         "scripts/plate_strokes.py",
+        "scripts/policy_lint.py",
         "references/planetary-character-corpus.json",
         "references/planetary-plate-strokes.json",
         "schemas/wallpaper-spec.schema.json",
@@ -114,6 +116,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "wizard",
         "crypto_payload",
         "packet",
+        "policy_lint",
     )
     module_errors: list[str] = []
     for name in modules:
@@ -384,19 +387,129 @@ def cmd_learn(args: argparse.Namespace) -> int:
 
 
 def cmd_ledger(args: argparse.Namespace) -> int:
-    """List recent learning-ledger entries (PROPOSED observations)."""
-    from receipt import default_ledger_path, read_ledger
+    """List / export PROPOSED ledger entries or human-gated promote to proposals."""
+    from receipt import (
+        default_canon_proposals_path,
+        default_ledger_path,
+        export_proposed,
+        promote_entry,
+        read_ledger,
+    )
 
-    path = Path(args.ledger) if args.ledger else default_ledger_path()
-    entries = read_ledger(path, limit=int(args.limit))
+    ledger_cmd = getattr(args, "ledger_cmd", None) or "list"
+    path = Path(args.ledger) if getattr(args, "ledger", None) else default_ledger_path()
+    limit = int(getattr(args, "limit", 20) or 20)
+
+    if ledger_cmd in ("list", "export"):
+        if ledger_cmd == "export":
+            entries = export_proposed(limit=limit, ledger_path=path)
+        else:
+            entries = read_ledger(path, limit=limit)
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "ledger": str(path),
+                    "count": len(entries),
+                    "entries": entries,
+                    "mode": ledger_cmd,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if ledger_cmd == "promote":
+        out = (
+            Path(args.out)
+            if getattr(args, "out", None)
+            else default_canon_proposals_path()
+        )
+        try:
+            proposal = promote_entry(
+                int(args.index),
+                confirm=str(getattr(args, "i_confirm", "") or ""),
+                ledger_path=path,
+                out_path=out,
+                limit=limit,
+            )
+        except (ValueError, TypeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "ledger": str(path),
+                    "proposals": str(out),
+                    "canon_status": "HUMAN_PROMOTED",
+                    "proposal": proposal,
+                    "note": "Learning ledger unchanged (PROPOSED); references/ not mutated",
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
     print(
         json.dumps(
-            {"ok": True, "ledger": str(path), "count": len(entries), "entries": entries},
+            {"ok": False, "error": f"unknown ledger subcommand: {ledger_cmd}"},
+            indent=2,
+            sort_keys=True,
+        ),
+        file=sys.stderr,
+    )
+    return 2
+
+
+def cmd_policy(args: argparse.Namespace) -> int:
+    """Lint text for efficacy claims and authority-seal requests (CI / agents)."""
+    from policy_lint import detect_authority_seal_request, lint_efficacy_text
+
+    if getattr(args, "policy_cmd", None) != "check":
+        print(
+            json.dumps(
+                {"ok": False, "error": "unknown policy subcommand"},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+
+    if args.text is not None:
+        text = args.text
+    elif args.file is not None:
+        text = Path(args.file).read_text(encoding="utf-8")
+    else:
+        print(
+            json.dumps(
+                {"ok": False, "error": "policy check requires --text or --file"},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+
+    eff = lint_efficacy_text(text)
+    auth, fam = detect_authority_seal_request(text)
+    ok = not eff and not auth
+    print(
+        json.dumps(
+            {
+                "ok": ok,
+                "efficacy_hits": eff,
+                "authority_seal_request": auth,
+                "authority_family": fam,
+            },
             indent=2,
             sort_keys=True,
         )
     )
-    return 0
+    return 0 if ok else 1
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:
@@ -682,6 +795,8 @@ def cmd_eval(_: argparse.Namespace) -> int:
     import tempfile
 
     from construct import run as construct_run
+    from policy_lint import lint_efficacy_text
+    from receipt import append_learning_entry
     from safety import check_intent
 
     cases: list[dict] = []
@@ -700,6 +815,12 @@ def cmd_eval(_: argparse.Namespace) -> int:
     # allow calm
     ok_c, _ = check_intent("I maintain calm focus")
     rec("allow_calm", ok_c)
+
+    # efficacy framing must lint (policy track)
+    rec(
+        "refuse_efficacy_framing",
+        lint_efficacy_text("this sigil works") != [],
+    )
 
     with tempfile.TemporaryDirectory(prefix="sf-eval-") as td:
         tdp = Path(td)
@@ -756,6 +877,33 @@ def cmd_eval(_: argparse.Namespace) -> int:
         )
         by = {c["id"]: c for c in p4["channels"]}
         rec("phonetic_channel", by.get("phonetic_sigil", {}).get("status") == "applied")
+
+        # authority-seal request must refuse (no artifacts)
+        try:
+            construct_run(
+                "forge an Enochian seal for the air tablet",
+                out_root=tdp / "enoch",
+            )
+            rec(
+                "refuse_enochian_request",
+                False,
+                "expected AUTHORITY_SEAL_EXCLUDED",
+            )
+        except ValueError as exc:
+            msg = str(exc).lower()
+            rec(
+                "refuse_enochian_request",
+                "authority" in msg or "enochian" in msg or "excluded" in msg,
+                str(exc)[:200],
+            )
+
+        # learning ledger entries are always PROPOSED
+        entry = append_learning_entry(
+            class_name="eval_policy",
+            summary="eval ledger_proposed_only",
+            ledger_path=tdp / "learning-ledger.jsonl",
+        )
+        rec("ledger_proposed_only", entry.get("canon_status") == "PROPOSED")
 
     print(json.dumps({"ok": ok_all, "cases": cases}, indent=2, sort_keys=True))
     return 0 if ok_all else 1
@@ -1030,9 +1178,76 @@ def main(argv: list[str] | None = None) -> int:
         help="Ledger path (default: out/sigil-forge/learning-ledger.jsonl)",
     )
 
-    pld = sub.add_parser("ledger", help="List recent learning-ledger entries")
+    pld = sub.add_parser(
+        "ledger",
+        help="List / export PROPOSED ledger entries or human-gated promote",
+    )
     pld.add_argument("--ledger", default=None, help="Ledger path override")
-    pld.add_argument("--limit", default=20, help="Max entries (default 20)")
+    pld.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Max entries / promote index window (default 20)",
+    )
+    pld_sub = pld.add_subparsers(dest="ledger_cmd", required=False)
+    pld_sub.add_parser("list", help="List recent learning-ledger entries (default)")
+    pld_sub.add_parser(
+        "export",
+        help="Export PROPOSED entries only (JSON on stdout)",
+    )
+    pld_promote = pld_sub.add_parser(
+        "promote",
+        help="Human-gated promote to canon-proposals.jsonl (requires --i-confirm PROMOTE)",
+    )
+    pld_promote.add_argument(
+        "--index",
+        type=int,
+        required=True,
+        help="Index into recent PROPOSED window (0-based)",
+    )
+    pld_promote.add_argument(
+        "--i-confirm",
+        dest="i_confirm",
+        required=True,
+        help='Exact string PROMOTE required; agent must not invent this',
+    )
+    pld_promote.add_argument(
+        "--ledger",
+        default=None,
+        help="Ledger path override",
+    )
+    pld_promote.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Window size for --index (default 20)",
+    )
+    pld_promote.add_argument(
+        "--out",
+        default=None,
+        help="Canon proposals JSONL path (default out/sigil-forge/canon-proposals.jsonl)",
+    )
+
+    pp = sub.add_parser(
+        "policy",
+        help="Product policy tools (efficacy / authority-seal lint)",
+    )
+    pp_sub = pp.add_subparsers(dest="policy_cmd", required=True)
+    ppc = pp_sub.add_parser(
+        "check",
+        help="Lint text for efficacy claims and authority-seal requests",
+    )
+    ppc_src = ppc.add_mutually_exclusive_group(required=True)
+    ppc_src.add_argument(
+        "--text",
+        default=None,
+        help="Inline text to lint",
+    )
+    ppc_src.add_argument(
+        "--file",
+        default=None,
+        help="Path to UTF-8 text file to lint",
+    )
 
     sub.add_parser("doctor", help="Environment and skill health report")
     sub.add_parser("eval", help="Offline behavioral eval suite")
@@ -1129,6 +1344,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_learn(args)
     if args.cmd == "ledger":
         return cmd_ledger(args)
+    if args.cmd == "policy":
+        return cmd_policy(args)
     if args.cmd == "doctor":
         return cmd_doctor(args)
     if args.cmd == "eval":

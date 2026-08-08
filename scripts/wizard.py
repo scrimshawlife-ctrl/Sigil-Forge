@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from paths import default_out_dir, skill_root
+from policy_lint import detect_authority_seal_request
 from safety import check_intent
 
 WIZARD_VERSION = "2.0.0"
@@ -419,6 +420,22 @@ def next_step(
                 "answers": raw,
                 "agent_instruction": (
                     "Refuse clearly. Do not construct. No artifacts. Offer to rewrite intent."
+                ),
+            }
+        hit, fam = detect_authority_seal_request(intent)
+        if hit:
+            return {
+                "ok": False,
+                "done": True,
+                "refused": True,
+                "phase": "authority_policy",
+                "error": f"AUTHORITY_SEAL_EXCLUDED family={fam or 'authority_seal'}",
+                "path": p,
+                "wizard_version": WIZARD_VERSION,
+                "answers": raw,
+                "agent_instruction": (
+                    "Refuse. Do not construct. Explain intent-sigil vs authority-seal. "
+                    "Point to distinction-enochian.md. Offer a present-tense intent rewrite."
                 ),
             }
 

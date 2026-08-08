@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from policy_lint import assert_no_efficacy
+
 SCHEMA_VERSION = "1.2"
 
 _REQUIRED_KEYS = (
@@ -23,7 +25,7 @@ _REQUIRED_KEYS = (
 _CREATIVE_FRAMING = (
     "Creative / focus tool: externalize and compress intent as a durable symbol. "
     "Methods are historical craft, symbolic encoding, and data embedding—"
-    "not claims of supernatural efficacy."
+    "not claims that symbols compel outcomes."
 )
 
 _PRACTICE_FRAMING = (
@@ -97,6 +99,8 @@ def build_packet(
     provenance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a forge-packet dict matching design §9 + ontology/provenance."""
+    notes = framing_notes(mode)
+    assert_no_efficacy(notes, field="framing_notes")
     packet: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "mode": mode,
@@ -106,7 +110,7 @@ def build_packet(
         "artifacts": artifacts,
         "crypto": crypto,
         "verify": verify_cmd,
-        "framing_notes": framing_notes(mode),
+        "framing_notes": notes,
         "interop": interop if interop is not None else {},
         "ontology": ontology if ontology is not None else {},
         "provenance": provenance if provenance is not None else {},

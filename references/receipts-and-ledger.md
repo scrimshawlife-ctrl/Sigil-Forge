@@ -35,8 +35,35 @@ Every entry has `canon_status: PROPOSED`. Default path:
 
 Schema: `schemas/learning-ledger-entry.schema.json`.
 
+The learning ledger is **append-only PROPOSED observations**. Promotion never
+rewrites ledger lines to CANON in place and never edits `references/`.
+
+## Human promotion (optional)
+
+“Canon” here means **operator-local accepted proposals**, not silent skill
+mutation. Optional later: a human PR that copies proposals into `references/`
+offline.
+
+1. Operator reviews `ledger --limit N` (or `ledger list` / `ledger export`).
+2. `ledger promote --index K --i-confirm PROMOTE` appends to
+   `out/sigil-forge/canon-proposals.jsonl` (override `SIGIL_FORGE_CANON_PROPOSALS`
+   or `--out`).
+3. Agent never runs promote without the explicit human confirm string `PROMOTE`.
+4. Promoting does **not** edit `references/` or skill code, and does **not**
+   change learning-ledger lines (they stay `PROPOSED`).
+5. Optional offline: human opens a PR to absorb proposals into method docs.
+
+Proposal records use `canon_status: HUMAN_PROMOTED` and embed the source entry
+with `source_canon_status: PROPOSED`. Schema:
+`schemas/canon-proposal.schema.json`.
+
+```bash
+python3 scripts/sigil_forge.py ledger --limit 20
+python3 scripts/sigil_forge.py ledger promote --index 0 --i-confirm PROMOTE
+```
+
 ## Hermes authority
 
 - Agent may draft learn entries after operator confirmation.
 - Agent may **not** rewrite references or treat PROPOSED ledger lines as truth.
-- Promotion to canon is human-only, out of band.
+- Promotion to canon proposals is human-only and requires `--i-confirm PROMOTE`.

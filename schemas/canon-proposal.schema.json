@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/canon-proposal.schema.json",
+  "title": "Sigil-Forge human-gated canon proposal",
+  "description": "Operator-local accepted proposal. Does not mutate skill references/ or rewrite learning-ledger PROPOSED lines.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "ts",
+    "canon_status",
+    "entry"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "kind": { "type": "string", "const": "sigil_forge_canon_proposal" },
+    "ts": { "type": "string" },
+    "canon_status": {
+      "type": "string",
+      "const": "HUMAN_PROMOTED",
+      "description": "Always HUMAN_PROMOTED; written only after exact confirm PROMOTE."
+    },
+    "source_canon_status": {
+      "type": "string",
+      "const": "PROPOSED",
+      "description": "Source learning-ledger status remains PROPOSED."
+    },
+    "entry": {
+      "type": "object",
+      "description": "Snapshot of the PROPOSED learning-ledger entry."
+    },
+    "note": { "type": "string" }
+  }
+}

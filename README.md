@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.10.0</strong> · Hermes skill · offline-first · verifiable · MIT
+  <strong>v0.11.0</strong> · Hermes skill · offline-first · verifiable · MIT
 </p>
 
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
@@ -26,10 +26,10 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 | **Planetary** | Traditional seal + intelligence/spirit; plate strokes → name_on_kamea → reconstruct |
 | **Stego** | SVG multi-channel + PNG LSB (digest-only on public media) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, verify, open, receipts, PROPOSED ledger, doctor, eval, check |
+| **Ops** | construct, verify, open, receipts, PROPOSED ledger, `ledger promote`, `policy check`, doctor, eval, check |
 | **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
 
-**Not included (by design):** Goetic/Enochian authority seals in the default forge, efficacy claims, auto-canon learning, cloud image APIs inside the skill.
+**Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
 ---
 
@@ -272,10 +272,25 @@ Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMM
 
 - Refuse harm, self-harm, non-consensual control before any encode  
 - Dual mode: `creative` (default) / `practice` (tone only)  
-- No efficacy language; methods ≠ metaphysics  
-- Enochian / goetic / authority seals **excluded** from the default forge  
+- No efficacy language; methods ≠ metaphysics — shared lint on framing/polish  
+- Enochian / Goetic / authority seals **hard-excluded** from default `construct` / wizard  
+  (no silent Spare substitute; see namespace doc)  
+- Learning ledger stays **PROPOSED**; human-only `ledger promote --i-confirm PROMOTE`  
+  writes local proposals — never mutates `references/`  
 
-See [references/safety-and-framing.md](references/safety-and-framing.md) · [references/distinction-enochian.md](references/distinction-enochian.md)
+```bash
+# Preflight: efficacy phrases + authority-seal request language
+python3 scripts/sigil_forge.py policy check --text "I maintain calm focus"
+python3 scripts/sigil_forge.py policy check --file path/to/text.txt
+
+# Human-gated canon proposal (operator confirm string required)
+python3 scripts/sigil_forge.py ledger promote --index 0 --i-confirm PROMOTE
+```
+
+See [references/safety-and-framing.md](references/safety-and-framing.md) ·
+[references/distinction-enochian.md](references/distinction-enochian.md) ·
+[references/authority-seal-namespace.md](references/authority-seal-namespace.md) ·
+[references/receipts-and-ledger.md](references/receipts-and-ledger.md)
 
 ---
 
@@ -308,6 +323,8 @@ Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](refere
 | [references/methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit |
 | [references/channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / privacy |
 | [references/expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
+| [references/authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
+| [references/safety-and-framing.md](references/safety-and-framing.md) | Refusals, efficacy lint, policy check |
 | [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md) | Product design |
 
 Social / OG crop (for GitHub Settings → Social preview):  

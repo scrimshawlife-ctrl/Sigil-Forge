@@ -5,7 +5,7 @@ description: >
   the user asks to be guided/wizard through sigil creation. Offline multi-channel
   construction; dual creative/practice framing; no efficacy claims. Prefer wizard
   --next step runner for new users.
-version: 0.10.0
+version: 0.11.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -69,10 +69,15 @@ or replaces professional help.
 ### When not to use
 
 - General image gen, cinema, or Kubrick-style production (use kubrick)
-- **Enochian seals** / authority placement (see `references/distinction-enochian.md`)
+- **Enochian / Goetic / authority seals** — hard-excluded from default `construct` /
+  wizard (see `references/distinction-enochian.md`,
+  `references/authority-seal-namespace.md`). Never rebrand a Spare monogram as one.
 - Full ritual liturgy, banishing systems, or results-magic engines
 - Harmful intents — refuse before any encode
+- Efficacy claims (“works,” “manifests,” “guarantees results”) — refuse or rewrite;
+  lint with `policy check`
 - Requests to invent geometry or claim stego success without `verify`
+- Auto-promoting the learning ledger to skill canon (human `ledger promote` only)
 
 ## Prerequisites
 
@@ -106,7 +111,10 @@ disclosure). Expert operators may skip to construct.
    Use `step.help` if needed. Prefer `--path quick` unless craft options requested.
    **Done when:** `next.done` true or expert construct args complete; safety ok.
 2. **Safety / align** — Refuse violence, self-harm, non-consensual control, exploitation
-   (`scripts/safety.py` + agent judgment). Empty noise → rewrite request.
+   (`scripts/safety.py` + agent judgment). Refuse authority-seal requests
+   (Enochian/Goetic/etc.; engine raises `AUTHORITY_SEAL_EXCLUDED` / wizard
+   `refused: true`). Empty noise → rewrite request. Optional preflight:
+   `policy check --text "…"`.
    **Done when:** `check_intent` ok **or** clear refusal with no artifacts.
 3. **Construct via engine** — Do not hand-draw paths:
 
@@ -222,12 +230,18 @@ python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
 python3 scripts/sigil_forge.py learn --class channel_preference \
   --summary "bind_runes + rose_cross_path coherent" --channels bind_runes,rose_cross_path
 python3 scripts/sigil_forge.py ledger --limit 20
+python3 scripts/sigil_forge.py ledger export --limit 20
+python3 scripts/sigil_forge.py ledger promote --index 0 --i-confirm PROMOTE   # human only
+python3 scripts/sigil_forge.py policy check --text "I maintain calm focus"
+python3 scripts/sigil_forge.py policy check --file path/to/text.txt
 python3 scripts/validate_hermes_skill.py   # frontmatter / Hermes hygiene
 ```
 
 Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`
 (host AI background shell template). Prefer env over `--passphrase` (argv is
 visible in process lists). Construct uses atomic staging then promote.
+`policy check` is preflight lint only (efficacy + authority-seal request); it does
+not construct.
 
 ## One-Shot Recipes
 
@@ -315,14 +329,19 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 4. **Treating PNG as full ciphertext** — public PNG LSB is digest-only; seal is packet-local.
 5. **All-vowel intents** — raise `NOT_COMPUTABLE:`; rewrite with consonants.
 6. **`--passphrase` on argv** — prefer `SIGIL_FORGE_PASSPHRASE`.
-7. **Collapsing Enochian seals** into Spare intent glyphs.
-8. **Mutating `references/`** or auto-promoting artifacts to canon.
+7. **Collapsing Enochian/Goetic/authority seals** into Spare intent glyphs (refuse;
+   never rebrand).
+8. **Mutating `references/`** or auto-promoting ledger lines to skill canon (human
+   `ledger promote --i-confirm PROMOTE` → local proposals only).
 9. **Premature completion** — deliver without verify when integrity was claimed.
 10. **AI-redrawing the sigil for wallpaper** — generate atmosphere only; composite the master SVG.
+11. **Efficacy language** in framing, polish, or delivery copy — use `policy check`.
 
 ## Verification Checklist
 
 - [ ] Safety gate passed (or refusal with no artifacts)
+- [ ] Authority-seal request excluded (or clear refusal; no silent substitute)
+- [ ] Framing / narrative pass efficacy policy (`policy check` clean or honest hits)
 - [ ] `forge-packet.json` has `schema_version`, `mode`, `intent_digest`, `channels[]`,
       `methods`, `artifacts`, `crypto`, `verify`, `framing_notes`
 - [ ] Every fixed channel is `applied` or `skipped` with reason
@@ -333,6 +352,7 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 - [ ] If polished: `polish_prompt.json` + `gen_seed` applied; master still verifies
 - [ ] If wallpaper: receipts `geometry_preserved: true`; no plaintext intent; glyph digest unchanged
 - [ ] If AI wallpaper: prompt package present; method/provider honest (no silent fake AI)
+- [ ] Learning entries remain `PROPOSED` unless human ran `ledger promote`
 - [ ] `python3 scripts/sigil_forge.py check` → `ok: true`
 - [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release)
 
@@ -356,9 +376,10 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |
 | [profiles-practice.md](references/profiles-practice.md) | Practice tone |
-| [safety-and-framing.md](references/safety-and-framing.md) | Refusals / no-efficacy |
+| [safety-and-framing.md](references/safety-and-framing.md) | Refusals / efficacy lint / policy check |
 | [hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine |
-| [expansion-spine.md](references/expansion-spine.md) | Future growth |
-| [distinction-enochian.md](references/distinction-enochian.md) | Intent ≠ Enochian seals |
+| [expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
+| [distinction-enochian.md](references/distinction-enochian.md) | Intent ≠ Enochian / Goetic seals |
+| [authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
 
 Design: [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md).
