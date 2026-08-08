@@ -43,7 +43,12 @@ python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 # Optional: python3 scripts/sigil_forge.py verify glyph.svg --expected-digest <64-hex>
 ```
 
-**Warning:** `--passphrase` appears in the process list (`ps`/argv); prefer env or interactive entry when secrecy matters.
+**Warning:** `--passphrase` appears in the process list (`ps`/argv). Prefer:
+
+```bash
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
+python3 scripts/sigil_forge.py construct --intent "..." --seal-packet --out out/sigil-forge
+```
 
 Artifacts land under `out/sigil-forge/<run-id>/` (`glyph.svg`, optional `glyph.png`, `forge-packet.json`, `forge-packet.md`). Run ids use timestamp + digest prefix so paths avoid full intent text.
 

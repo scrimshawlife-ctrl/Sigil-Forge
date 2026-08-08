@@ -14,11 +14,11 @@ python3 scripts/sigil_forge.py construct \
 # 3. Verify SVG stego recovers the intent digest
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 
-# 4. (Optional) Practice mode + local passphrase seal
+# 4. (Optional) Practice mode + local passphrase seal (prefer env over --passphrase)
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode practice \
-  --passphrase 'operator-secret' \
   --seal-packet \
   --out out/sigil-forge
 

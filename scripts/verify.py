@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from stego_png import DIGEST_LEN, MAGIC, extract_lsb, unpack_payload
+from stego_svg import expected_epsilon_bits
 from stego_svg import extract as extract_svg
 
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -21,6 +22,27 @@ def _normalize_digest(value: Any) -> str | None:
 
 def _digest_format_ok(digest: str | None) -> bool:
     return bool(digest) and _DIGEST_RE.fullmatch(digest or "") is not None
+
+
+def _cross_check_epsilon(digest: str, epsilon_bits: list[int] | None) -> str | None:
+    """When path_epsilon bits are present, require parity matches digest stream.
+
+    Returns error detail, or None when ok / nothing to check.
+    """
+    if not epsilon_bits:
+        return None
+    expected = expected_epsilon_bits(digest, len(epsilon_bits))
+    if not expected:
+        return "path_epsilon bits present but digest has no hex bits"
+    mismatches = 0
+    for i, (got, exp) in enumerate(zip(epsilon_bits, expected)):
+        if int(got) != int(exp):
+            mismatches += 1
+            if mismatches == 1:
+                first = f"path_epsilon bit[{i}]={got} != digest stream bit {exp}"
+    if mismatches:
+        return f"{first} ({mismatches} of {len(epsilon_bits)} bits mismatched)"
+    return None
 
 
 def _cross_check_metrics(digest: str, metrics: list[str]) -> str | None:
@@ -113,6 +135,7 @@ def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any
     digest = _normalize_digest(got.get("intent_digest"))
     channels = list(got.get("channels_detected") or [])
     metrics = list(got.get("metrics") or [])
+    epsilon_bits = list(got.get("epsilon_bits") or [])
 
     if not digest:
         return _apply_expected(
@@ -153,6 +176,20 @@ def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any
             expected_digest,
         )
 
+    eps_err = _cross_check_epsilon(digest, epsilon_bits)
+    if eps_err:
+        return _apply_expected(
+            _fail(
+                path=path,
+                kind="svg",
+                detail=eps_err,
+                digest=digest,
+                channels=channels,
+                epsilon_bit_count=len(epsilon_bits),
+            ),
+            expected_digest,
+        )
+
     result: dict[str, Any] = {
         "ok": True,
         "intent_digest": digest,
@@ -162,6 +199,8 @@ def _verify_svg(path: Path, expected_digest: str | None = None) -> dict[str, Any
     }
     if metrics:
         result["metrics"] = metrics
+    if epsilon_bits:
+        result["epsilon_bit_count"] = len(epsilon_bits)
     return _apply_expected(result, expected_digest)
 
 

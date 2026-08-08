@@ -5,7 +5,7 @@ description: >-
   Builds multi-channel forge packets and procedural glyphs with
   optional steganography. Creative or practice framing; offline-first.
   Never invents geometry or claims supernatural efficacy.
-version: 0.1.0
+version: 0.1.1
 license: MIT
 metadata:
   hermes:
@@ -172,11 +172,11 @@ python3 scripts/sigil_forge.py construct \
   --out out/sigil-forge
 
 # Practice mode + passphrase seal (omit plaintext intent with --seal-packet)
-# WARNING: --passphrase appears in the process list (ps/argv); prefer env/interactive when possible.
+# Prefer SIGIL_FORGE_PASSPHRASE over --passphrase (argv is visible in ps).
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode practice \
-  --passphrase 'operator-secret' \
   --seal-packet \
   --out out/sigil-forge
 
@@ -193,8 +193,10 @@ python3 scripts/sigil_forge.py construct --intent "..." --json --out out/sigil-f
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 ```
 
-Env: `HERMES_SKILL_DIR` overrides skill root. Run ids are timestamp + digest
-prefix (paths avoid full intent text).
+Env: `HERMES_SKILL_DIR` overrides skill root; `SIGIL_FORGE_PASSPHRASE` supplies
+seal passphrase without argv exposure. Run ids are timestamp + digest prefix
+(paths avoid full intent text). Construct writes to a staging dir and promotes
+only after packet validation (atomic run dir).
 
 ## Pitfalls
 
@@ -207,8 +209,8 @@ prefix (paths avoid full intent text).
   successful forge if SVG + packet exist.
 - **Empty dual craft** (no monogram and no kamea points, e.g. all-vowel intent)
   raises `NOT_COMPUTABLE:` with rewrite guidance — do not invent geometry.
-- **`--passphrase` appears in the process list** (shell argv); treat as
-  sensitive and prefer safer delivery when available.
+- **`--passphrase` appears in the process list** (shell argv); prefer
+  `SIGIL_FORGE_PASSPHRASE` when secrecy matters.
 - **Do not collapse Enochian / authority seals** into Spare-style intent glyphs.
 - **Never mutate `references/`** or promote artifacts to “canon” without the human.
 - **Stego is for operator sovereignty**, not assisting covert harm — safety first.
