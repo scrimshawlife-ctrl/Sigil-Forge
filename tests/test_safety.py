@@ -12,10 +12,28 @@ def test_blocks_harm_others():
     assert reason
 
 
+def test_blocks_kill_my_neighbor():
+    ok, reason = check_intent("I will kill my neighbor tomorrow")
+    assert not ok
+    assert reason
+
+
 def test_allows_kill_process_engineering():
     ok, reason = check_intent("I kill process zombies and ship cleanly")
     assert ok
     assert reason == ""
+
+
+def test_allows_kill_the_theme():
+    ok, reason = check_intent("I kill the theme and rebuild the palette")
+    assert ok
+    assert reason == ""
+
+
+def test_blocks_kill_the_boss():
+    ok, reason = check_intent("I will kill the boss")
+    assert not ok
+    assert reason
 
 
 def test_blocks_self_harm():
