@@ -1,6 +1,6 @@
 # Hermes runtime contract
 
-Version: **v3** (Sigil-Forge v0.12.5+)
+Version: **v3** (Sigil-Forge v0.12.6+)
 
 Sigil-Forge is a **standalone Hermes skill** (not a Hermes plugin).  
 Default install path: `~/.hermes/skills/sigil-forge`. Skill name: `sigil-forge`.
@@ -35,8 +35,8 @@ Wizard sessions: `out/wizard-sessions/<id>.json`.
 
 | Command | Role |
 |---------|------|
-| `wizard` | Guided interview: `--script`, `--next`, `--session-new`, `--apply` |
-| `construct` | Full forge (expert / non-wizard); optional `--proof` |
+| `wizard` | Guided interview: `--script`, `--next`, `--session-new`, `--apply`; full path includes `proof`/`kdf` |
+| `construct` | Full forge (expert / non-wizard); optional `--proof` / `--kdf` / `--seal-packet` |
 | `verify` | Recover digest / integrity from SVG or PNG |
 | `verify-proof` | Check local/Noir/risc0 proof manifests for a run |
 | `inspect` | Public PoI/SF11 surfaces without disclosing intent |
@@ -69,9 +69,10 @@ Install excludes: `.git`, `out/`, `.venv`, caches, `.worktrees`, `docs/superpowe
 2. Load `references/wizard.md` only when guiding (progressive disclosure).  
 3. On `done`, `wizard --apply` then `verify`.  
 4. Expert operators may skip to `construct`.  
-5. PoI depth: load `references/proof-of-intent.md` only when commitments/proofs are in play.
+5. PoI depth: load `references/proof-of-intent.md` only when commitments/proofs are in play.  
+6. Full-path wizard may set `proof` / `kdf`; apply returns capsule paths + next-hints when sealed.
 
-See `references/wizard.md`.
+See `references/wizard.md` · `references/proof-of-intent.md`.
 
 ## Schemas
 

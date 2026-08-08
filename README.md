@@ -8,11 +8,13 @@
   <strong>v0.12.6</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
 </p>
 
-**Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
+**Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, **Proof of Intent** surfaces (commitment, capsule, `sigil_root`), and a guided **wizard** for Hermes agents.
 
 Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** — no image API required.
 
 > Methods are craft history, symbolic compression, and data embedding — not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
+
+**Packaging:** this is a **Hermes skill** (`SKILL.md` + offline CLI under `~/.hermes/skills/sigil-forge`), **not** a Hermes plugin. Agents load progressive refs on demand; geometry always comes from `scripts/`.
 
 ---
 
@@ -20,16 +22,16 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 
 | Area | What ships |
 |------|------------|
-| **Wizard** | Step runner (`--next`), quick/full paths, sessions, per-step help |
+| **Wizard** | Step runner (`--next`), quick/full paths, sessions, PoI `proof`/`kdf` on full path (v2.1) |
 | **Craft** | Spare monogram, kamea paths, Hebrew Rose Cross, bind-runes (`modern_derivation`) |
 | **Encodings** | `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` |
-| **Planetary** | Traditional seal + intelligence/spirit; plate strokes → name_on_kamea → reconstruct |
-| **Stego** | SVG multi-channel + PNG LSB (digest-only on public media) |
+| **Planetary** | Traditional seal + intelligence/spirit; plate → name_on_kamea → reconstruct |
+| **Stego** | SVG multi-channel + PNG LSB (digest-only; SF1 + SF11 dual verify) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, verify, verify-proof, inspect, open (`--capsule`), receipts, ledger, policy, doctor, eval, check |
+| **Ops** | construct, verify, verify-proof, inspect, open (`--capsule`), policy, ledger, doctor, eval, check |
 | **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
-| **Proof of Intent** | Commitment, capsule, `sigil_root`, SF11, knowledge proofs, optional Noir/risc0 (v0.12.3+) |
-| **Hermes packaging** | Skill (not plugin); wizard PoI (`proof`/`kdf`); install/check/eval gates (v0.12.6) |
+| **Proof of Intent** | Salted commitment, capsule, Merkle `sigil_root`, SF11, knowledge proofs; optional Noir/risc0 |
+| **Hermes packaging** | Skill (not plugin); lean install; `check`/`doctor`/`eval` gates; progressive refs |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
@@ -51,13 +53,22 @@ bash install.sh --target /path/to/skills/sigil-forge
 bash install.sh --version
 ```
 
+Post-install runs `validate_hermes_skill` + `check` (with `HERMES_SKILL_DIR` set to the target).  
+Install is a **lean skill tree**: excludes `.git`, `out/`, `.venv`, caches, `.worktrees`, and `docs/superpowers` (implementation plans are clone-only).
+
 **Requirements:** Python 3.10+ (stdlib). No pip packages for the core path. Optional: `jsonschema` for stricter packet validation; optional `argon2-cffi` for Argon2id sealing.
 
 From a clone without installing:
 
 ```bash
-python3 scripts/sigil_forge.py check
-python3 scripts/validate_hermes_skill.py   # Hermes frontmatter hygiene
+python3 scripts/sigil_forge.py check      # files, modules, Hermes frontmatter, dry PoI construct
+python3 scripts/sigil_forge.py doctor     # env + proof providers + packaging: hermes-skill
+python3 scripts/validate_hermes_skill.py  # SKILL.md frontmatter hygiene
+```
+
+```bash
+export HERMES_SKILL_DIR="$HOME/.hermes/skills/sigil-forge"
+# Reload Hermes skills if the agent is already running
 ```
 
 ---
@@ -80,14 +91,25 @@ python3 scripts/sigil_forge.py wizard --apply answers.json \
 
 # 4) Verify
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
+python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
 ```
 
 | Path | Audience | Steps |
 |------|----------|--------|
 | **`quick`** | Most users | intent, mode, wallpaper (+ surface/mode/theme if yes) |
-| **`full`** | Craft options | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet |
+| **`full`** | Craft + privacy | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet, **proof**, **kdf** (when seal/proof needs passphrase) |
 
 Unanswered optional fields use defaults on apply. Bad intents return `refused: true` early (no artifacts).
+
+**Full path + Proof of Intent** (capsule requires env passphrase):
+
+```bash
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
+# answers JSON includes "proof": "commitment", "kdf": "auto"
+python3 scripts/sigil_forge.py wizard --apply answers.json \
+  --path full --out out/sigil-forge
+# apply result includes intent_capsule, sigil_root, next-hints for open/verify-proof
+```
 
 ```bash
 python3 scripts/sigil_forge.py wizard --script --path quick   # full contract JSON
@@ -110,6 +132,7 @@ python3 scripts/sigil_forge.py construct \
 
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
+python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
 ```
 
 ### Useful flags
@@ -128,11 +151,11 @@ python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
 --spare-mode letter_monogram|pictorial|automatic_drawing|mantric_alphabet|phonetic_mantric
 --phonetic
 
-# Privacy (prefer env over --passphrase — argv is visible in ps)
+# Privacy + Proof of Intent (prefer env over --passphrase — argv is visible in ps)
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 --seal-packet
---kdf auto                    # Argon2id if installed, else PBKDF2
---proof commitment            # capsule + sigil_root (requires passphrase)
+--kdf auto|argon2id|pbkdf2-sha256   # auto → Argon2id if installed, else PBKDF2
+--proof none|commitment|zk-knowledge|zk-forge
 
 # Polish prompt package only (no image API)
 --polish --polish-style "ink on parchment"
@@ -144,14 +167,44 @@ export SIGIL_FORGE_PASSPHRASE='operator-secret'
 --interop
 ```
 
-Open a sealed packet:
+| `--proof` | Needs passphrase | Behavior |
+|-----------|------------------|----------|
+| `none` | No | Still emits commitment + `sigil_root` (no capsule) |
+| `commitment` | Yes | Intent capsule + local knowledge attestation |
+| `zk-knowledge` | Yes | Local attestation + optional Noir (skips if no `nargo`) |
+| `zk-forge` | No | Optional risc0/zkVM path (skips if guest unavailable) |
+
+Open sealed packet or commitment-bound capsule:
 
 ```bash
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
+python3 scripts/sigil_forge.py open --capsule out/sigil-forge/*/intent-capsule.json --json
+python3 scripts/sigil_forge.py verify-proof out/sigil-forge/*/ --passphrase "$SIGIL_FORGE_PASSPHRASE"
 ```
 
 Artifacts land under `out/sigil-forge/<run-id>/`. Run ids use timestamp + digest prefix so paths avoid full intent text.
+
+---
+
+## Proof of Intent
+
+Public artifacts can bind to a privacy-preserving **intent commitment** without putting plaintext intent (or the commitment nonce) in public media. Geometry still uses `intent_digest = SHA-256(normalized intent)` for deterministic craft.
+
+| Surface | Role |
+|---------|------|
+| `intent_digest` | Forge geometry + legacy SF1 stego |
+| `intent_commitment` | Salted per-run commitment (value public; **nonce private**) |
+| `intent_commitment_zk` | Fixed-width companion for optional circuits |
+| `sigil_root` | Merkle root over public leaves (no self-reference) |
+| `forge-manifest.json` | Public config/outputs hashed into root |
+| `intent-capsule.json` | Sealed witness (intent + nonce) behind passphrase |
+| SF11 stego | Digest + root carrier; dual-verify with SF1 |
+| `inspect` / `verify-proof` | Public inspection / proof status (no default plaintext dump) |
+
+Proofs are **provenance only** — never efficacy. Missing Noir/risc0 → status `skipped`, forge still succeeds.
+
+Progressive agent ref: [references/proof-of-intent.md](references/proof-of-intent.md)
 
 ---
 
@@ -187,7 +240,7 @@ Plate geometry is a **scholarly vectorization** of Western ceremonial plate voca
 
 ## Wallpapers
 
-Canonical `glyph.svg` is **immutable**. Atmosphere is procedural (offline), operator-supplied, or host AI; then composited deterministically.
+Canonical `glyph.svg` is **immutable**. Atmosphere is procedural (offline), operator-supplied, or host AI; then composited deterministically. Wallpaper receipts may bind `intent_commitment` / `sigil_root` when present.
 
 ```bash
 # From an existing run
@@ -231,9 +284,13 @@ See [references/wallpaper-framework.md](references/wallpaper-framework.md) · [r
 
 | Output | Role |
 |--------|------|
-| `glyph.svg` / `glyph.png` | Master geometry; offline PNG + LSB digest |
-| `forge-packet.json` (+ `.md`) | Channels, methods, ontology, digests, verify command |
+| `glyph.svg` / `glyph.png` | Master geometry; offline PNG + LSB (SF1 / SF11) |
+| `forge-packet.json` (+ `.md`) | Channels, methods, ontology, digests, commitment, `sigil_root` |
+| `forge-manifest.json` | Public forge config/outputs (hashed into root; no self-root) |
+| `artifact-root.json` | Merkle leaves + `sigil_root` |
+| `intent-capsule.json` | Sealed witness when passphrase + proof/seal path |
 | `run-receipt.json` | Run integrity receipt |
+| `proofs/` | Optional proof-manifest + local/Noir/risc0 outputs |
 | Stego carriers | SVG metadata / path / metric channels + PNG LSB |
 | `polish_prompt.json` | Geometry-locked host polish package (optional) |
 | `wallpaper/` | Device composites + background prompts |
@@ -249,19 +306,20 @@ Channels: [references/channels-and-steganography.md](references/channels-and-ste
 ## CLI overview
 
 ```text
-construct   Forge multi-channel sigil + packet
-verify      Recover intent digest (+ sigil_root when SF11/v2)
-inspect     Public carrier inspection (digest/root; no plaintext)
+construct     Forge multi-channel sigil + packet (+ optional --proof)
+verify        Recover intent digest (+ sigil_root when SF11)
+inspect       Public carrier inspection (digest/root; no plaintext)
 verify-proof  Proof-of-intent check for a run (optional passphrase)
-wizard      Guided interview (--next / --apply / sessions)
-wallpaper   Immutable glyph + atmosphere composite
-open        Decrypt sealed_intent from forge-packet.json
-learn       Append PROPOSED ledger observation
-ledger      List recent ledger entries
-doctor      Environment / skill health
-eval        Offline behavioral evals
-check       Smoke-check tree, schemas, dry construct
-help        Command overview
+wizard        Guided interview (--next / --apply / sessions / --path quick|full)
+wallpaper     Immutable glyph + atmosphere composite
+open          Decrypt sealed_intent; --capsule for intent-capsule.json
+policy check  Efficacy + authority-seal request preflight lint
+learn         Append PROPOSED ledger observation
+ledger        List / export / promote (human --i-confirm PROMOTE only)
+doctor        Environment / skill health (packaging: hermes-skill)
+eval          Offline behavioral + PoI + Hermes packaging evals
+check         Smoke-check tree, schemas, Hermes, dry construct/PoI
+help          Command overview
 ```
 
 ```bash
@@ -283,6 +341,7 @@ Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMM
   (no silent Spare substitute; see namespace doc)  
 - Learning ledger stays **PROPOSED**; human-only `ledger promote --i-confirm PROMOTE`  
   writes local proposals — never mutates `references/`  
+- PoI: never put commitment **nonce** in public media; never claim ZK without generate + verify  
 
 ```bash
 # Preflight: efficacy phrases + authority-seal request language
@@ -309,8 +368,9 @@ python3 -m pytest -q
 # Hermes skill hygiene
 python3 scripts/validate_hermes_skill.py
 
-# Smoke
+# Smoke (includes hermes_ok + poi_ok)
 python3 scripts/sigil_forge.py check
+python3 scripts/sigil_forge.py eval
 ```
 
 Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](references/expansion-spine.md)
@@ -323,15 +383,17 @@ Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](refere
 |-----|--------|
 | [QUICKSTART.md](QUICKSTART.md) | Short command sequence |
 | [SKILL.md](SKILL.md) | Hermes behavior contract |
-| [references/wizard.md](references/wizard.md) | Step runner, paths, sessions |
-| [references/hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine |
+| [references/wizard.md](references/wizard.md) | Step runner, paths, sessions, PoI steps |
+| [references/proof-of-intent.md](references/proof-of-intent.md) | Commitments, capsule, proofs (load on demand) |
+| [references/hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine; skill packaging |
 | [references/wallpaper-framework.md](references/wallpaper-framework.md) | Wallpaper pipeline |
 | [references/methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit |
+| [references/methods-spare.md](references/methods-spare.md) · [methods-kamea.md](references/methods-kamea.md) | Craft methods |
 | [references/channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / privacy |
 | [references/expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
 | [references/authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
 | [references/safety-and-framing.md](references/safety-and-framing.md) | Refusals, efficacy lint, policy check |
-| [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md) | Product design |
+| [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md) | Product design *(clone only; not in Hermes install)* |
 
 Social / OG crop (for GitHub Settings → Social preview):  
 [`docs/assets/sigil-forge-social.jpg`](docs/assets/sigil-forge-social.jpg) (1280×640)

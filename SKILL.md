@@ -103,10 +103,14 @@ python3 scripts/sigil_forge.py wizard --next --session <id> \
 # When next.done is true:
 python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
+python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
 ```
 
-Load [references/wizard.md](references/wizard.md) only while guiding (progressive
-disclosure). Expert operators may skip to construct.
+**Full path** adds craft options plus Proof-of-Intent steps `proof` / `kdf`
+(capsule needs `SIGIL_FORGE_PASSPHRASE`). Load
+[references/wizard.md](references/wizard.md) only while guiding; load
+[references/proof-of-intent.md](references/proof-of-intent.md) only for PoI.
+Expert operators may skip to construct.
 
 1. **Intake / wizard** — Run `--next` until done; ask **only** the current step.
    Use `step.help` if needed. Prefer `--path quick` unless craft options requested.
