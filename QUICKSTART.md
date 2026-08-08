@@ -1,6 +1,6 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.11.0.**
+Run from the skill root (clone or install dir). **Current version: 0.12.0.**
 
 ```bash
 # 1. Smoke-check the skill tree

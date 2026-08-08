@@ -72,29 +72,55 @@ def derive_key(
     )
 
 
+def resolve_kdf(kdf: str | None = None, *, prefer_argon2: bool = False) -> str:
+    """Return concrete kdf name: argon2id | pbkdf2-sha256.
+
+    ``auto`` (and prefer_argon2=True) selects Argon2id when importable.
+    """
+    name = (kdf or ("auto" if prefer_argon2 else "pbkdf2-sha256")).strip().lower()
+    if name in ("auto",):
+        return "argon2id" if argon2_available() else "pbkdf2-sha256"
+    if name == "argon2id":
+        if not argon2_available():
+            raise ValueError(
+                "argon2id requested but argon2 package not installed; use auto or pbkdf2-sha256"
+            )
+        return "argon2id"
+    if name in ("pbkdf2-sha256", "pbkdf2"):
+        return "pbkdf2-sha256"
+    raise ValueError(f"unsupported kdf: {kdf!r}")
+
+
 def seal_intent(
     plaintext: str,
     passphrase: str,
     *,
     prefer_argon2: bool = False,
+    kdf: str | None = None,
 ) -> dict[str, Any]:
     """Encrypt intent with AES-256-GCM.
 
-    Default KDF is PBKDF2-HMAC-SHA256 (offline stdlib). If prefer_argon2 and
-    argon2 is importable, uses Argon2id instead.
+    KDF selection:
+      - kdf='auto' or prefer_argon2=True → Argon2id if available else PBKDF2
+      - kdf='argon2id' / 'pbkdf2-sha256' → explicit
+      - default (no args) remains PBKDF2 for backward-compatible call sites
+        unless prefer_argon2=True
     """
     salt = os.urandom(_SALT_LEN)
     nonce = os.urandom(_NONCE_LEN)
-    kdf = "pbkdf2-sha256"
-    iterations: int | None = DEFAULT_PBKDF2_ITERATIONS
-    if prefer_argon2 and argon2_available():
-        kdf = "argon2id"
-        iterations = None
+    # Prefer explicit kdf; else prefer_argon2 maps to auto
+    if kdf is not None:
+        kdf_name = resolve_kdf(kdf)
+    elif prefer_argon2:
+        kdf_name = resolve_kdf("auto")
+    else:
+        kdf_name = "pbkdf2-sha256"
+    iterations: int | None = DEFAULT_PBKDF2_ITERATIONS if kdf_name == "pbkdf2-sha256" else None
     key = derive_key(
         passphrase,
         salt,
         iterations if iterations is not None else DEFAULT_PBKDF2_ITERATIONS,
-        kdf=kdf,
+        kdf=kdf_name,
     )
     ct, tag = aes_gcm_encrypt(key, nonce, plaintext.encode("utf-8"))
     combined = ct + tag
@@ -102,10 +128,11 @@ def seal_intent(
         "ciphertext_b64": base64.b64encode(combined).decode("ascii"),
         "nonce_b64": base64.b64encode(nonce).decode("ascii"),
         "salt_b64": base64.b64encode(salt).decode("ascii"),
-        "kdf": kdf,
+        "kdf": kdf_name,
         "alg": "aes-256-gcm",
+        "crypto_version": 2,
     }
-    if kdf == "pbkdf2-sha256":
+    if kdf_name == "pbkdf2-sha256":
         out["iterations"] = DEFAULT_PBKDF2_ITERATIONS
     else:
         out["argon2"] = {

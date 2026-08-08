@@ -8,9 +8,13 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from crypto_payload import intent_digest, seal_intent
+from artifact_root import build_sigil_root
+from commitment import commit_intent, public_commitment
+from crypto_payload import intent_digest, resolve_kdf, seal_intent
+from forge_manifest import build_forge_manifest, write_manifest
 from phonetic import build_phonetic_artifact
 from fuse import build_layout
+from intent_capsule import build_capsule, ciphertext_digest
 from kamea import DEFAULT_KAMEA_ENCODING, KAMEA_SQUARES
 from normalize import normalize_intent
 from ontology import assert_not_entity_seal_request, default_packet_ontology
@@ -21,6 +25,7 @@ from spare import reduce_letters
 from stego_png import embed_lsb, pack_payload
 from stego_svg import embed as stego_svg_embed
 from svg_export import layout_to_svg
+from wallpaper.seed import file_sha256
 
 # Env passphrase avoids argv exposure (process list / shell history).
 PASSPHRASE_ENV = "SIGIL_FORGE_PASSPHRASE"
@@ -45,6 +50,7 @@ _CHANNEL_ORDER = (
     "rose_cross_path",
     "planetary_seal",
     "intent_digest",
+    "intent_commitment",
     "optional_ciphertext",
     "svg_metadata",
     "path_epsilon",
@@ -190,6 +196,8 @@ def run(
     planetary_seal_kind: str = "traditional_seal",
     planetary_geometry: str = "auto",
     prefer_argon2: bool = False,
+    kdf: str | None = None,
+    proof: str = "none",
     interop: bool = False,
     phonetic: bool = False,
 ) -> dict[str, Any]:
@@ -197,17 +205,29 @@ def run(
 
     Writes under ``out_root/<run-id>/``:
       glyph.svg, glyph.png (when raster ok), forge-packet.json/md,
-      run-receipt.json (default), optional polish_prompt.json when ``write_polish``.
+      run-receipt.json (default), optional polish_prompt.json when ``write_polish``,
+      forge-manifest.json, optional intent-capsule.json (Proof of Intent).
 
     Returns the forge-packet dict. Raises ValueError on harmful/empty intent.
     """
     if mode not in ("creative", "practice"):
         raise ValueError(f"mode must be 'creative' or 'practice', got {mode!r}")
 
+    proof_mode = (proof or "none").strip().lower()
+    if proof_mode not in ("none", "commitment", "zk-knowledge", "zk-forge"):
+        raise ValueError(f"unsupported proof mode: {proof!r}")
+    if proof_mode == "zk-forge":
+        raise ValueError("NOT_IMPLEMENTED: zk-forge proof (reserved for later release)")
+
     passphrase = resolve_passphrase(passphrase)
     if seal_packet and not passphrase:
         raise ValueError(
             "seal_packet=True requires passphrase "
+            f"(--passphrase or ${PASSPHRASE_ENV})"
+        )
+    if proof_mode == "commitment" and not passphrase:
+        raise ValueError(
+            "proof=commitment requires passphrase for intent capsule "
             f"(--passphrase or ${PASSPHRASE_ENV})"
         )
 
@@ -218,14 +238,27 @@ def run(
 
     normalized = normalize_intent(intent)
     digest = intent_digest(normalized)
+    # Privacy commitment (per-run nonce) — geometry still uses intent_digest
+    commitment_rec = commit_intent(normalized)
     enc = (kamea_encoding or DEFAULT_KAMEA_ENCODING).strip().lower()
+
+    # KDF policy: explicit kdf wins; else prefer_argon2 → auto; else pbkdf2 default
+    kdf_arg = kdf
+    if kdf_arg is None and prefer_argon2:
+        kdf_arg = "auto"
+    prefer_for_seal = prefer_argon2 or (kdf_arg in ("auto", "argon2id") if kdf_arg else False)
 
     craft_channels: list[dict[str, str]] = []
     sealed_blob: dict[str, Any] | None = None
 
     # --- optional ciphertext (local packet only; not embedded in public PNG) ---
     if passphrase:
-        sealed_blob = seal_intent(intent, passphrase, prefer_argon2=prefer_argon2)
+        sealed_blob = seal_intent(
+            intent,
+            passphrase,
+            prefer_argon2=prefer_for_seal,
+            kdf=kdf_arg,
+        )
         craft_channels.append(
             _ch(
                 "optional_ciphertext",
@@ -240,6 +273,7 @@ def run(
             "kdf": sealed_blob.get("kdf", "pbkdf2-sha256"),
             "key_policy": key_policy,
             "ciphertext_present": True,
+            "crypto_version": sealed_blob.get("crypto_version", 2),
         }
         if sealed_blob.get("iterations") is not None:
             crypto["iterations"] = sealed_blob["iterations"]
@@ -257,6 +291,13 @@ def run(
 
     craft_channels.append(
         _ch("intent_digest", "applied", f"sha256 hex len={len(digest)}")
+    )
+    craft_channels.append(
+        _ch(
+            "intent_commitment",
+            "applied",
+            f"scheme={commitment_rec['scheme']} (nonce private)",
+        )
     )
 
     # --- fuse layout ---
@@ -596,6 +637,71 @@ def run(
             }
 
         include_normalized = not seal_packet
+
+        # --- Proof of Intent: glyph digest, forge-manifest, Merkle root, capsule ---
+        version = "0.0.0"
+        vpath = skill_root() / "VERSION"
+        if vpath.is_file():
+            version = vpath.read_text(encoding="utf-8").strip() or version
+
+        glyph_digest = file_sha256(str(staging / "glyph.svg"))
+        pub_commit = public_commitment(commitment_rec)
+        forge_manifest = build_forge_manifest(
+            forge_version=version,
+            intent_digest=digest,
+            intent_commitment=pub_commit["value"],
+            mode=mode,
+            methods=methods,
+            channels=channels,
+            glyph_digest=glyph_digest,
+        )
+        mf_digest = write_manifest(staging / "forge-manifest.json", forge_manifest)
+
+        import json as _json
+
+        capsule: dict[str, Any] | None = None
+        ct_digest: str | None = None
+        if passphrase:
+            # Seal witness once; public_bindings.artifact_root filled after Merkle
+            # (public fields only — does not re-encrypt / change ciphertext leaf).
+            capsule = build_capsule(
+                intent=intent,
+                normalized=normalized,
+                commitment_record=commitment_rec,
+                passphrase=passphrase,
+                forge_version=version,
+                method_manifest_digest=mf_digest,
+                artifact_root=None,
+                kdf=kdf_arg or ("auto" if prefer_for_seal else "pbkdf2-sha256"),
+            )
+            ct_digest = ciphertext_digest(capsule)
+
+        root_info = build_sigil_root(
+            {
+                "intent_commitment": pub_commit["value"],
+                "intent_digest": digest,
+                "method_manifest_digest": mf_digest,
+                "canonical_glyph_digest": glyph_digest,
+                "forge_manifest_digest": mf_digest,
+                "ciphertext_digest": ct_digest,
+            }
+        )
+        sigil_root = root_info["sigil_root"]
+        if capsule is not None:
+            capsule.setdefault("public_bindings", {})["artifact_root"] = sigil_root
+            (staging / "intent-capsule.json").write_text(
+                _json.dumps(capsule, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            artifacts["intent_capsule"] = str(final_dir / "intent-capsule.json")
+
+        (staging / "artifact-root.json").write_text(
+            _json.dumps(root_info, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        artifacts["forge_manifest"] = str(final_dir / "forge-manifest.json")
+        artifacts["artifact_root"] = str(final_dir / "artifact-root.json")
+
         packet = build_packet(
             mode=mode,
             intent_digest=digest,
@@ -612,6 +718,24 @@ def run(
             interop=interop_block,
         )
         packet["schema_version"] = packet.get("schema_version") or SCHEMA_VERSION
+        # Proof-of-Intent public surfaces (additive)
+        packet["intent_commitment"] = pub_commit
+        packet["compatibility"] = {"intent_digest": digest}
+        packet["sigil_root"] = sigil_root
+        packet["proof"] = {
+            "mode": proof_mode,
+            "status": "applied" if proof_mode == "commitment" and passphrase else (
+                "skipped" if proof_mode in ("none", "zk-knowledge") else "applied"
+            ),
+            "detail": (
+                "commitment+capsule+root"
+                if passphrase
+                else "commitment+root (no capsule without passphrase)"
+            ),
+        }
+        if proof_mode == "zk-knowledge":
+            packet["proof"]["status"] = "skipped"
+            packet["proof"]["detail"] = "noir_unavailable_or_not_wired_in_v0.12.0"
 
         # Validate before promote — incomplete runs never leave a public run dir.
         schema_path = skill_root() / "schemas" / "forge-packet.schema.json"
