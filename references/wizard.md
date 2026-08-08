@@ -1,62 +1,104 @@
 # Forge wizard (Hermes)
 
-Guided interview so operators never have to memorize CLI flags. The engine still
-owns geometry; the agent/host owns conversation and safety judgment.
+Guided **step-by-step** interview so operators never memorize CLI flags.
+The engine owns geometry; the agent owns conversation and safety judgment.
 
-## Hermes agent flow
+Hermes has no native multi-page UI — the wizard is a **step runner** the agent
+loops with `wizard --next`.
 
-1. User asks to forge a sigil, is new, or says “wizard” / “guide me”.
-2. Load steps:
+## Paths
 
-   ```bash
-   python3 scripts/sigil_forge.py wizard --script
-   ```
+| Path | Who | Steps |
+|------|-----|--------|
+| **quick** (recommended for new users) | Casual | intent → mode → wallpaper (+ surface/mode/theme if yes) |
+| **full** | Craft options | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet |
 
-3. Ask **one step at a time** (or batch if the user already answered).
-4. When complete, write `answers.json` and apply:
+Unanswered optional steps fill from defaults on apply.
 
-   ```bash
-   python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
-   ```
+## Hermes agent loop (required)
 
-5. Verify:
+```bash
+# 1) Optional: read contract once
+python3 scripts/sigil_forge.py wizard --script --path quick
 
-   ```bash
-   python3 scripts/sigil_forge.py verify <run>/glyph.svg
-   ```
+# 2) Create resume session (or track answers JSON yourself)
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+# → { session_id, next: { step, help, agent_instruction } }
 
-## Agent rules (also in script JSON)
+# 3) Each user turn: merge answer → next
+python3 scripts/sigil_forge.py wizard --next --session <id> \
+  --answers-json '{"intent":"I maintain calm focus"}'
 
-- Safety before construct; refuse with no artifacts.
-- Never invent monogram/kamea paths.
-- No efficacy claims.
-- Wallpapers do not AI-redraw the canonical glyph.
+# 4) When next.done == true → apply
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+
+# 5) Verify
+python3 scripts/sigil_forge.py verify <run>/glyph.svg
+```
+
+Without sessions (stateless):
+
+```bash
+python3 scripts/sigil_forge.py wizard --next --path quick
+python3 scripts/sigil_forge.py wizard --next --path quick \
+  --answers-json '{"intent":"I maintain calm focus"}'
+# …accumulate answers…
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+```
+
+### Agent rules
+
+1. Ask **only** the current `step` (one question per turn).  
+2. Use `step.help` / `step.why` if the user is confused.  
+3. Prefer **quick** path unless they ask for craft options.  
+4. On `refused: true` (safety), stop — no artifacts.  
+5. On `done: true`, apply then offer verify.  
+6. Never invent monogram/kamea geometry.  
+7. No efficacy claims.  
+8. Progressive disclosure: load this file when guiding; don’t dump all method refs on turn 1.
+
+## Per-step fields
+
+Each step may include: `id`, `prompt`, `type`, `choices`, `default`, `example`,
+`help`, `why`, `skip_ok`, `required`, `when` (conditional).
+
+Conditional examples:
+
+- Wallpaper surface/mode/theme only if `wallpaper: true`  
+- `planetary_geometry` only if `planetary_seal != none`
 
 ## Answers shape
-
-Flat object keyed by step id. Defaults fill gaps.
 
 ```json
 {
   "intent": "I maintain calm focus",
   "mode": "creative",
-  "kamea_encoding": "hebrew_gematria",
-  "square": "auto",
-  "planetary_seal": "none",
-  "spare_mode": "letter_monogram",
-  "phonetic": false,
-  "polish": false,
-  "wallpaper": false,
-  "seal_packet": false
+  "wallpaper": false
 }
 ```
 
-`planetary_seal`: `none` | `traditional_seal` | `intelligence_character` | `spirit_character`
+Full path may add: `kamea_encoding`, `square`, `planetary_seal`,
+`planetary_geometry`, `spare_mode`, `phonetic`, `polish`, `seal_packet`, …
 
-## Human TTY (optional)
+## Sessions
+
+Stored under `out/wizard-sessions/<id>.json` (skill out tree — not `references/`).
 
 ```bash
-python3 scripts/sigil_forge.py wizard --interactive --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+python3 scripts/sigil_forge.py wizard --next --session <id> --answers-json '{...}'
 ```
 
-Prefer Hermes conversational flow for skill runs; interactive is for local CLI users.
+## Human TTY
+
+```bash
+python3 scripts/sigil_forge.py wizard --interactive --path quick --out out/sigil-forge
+```
+
+Type `done` after intent to accept remaining defaults.
+
+## Related
+
+- CLI: `python3 scripts/sigil_forge.py wizard --help`  
+- Planetary options: `methods-planetary-characters.md`  
+- Runtime: `hermes-runtime-contract.md`

@@ -515,22 +515,23 @@ def cmd_wallpaper(args: argparse.Namespace) -> int:
 
 
 def cmd_wizard(args: argparse.Namespace) -> int:
-    """Hermes-facing guided forge wizard."""
+    """Hermes-facing guided forge wizard (step runner + apply)."""
     from wizard import (
         apply_answers,
+        create_session,
         default_answers,
         interactive_answers,
         load_answers_file,
+        load_session,
+        next_step,
+        save_session,
+        session_next,
         validate_answers,
         wizard_script,
     )
 
-    if getattr(args, "script", False):
-        print(json.dumps(wizard_script(), indent=2, sort_keys=True))
-        return 0
-    if getattr(args, "defaults", False):
-        print(json.dumps({"answers": default_answers()}, indent=2, sort_keys=True))
-        return 0
+    path = getattr(args, "path", None) or "full"
+
     if getattr(args, "list_corpus", False):
         from planetary_corpus import list_corpus_summary, load_corpus
 
@@ -548,16 +549,44 @@ def cmd_wizard(args: argparse.Namespace) -> int:
         )
         return 0
 
-    answers: dict
-    if getattr(args, "interactive", False):
-        answers = interactive_answers()
-    elif getattr(args, "apply", None):
+    if getattr(args, "session_new", False):
         try:
-            answers = load_answers_file(args.apply)
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            doc = create_session(path=path if path in ("quick", "full") else "quick")
+        except ValueError as exc:
             print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
             return 1
-    elif getattr(args, "answers_json", None):
+        # Immediately return first next-step for agent loop
+        nxt = next_step(doc.get("answers") or {}, path=doc["path"])
+        nxt["session_id"] = doc["session_id"]
+        print(json.dumps({"ok": True, "session": doc, "next": nxt}, indent=2, sort_keys=True))
+        return 0
+
+    if getattr(args, "defaults", False):
+        print(
+            json.dumps(
+                {"path": path, "answers": default_answers()},
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if getattr(args, "script", False) or (
+        not getattr(args, "next", False)
+        and not getattr(args, "apply", None)
+        and not getattr(args, "answers_json", None)
+        and not getattr(args, "interactive", False)
+        and not getattr(args, "session", None)
+        and not getattr(args, "validate_only", False)
+    ):
+        print(json.dumps(wizard_script(path=path), indent=2, sort_keys=True))
+        return 0
+
+    # Load / merge answers
+    answers: dict = {}
+    session_id = getattr(args, "session", None)
+
+    if getattr(args, "answers_json", None):
         try:
             answers = json.loads(args.answers_json)
             if not isinstance(answers, dict):
@@ -565,21 +594,85 @@ def cmd_wizard(args: argparse.Namespace) -> int:
         except (json.JSONDecodeError, ValueError) as exc:
             print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
             return 1
-    else:
-        # Default: emit script so Hermes/agents know what to do
-        print(json.dumps(wizard_script(), indent=2, sort_keys=True))
+    elif getattr(args, "apply", None) and not getattr(args, "next", False):
+        try:
+            answers = load_answers_file(args.apply)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+    elif session_id and not getattr(args, "next", False) and not getattr(args, "interactive", False):
+        try:
+            doc = load_session(session_id)
+            answers = dict(doc.get("answers") or {})
+            path = doc.get("path") or path
+        except (OSError, ValueError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+
+    if getattr(args, "next", False):
+        try:
+            if session_id:
+                # merge answers_json into session if provided
+                merge = answers if answers else None
+                if getattr(args, "apply", None) and not answers:
+                    merge = load_answers_file(args.apply)
+                out = session_next(session_id, merge_answers=merge, path=path)
+            else:
+                if getattr(args, "apply", None) and not answers:
+                    answers = load_answers_file(args.apply)
+                out = next_step(answers, path=path)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+        print(json.dumps(out, indent=2, sort_keys=True))
+        if out.get("refused"):
+            return 1
         return 0
 
+    if getattr(args, "interactive", False):
+        answers = interactive_answers(path=path)
+        if session_id:
+            try:
+                save_session(session_id, answers, path=path)
+            except ValueError as exc:
+                print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+                return 1
+
     if getattr(args, "validate_only", False):
-        report = validate_answers(answers)
+        report = validate_answers(answers, path=path)
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0 if report["ok"] else 1
+
+    # apply
+    if not answers and getattr(args, "apply", None):
+        try:
+            answers = load_answers_file(args.apply)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+    if not answers:
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": "no answers; use --apply FILE, --answers-json, --interactive, or --next",
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 1
 
     result = apply_answers(
         answers,
         out_root=Path(args.out) if getattr(args, "out", None) else None,
         passphrase=getattr(args, "passphrase", None),
+        path=path,
     )
+    if session_id and result.get("ok"):
+        try:
+            save_session(session_id, result.get("answers") or answers, path=path)
+        except ValueError:
+            pass
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("ok") else 1
 
@@ -946,12 +1039,33 @@ def main(argv: list[str] | None = None) -> int:
 
     pwz = sub.add_parser(
         "wizard",
-        help="Guided forge interview (Hermes agent script or --apply answers)",
+        help="Guided forge interview (Hermes --next step runner or --apply)",
+    )
+    pwz.add_argument(
+        "--path",
+        default="full",
+        choices=("quick", "full"),
+        help="Interview path: quick (intent+wallpaper) or full (default full for script)",
     )
     pwz.add_argument(
         "--script",
         action="store_true",
-        help="Print interview steps JSON for Hermes (default if no apply)",
+        help="Print interview contract JSON for Hermes",
+    )
+    pwz.add_argument(
+        "--next",
+        action="store_true",
+        help="Step runner: given partial answers, emit next question or done",
+    )
+    pwz.add_argument(
+        "--session-new",
+        action="store_true",
+        help="Create a resume session under out/wizard-sessions/ and return first step",
+    )
+    pwz.add_argument(
+        "--session",
+        default=None,
+        help="Resume/update session id (with --next or --apply)",
     )
     pwz.add_argument(
         "--defaults",
@@ -966,7 +1080,7 @@ def main(argv: list[str] | None = None) -> int:
     pwz.add_argument(
         "--apply",
         default=None,
-        help="Path to answers JSON; run construct (+ optional wallpaper)",
+        help="Path to answers JSON; with --next loads as partial answers",
     )
     pwz.add_argument(
         "--answers-json",

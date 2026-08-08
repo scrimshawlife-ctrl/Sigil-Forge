@@ -1,10 +1,11 @@
 ---
 name: sigil-forge
 description: >
-  Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
-  Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.9.0
-
+  Use when forging sigils, intent glyphs, kamea/Spare stego, forge packets, or when
+  the user asks to be guided/wizard through sigil creation. Offline multi-channel
+  construction; dual creative/practice framing; no efficacy claims. Prefer wizard
+  --next step runner for new users.
+version: 0.10.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -28,6 +29,10 @@ triggers:
   - steganography
   - forge packet
   - chaos magic sigil
+  - wizard
+  - guide me
+  - walk me through
+  - help me forge
 ---
 
 # Sigil-Forge
@@ -80,20 +85,26 @@ or replaces professional help.
 
 Each step ends with a checkable completion criterion.
 
-**Prefer the wizard** when the user is new, asks to be guided, or says “wizard”:
+**Prefer the wizard** when the user is new, asks to be guided, or says “wizard” /
+“guide me” / “walk me through”. Use the **step runner** (one question per turn):
 
 ```bash
-python3 scripts/sigil_forge.py wizard --script   # interview steps for you to ask
-# …collect answers conversationally…
-python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+# Quick path for most users (intent + optional wallpaper)
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+# Each turn after the user answers:
+python3 scripts/sigil_forge.py wizard --next --session <id> \
+  --answers-json '{"intent":"I maintain calm focus"}'
+# When next.done is true:
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 ```
 
-See [references/wizard.md](references/wizard.md). Expert operators may skip to construct.
+Load [references/wizard.md](references/wizard.md) only while guiding (progressive
+disclosure). Expert operators may skip to construct.
 
-1. **Intake** — Capture present-tense intent, mode (`creative`|`practice`), optional
-   passphrase / `SIGIL_FORGE_PASSPHRASE`, optional kamea square, style for polish.
-   Or run the **wizard** script and walk steps one at a time.
-   **Done when:** intent string non-empty after strip; mode valid.
+1. **Intake / wizard** — Run `--next` until done; ask **only** the current step.
+   Use `step.help` if needed. Prefer `--path quick` unless craft options requested.
+   **Done when:** `next.done` true or expert construct args complete; safety ok.
 2. **Safety / align** — Refuse violence, self-harm, non-consensual control, exploitation
    (`scripts/safety.py` + agent judgment). Empty noise → rewrite request.
    **Done when:** `check_intent` ok **or** clear refusal with no artifacts.
@@ -197,8 +208,10 @@ python3 scripts/sigil_forge.py construct --intent "…" --phonetic --interop --o
 python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
 python3 scripts/sigil_forge.py construct --intent "…" --wallpaper --surface phone_lock \
   --wp-mode focus --out out/sigil-forge
-python3 scripts/sigil_forge.py wizard --script
-python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --script --path quick
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+python3 scripts/sigil_forge.py wizard --next --session <id> --answers-json '{…}'
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py wizard --list-corpus
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
@@ -221,13 +234,17 @@ visible in process lists). Construct uses atomic staging then promote.
 ### Wizard-guided forge (recommended for Hermes)
 
 ```bash
-python3 scripts/sigil_forge.py wizard --script
-# Agent asks steps; writes answers.json then:
-python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session-new --path quick
+# Loop: ask only next.step; merge answer; call --next again until done
+python3 scripts/sigil_forge.py wizard --next --session <id> \
+  --answers-json '{"intent":"I maintain calm focus"}'
+# Save final answers and apply
+python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 ```
 
-**Done when:** wizard `ok: true`; verify recovers digest; no efficacy claims.
+**Done when:** apply `ok: true`; verify recovers digest; no efficacy claims.
+**Agent must:** one question per turn; refuse on `refused: true`; never invent geometry.
 
 ### Offline creative forge + verify
 

@@ -1,15 +1,16 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.9.0.**
+Run from the skill root (clone or install dir). **Current version: 0.10.0.**
 
 ```bash
 # 1. Smoke-check the skill tree
 python3 scripts/sigil_forge.py check
 # Optional: python3 scripts/sigil_forge.py doctor
 
-# 1b. Hermes wizard (guided interview → answers → forge)
-# python3 scripts/sigil_forge.py wizard --script
-# python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+# 1b. Hermes wizard (step-by-step — preferred for new users)
+# python3 scripts/sigil_forge.py wizard --session-new --path quick
+# python3 scripts/sigil_forge.py wizard --next --session <id> --answers-json '{"intent":"…"}'
+# python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
 
 # 2. Construct a creative forge packet + master glyph
 python3 scripts/sigil_forge.py construct \
