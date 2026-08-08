@@ -21,7 +21,7 @@ def test_seal_roundtrip():
 
 def test_wrong_passphrase_fails():
     blob = seal_intent("secret intent", "correct horse")
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         open_intent(blob, "wrong")
 
 
@@ -83,5 +83,5 @@ def test_aes_gcm_tampered_tag_fails():
     iv = _h("00" * 12)
     ct, tag = aes_gcm_encrypt(key, iv, b"hello", b"")
     bad_tag = bytes(b ^ 0x01 for b in tag)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         aes_gcm_decrypt(key, iv, ct, bad_tag, b"")

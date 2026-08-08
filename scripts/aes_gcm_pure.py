@@ -5,6 +5,7 @@ crypto_payload.seal_intent / open_intent. Validated against NIST vectors.
 """
 from __future__ import annotations
 
+import hmac
 import struct
 from typing import Tuple
 
@@ -242,10 +243,6 @@ def aes_gcm_decrypt(
     h = _bytes_to_int(aes_encrypt_block(key, b"\x00" * 16))
     j0 = _j0_from_iv(h, nonce)
     expected = _auth_tag(h, aad, ciphertext, j0, key)
-    # Constant-time compare
-    diff = 0
-    for a, b in zip(expected, tag):
-        diff |= a ^ b
-    if diff != 0 or len(expected) != len(tag):
+    if not hmac.compare_digest(expected, tag):
         raise ValueError("AES-GCM authentication failed")
     return _gctr(key, _inc32(j0), ciphertext)

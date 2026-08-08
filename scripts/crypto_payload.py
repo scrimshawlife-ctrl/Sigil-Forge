@@ -9,9 +9,11 @@ from typing import Any
 from aes_gcm_pure import aes_gcm_decrypt, aes_gcm_encrypt
 
 DEFAULT_PBKDF2_ITERATIONS = 200_000
+MAX_PBKDF2_ITERATIONS = 1_000_000
 _SALT_LEN = 16
 _NONCE_LEN = 12  # standard 96-bit GCM IV
 _TAG_LEN = 16
+_REQUIRED_BLOB_KEYS = ("salt_b64", "nonce_b64", "ciphertext_b64")
 
 
 def intent_digest(normalized: str) -> str:
@@ -24,8 +26,10 @@ def derive_key(
     iterations: int = DEFAULT_PBKDF2_ITERATIONS,
 ) -> bytes:
     """PBKDF2-HMAC-SHA256 → 32-byte AES-256 key."""
-    if iterations < 1:
-        raise ValueError("iterations must be >= 1")
+    if not (1 <= iterations <= MAX_PBKDF2_ITERATIONS):
+        raise ValueError(
+            f"iterations must be in [1, {MAX_PBKDF2_ITERATIONS}], got {iterations}"
+        )
     return hashlib.pbkdf2_hmac(
         "sha256",
         passphrase.encode("utf-8"),
@@ -62,10 +66,24 @@ def open_intent(blob: dict[str, Any], passphrase: str) -> str:
         raise ValueError(f"unsupported alg: {blob.get('alg')!r}")
     if blob.get("kdf") != "pbkdf2-sha256":
         raise ValueError(f"unsupported kdf: {blob.get('kdf')!r}")
-    iterations = int(blob.get("iterations", DEFAULT_PBKDF2_ITERATIONS))
+    missing = [k for k in _REQUIRED_BLOB_KEYS if k not in blob]
+    if missing:
+        raise ValueError(f"missing required field(s): {', '.join(missing)}")
+    try:
+        iterations = int(blob.get("iterations", DEFAULT_PBKDF2_ITERATIONS))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"invalid iterations: {blob.get('iterations')!r}") from exc
+    if not (1 <= iterations <= MAX_PBKDF2_ITERATIONS):
+        raise ValueError(
+            f"iterations must be in [1, {MAX_PBKDF2_ITERATIONS}], got {iterations}"
+        )
     salt = base64.b64decode(blob["salt_b64"])
     nonce = base64.b64decode(blob["nonce_b64"])
     combined = base64.b64decode(blob["ciphertext_b64"])
+    if len(salt) != _SALT_LEN:
+        raise ValueError(f"salt must be {_SALT_LEN} bytes, got {len(salt)}")
+    if len(nonce) != _NONCE_LEN:
+        raise ValueError(f"nonce must be {_NONCE_LEN} bytes, got {len(nonce)}")
     if len(combined) < _TAG_LEN:
         raise ValueError("ciphertext too short")
     ct, tag = combined[:-_TAG_LEN], combined[-_TAG_LEN:]
