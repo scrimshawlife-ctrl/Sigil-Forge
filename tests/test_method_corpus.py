@@ -185,9 +185,9 @@ def test_bind_runes_modern_derivation_label(tmp_path: Path):
 
 
 def test_refuse_goetic_entity_request():
-    with pytest.raises(ValueError, match="excluded"):
+    with pytest.raises(ValueError, match=r"AUTHORITY_SEAL_EXCLUDED|excluded"):
         assert_not_entity_seal_request("draw a goetic seal for me")
-    with pytest.raises(ValueError, match="excluded"):
+    with pytest.raises(ValueError, match=r"AUTHORITY_SEAL_EXCLUDED|excluded"):
         construct_run("I want a goetic seal of Asmodeus", out_root=Path("/tmp"))
 
 
