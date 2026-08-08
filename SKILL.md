@@ -5,7 +5,7 @@ description: >
   the user asks to be guided/wizard through sigil creation. Offline multi-channel
   construction; dual creative/practice framing; no efficacy claims. Prefer wizard
   --next step runner for new users.
-version: 0.12.3
+version: 0.12.4
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -37,9 +37,10 @@ triggers:
 
 # Sigil-Forge
 
-Standalone Hermes skill. Hermes loads this directory; `SKILL.md` is the behavior
-contract. Deterministic construction lives under `scripts/`; the agent owns
-intake, mode framing, safety judgment, and optional host image polish.
+Standalone **Hermes skill** (not a plugin). Hermes loads this directory;
+`SKILL.md` is the behavior contract. Deterministic construction lives under
+`scripts/`; the agent owns intake, mode framing, safety judgment, and optional
+host image polish. Install: `bash install.sh` → `~/.hermes/skills/sigil-forge`.
 
 ## Overview
 
@@ -172,6 +173,11 @@ disclosure). Expert operators may skip to construct.
    ```
 
    **Done when:** plaintext recovered or auth failure reported.
+10. **Proof of Intent (optional)** — Commitments, `sigil_root`, capsules, and
+    optional knowledge proofs. Load
+    [references/proof-of-intent.md](references/proof-of-intent.md) only when the
+    operator asks for commitment/capsule/proof surfaces. Geometry still uses
+    `intent_digest`; never put the commitment nonce in public media.
 
 ## Modes
 
@@ -358,8 +364,9 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 - [ ] If wallpaper: receipts `geometry_preserved: true`; no plaintext intent; glyph digest unchanged
 - [ ] If AI wallpaper: prompt package present; method/provider honest (no silent fake AI)
 - [ ] Learning entries remain `PROPOSED` unless human ran `ledger promote`
-- [ ] `python3 scripts/sigil_forge.py check` → `ok: true`
-- [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release)
+- [ ] Packet has `intent_commitment` + `sigil_root` when construct succeeds (v0.12+)
+- [ ] `python3 scripts/sigil_forge.py check` → `ok: true` (includes `hermes_ok`, `poi_ok`)
+- [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release/install)
 
 ## References
 
@@ -382,7 +389,8 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |
 | [profiles-practice.md](references/profiles-practice.md) | Practice tone |
 | [safety-and-framing.md](references/safety-and-framing.md) | Refusals / efficacy lint / policy check |
-| [hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine |
+| [hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine; skill packaging |
+| [proof-of-intent.md](references/proof-of-intent.md) | Commitments, capsule, proofs (load on demand) |
 | [expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
 | [distinction-enochian.md](references/distinction-enochian.md) | Intent ≠ Enochian / Goetic seals |
 | [authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |

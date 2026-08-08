@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.12.3** (this file tracks shipped vs remaining).
+**Current release: v0.12.4** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -24,6 +24,7 @@ compression, name paths, planetary characters, and entity seals.
 | v0.12.1 | SF11 stego (digest+root), dual verify, wallpaper root binding, `inspect` CLI |
 | v0.12.2 | ProofProvider, zk companion commit, local knowledge attestation, Noir circuit (optional), `verify-proof` |
 | v0.12.3 | `forge_core` pure boundary, dual-commit bind tests, `open --capsule`, risc0/zkVM skip-path adapter |
+| v0.12.4 | Hermes skill packaging: install/check/doctor gates, lean install, progressive PoI ref |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
@@ -48,6 +49,8 @@ compression, name paths, planetary characters, and entity seals.
 ### Ops
 - CLI: construct, verify, verify-proof, inspect, wallpaper, wizard, open (`--capsule`), learn, ledger, doctor, eval, check
 - Receipts + PROPOSED ledger
+- Hermes skill install: lean tree (excludes `docs/superpowers`), post-install `validate_hermes_skill` + `check`
+- Progressive refs: `hermes-runtime-contract.md`, `proof-of-intent.md`
 - `validate_hermes_skill.py`
 
 ### Policy machinery (shipped)

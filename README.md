@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.12.3</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
+  <strong>v0.12.4</strong> · Hermes skill · offline-first · verifiable · MIT · proof-of-intent
 </p>
 
 **Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
@@ -26,9 +26,10 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 | **Planetary** | Traditional seal + intelligence/spirit; plate strokes → name_on_kamea → reconstruct |
 | **Stego** | SVG multi-channel + PNG LSB (digest-only on public media) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, verify, open, receipts, PROPOSED ledger, `ledger promote`, `policy check`, doctor, eval, check |
+| **Ops** | construct, verify, verify-proof, inspect, open (`--capsule`), receipts, ledger, policy, doctor, eval, check |
 | **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
-| **Proof of Intent** | Commitment, capsule, `sigil_root`, SF11, `inspect`, knowledge proofs, optional Noir/risc0 stubs, `open --capsule` (v0.12.3) |
+| **Proof of Intent** | Commitment, capsule, `sigil_root`, SF11, knowledge proofs, optional Noir/risc0 (v0.12.3+) |
+| **Hermes packaging** | Skill (not plugin); `install.sh` + `check`/`doctor` gates; progressive refs (v0.12.4) |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 

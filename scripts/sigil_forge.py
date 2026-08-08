@@ -31,10 +31,13 @@ def cmd_check(_: argparse.Namespace) -> int:
     required = [
         "VERSION",
         "SKILL.md",
+        "QUICKSTART.md",
+        "install.sh",
         "scripts/paths.py",
         "scripts/sigil_forge.py",
         "scripts/construct.py",
         "scripts/verify.py",
+        "scripts/forge_core.py",
         "scripts/normalize.py",
         "scripts/safety.py",
         "scripts/spare.py",
@@ -64,13 +67,25 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/intent_capsule.py",
         "scripts/stego_envelope.py",
         "scripts/inspect_artifact.py",
+        "scripts/proofs/__init__.py",
+        "scripts/proofs/registry.py",
+        "scripts/proofs/base.py",
+        "scripts/proofs/zk_commit.py",
+        "scripts/proofs/local_knowledge.py",
+        "scripts/proofs/noir_provider.py",
+        "scripts/proofs/risc0_provider.py",
+        "scripts/proofs/verify_run.py",
+        "scripts/proofs/manifest.py",
         "references/planetary-character-corpus.json",
         "references/planetary-plate-strokes.json",
+        "references/hermes-runtime-contract.md",
+        "references/proof-of-intent.md",
         "schemas/wallpaper-spec.schema.json",
         "schemas/wallpaper-receipt.schema.json",
         "schemas/intent-capsule.schema.json",
         "schemas/artifact-root.schema.json",
         "schemas/forge-manifest.schema.json",
+        "schemas/proof-manifest.schema.json",
         "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
@@ -87,6 +102,10 @@ def cmd_check(_: argparse.Namespace) -> int:
         "schemas/forge-packet.schema.json",
         "schemas/construction-result.schema.json",
         "schemas/channel-manifest.schema.json",
+        "schemas/intent-capsule.schema.json",
+        "schemas/artifact-root.schema.json",
+        "schemas/forge-manifest.schema.json",
+        "schemas/proof-manifest.schema.json",
     ):
         path = root / rel
         if not path.is_file():
@@ -102,11 +121,12 @@ def cmd_check(_: argparse.Namespace) -> int:
             schemas_ok = False
             schema_errors.append(f"{rel}: {exc}")
 
-    # Import core scripts modules
+    # Import core scripts modules (incl. pure forge_core + proof providers)
     modules = (
         "paths",
         "construct",
         "verify",
+        "forge_core",
         "normalize",
         "safety",
         "spare",
@@ -136,6 +156,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "inspect_artifact",
         "packet",
         "policy_lint",
+        "proofs.registry",
+        "proofs.zk_commit",
+        "proofs.risc0_provider",
     )
     module_errors: list[str] = []
     for name in modules:
@@ -145,9 +168,23 @@ def cmd_check(_: argparse.Namespace) -> int:
             module_errors.append(f"{name}: {exc}")
     modules_ok = not module_errors
 
+    # Hermes SKILL.md frontmatter (packaging gate)
+    hermes_ok = False
+    hermes_errors: list[str] = []
+    try:
+        from validate_hermes_skill import validate as validate_hermes
+
+        hermes_report = validate_hermes(root / "SKILL.md")
+        hermes_ok = bool(hermes_report.get("ok"))
+        hermes_errors = list(hermes_report.get("errors") or [])
+    except Exception as exc:  # noqa: BLE001
+        hermes_errors = [str(exc)]
+        hermes_ok = False
+
     # Dry construct + verify into a temp directory (no persistent out/)
     construct_ok = False
     verify_ok = False
+    poi_ok = False
     construct_error: str | None = None
     try:
         from construct import run as construct_run
@@ -165,7 +202,16 @@ def cmd_check(_: argparse.Namespace) -> int:
                 raise RuntimeError("dry construct did not write glyph.svg")
             if not packet.get("intent_digest"):
                 raise RuntimeError("dry construct missing intent_digest")
+            # Proof-of-Intent surfaces always present from v0.12+
+            if not packet.get("intent_commitment"):
+                raise RuntimeError("dry construct missing intent_commitment")
+            if not packet.get("sigil_root"):
+                raise RuntimeError("dry construct missing sigil_root")
+            run_dir = Path(packet["artifacts"]["run_dir"])
+            if not (run_dir / "forge-manifest.json").is_file():
+                raise RuntimeError("dry construct missing forge-manifest.json")
             construct_ok = True
+            poi_ok = True
             v = verify_run(svg)
             verify_ok = bool(v.get("ok")) and v.get("intent_digest") == packet[
                 "intent_digest"
@@ -176,13 +222,16 @@ def cmd_check(_: argparse.Namespace) -> int:
         construct_error = str(exc)
         construct_ok = False
         verify_ok = False
+        poi_ok = False
 
     ok = (
         not missing
         and schemas_ok
         and modules_ok
+        and hermes_ok
         and construct_ok
         and verify_ok
+        and poi_ok
     )
     print(
         json.dumps(
@@ -194,8 +243,11 @@ def cmd_check(_: argparse.Namespace) -> int:
                 "schema_errors": schema_errors,
                 "modules_ok": modules_ok,
                 "module_errors": module_errors,
+                "hermes_ok": hermes_ok,
+                "hermes_errors": hermes_errors,
                 "construct_ok": construct_ok,
                 "verify_ok": verify_ok,
+                "poi_ok": poi_ok,
                 "construct_error": construct_error,
             },
             indent=2,
@@ -604,21 +656,56 @@ def cmd_doctor(_: argparse.Namespace) -> int:
         for p in (
             "VERSION",
             "SKILL.md",
+            "QUICKSTART.md",
             "scripts/construct.py",
+            "scripts/forge_core.py",
             "scripts/kamea.py",
+            "scripts/proofs/registry.py",
+            "references/hermes-runtime-contract.md",
+            "references/proof-of-intent.md",
             "schemas/sigil-method.schema.json",
+            "schemas/intent-capsule.schema.json",
+            "schemas/proof-manifest.schema.json",
             "references/source-manifest.yaml",
         )
         if not (root / p).is_file()
     ]
     module_errors: list[str] = []
-    for name in ("construct", "kamea", "ontology", "planetary_seals", "phonetic"):
+    for name in (
+        "construct",
+        "forge_core",
+        "kamea",
+        "ontology",
+        "planetary_seals",
+        "phonetic",
+        "proofs.registry",
+    ):
         try:
             importlib.import_module(name)
         except Exception as exc:  # noqa: BLE001
             module_errors.append(f"{name}: {exc}")
+
+    proof_providers: list[dict] = []
+    try:
+        from proofs.registry import list_providers
+
+        proof_providers = list_providers()
+    except Exception as exc:  # noqa: BLE001
+        module_errors.append(f"proofs.registry.list_providers: {exc}")
+
+    hermes_ok = False
+    hermes_errors: list[str] = []
+    try:
+        from validate_hermes_skill import validate as validate_hermes
+
+        hr = validate_hermes(root / "SKILL.md")
+        hermes_ok = bool(hr.get("ok"))
+        hermes_errors = list(hr.get("errors") or [])
+    except Exception as exc:  # noqa: BLE001
+        hermes_errors = [str(exc)]
+
     report: dict = {
-        "ok": not missing and not module_errors,
+        "ok": not missing and not module_errors and hermes_ok,
         "python": sys.version.split()[0],
         "platform": platform.platform(),
         "skill_root": str(root),
@@ -629,6 +716,10 @@ def cmd_doctor(_: argparse.Namespace) -> int:
         "layout_raster": True,
         "missing": missing,
         "module_errors": module_errors,
+        "hermes_ok": hermes_ok,
+        "hermes_errors": hermes_errors,
+        "proof_providers": proof_providers,
+        "packaging": "hermes-skill",
         "hermes_skill_dir_env": __import__("os").environ.get("HERMES_SKILL_DIR"),
     }
     try:

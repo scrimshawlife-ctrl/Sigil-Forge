@@ -1,9 +1,11 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.12.3.**
+Run from the skill root (clone or install dir). **Current version: 0.12.4.**
+
+Hermes packaging: this is a **skill** (`SKILL.md` + offline CLI), not a plugin.
 
 ```bash
-# 1. Smoke-check the skill tree
+# 1. Smoke-check the skill tree (files, modules, Hermes frontmatter, dry PoI construct)
 python3 scripts/sigil_forge.py check
 # Optional: python3 scripts/sigil_forge.py doctor
 
@@ -48,23 +50,32 @@ python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode practice \
   --seal-packet \
+  --proof commitment \
   --out out/sigil-forge
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
+python3 scripts/sigil_forge.py open --capsule out/sigil-forge/*/intent-capsule.json --json
+python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
+python3 scripts/sigil_forge.py verify-proof out/sigil-forge/*/ --passphrase "$SIGIL_FORGE_PASSPHRASE"
 
 # 6. (Dev) Tests + Hermes frontmatter hygiene
 python3 -m pytest -q
 python3 scripts/validate_hermes_skill.py
 ```
 
-**Install to Hermes** (optional):
+**Install to Hermes** (skill tree under `~/.hermes/skills/sigil-forge`):
 
 ```bash
 bash install.sh --dry-run    # preview
-bash install.sh              # → ~/.hermes/skills/sigil-forge
+bash install.sh              # install + post-check (validate_hermes + check)
+export HERMES_SKILL_DIR="$HOME/.hermes/skills/sigil-forge"
+python3 "$HERMES_SKILL_DIR/scripts/sigil_forge.py" doctor
+# Reload Hermes skills if the agent is already running
 ```
 
 Wallpaper outputs live under `<run-id>/wallpaper/` and `<run-id>/receipts/`.
 Canonical `glyph.svg` is never rewritten by wallpaper generation.
 
-See [README.md](README.md), [SKILL.md](SKILL.md), and
+See [README.md](README.md), [SKILL.md](SKILL.md),
+[references/hermes-runtime-contract.md](references/hermes-runtime-contract.md),
+[references/proof-of-intent.md](references/proof-of-intent.md), and
 [references/wallpaper-framework.md](references/wallpaper-framework.md).
