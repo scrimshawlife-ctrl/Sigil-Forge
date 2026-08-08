@@ -89,6 +89,7 @@ def layout_to_rgb(
     fg: tuple[int, int, int] = FG,
     bind_polylines: Iterable[Iterable[tuple[float, float]]] | None = None,
     rose_points: Iterable[tuple[float, float]] | None = None,
+    planetary_seal_strokes: Iterable[Iterable[tuple[float, float]]] | None = None,
 ) -> bytes:
     """Return raw RGB bytes (size*size*3) for a layout."""
     if size < 8:
@@ -108,6 +109,9 @@ def layout_to_rgb(
             _polyline(buf, size, list(poly), fg)
     if rose_points:
         _polyline(buf, size, list(rose_points), fg)
+    if planetary_seal_strokes:
+        for poly in planetary_seal_strokes:
+            _polyline(buf, size, list(poly), fg)
     return bytes(buf)
 
 
@@ -118,6 +122,7 @@ def layout_to_png_bytes(
     size: int = DEFAULT_SIZE,
     bind_polylines: Iterable[Iterable[tuple[float, float]]] | None = None,
     rose_points: Iterable[tuple[float, float]] | None = None,
+    planetary_seal_strokes: Iterable[Iterable[tuple[float, float]]] | None = None,
 ) -> bytes:
     """Render layout geometry to a filter-0 8-bit RGB PNG (stdlib path)."""
     rgb = layout_to_rgb(
@@ -126,5 +131,6 @@ def layout_to_png_bytes(
         size=size,
         bind_polylines=bind_polylines,
         rose_points=rose_points,
+        planetary_seal_strokes=planetary_seal_strokes,
     )
     return write_rgb_png(size, size, rgb)

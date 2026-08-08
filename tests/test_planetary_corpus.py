@@ -39,20 +39,18 @@ def test_native_hebrew_gematria():
     assert all(1 <= r <= 9 for r in reduced)
 
 
-def test_intelligence_uses_corpus_name_on_kamea():
-    intel = intelligence_character("jupiter")
+def test_intelligence_auto_is_plate_with_entity_metadata():
+    intel = intelligence_character("jupiter")  # default geometry=auto → plate
     assert intel.artifact_class == "intelligence_character"
-    assert intel.claimed_historical_status == "corpus_name_path_agrippan"
+    assert intel.claimed_historical_status == "stroke_digitization_plate_v1"
     assert intel.entity_name == "Iophiel"
     assert intel.entity_number == 136
-    assert intel.provenance.get("construction") == "name_on_kamea"
-    assert intel.provenance.get("status") == "corpus_name_on_kamea"
-    assert len(intel.path) >= 2
+    assert len(intel.strokes) >= 2
     assert intel.path != traditional_seal_path("jupiter").path
 
 
-def test_spirit_uses_corpus_name_on_kamea():
-    spirit = spirit_character("saturn")
+def test_spirit_name_on_kamea_explicit():
+    spirit = spirit_character("saturn", geometry="name_on_kamea")
     assert spirit.entity_name == "Zazel"
     assert spirit.claimed_historical_status == "corpus_name_path_agrippan"
     assert spirit.provenance.get("entity_name_hebrew")
@@ -73,6 +71,7 @@ def test_construct_with_intelligence_corpus(tmp_path: Path):
         kamea_encoding="latin_mod9_v1",
         planetary_seal=True,
         planetary_seal_kind="intelligence_character",
+        planetary_geometry="name_on_kamea",
     )
     ps = packet["methods"]["planetary_seal"]
     assert ps.get("entity_name") == "Iophiel"

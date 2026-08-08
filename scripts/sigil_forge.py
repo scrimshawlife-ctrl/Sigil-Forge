@@ -53,7 +53,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/wallpaper/providers.py",
         "scripts/wizard.py",
         "scripts/planetary_corpus.py",
+        "scripts/plate_strokes.py",
         "references/planetary-character-corpus.json",
+        "references/planetary-plate-strokes.json",
         "schemas/wallpaper-spec.schema.json",
         "schemas/wallpaper-receipt.schema.json",
         "scripts/validate_hermes_skill.py",
@@ -108,6 +110,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "ontology",
         "planetary_seals",
         "planetary_corpus",
+        "plate_strokes",
         "wizard",
         "crypto_payload",
         "packet",
@@ -201,6 +204,7 @@ def cmd_construct(args: argparse.Namespace) -> int:
             planetary_seal=bool(getattr(args, "planetary_seal", False)),
             planetary_seal_kind=getattr(args, "planetary_seal_kind", None)
             or "traditional_seal",
+            planetary_geometry=getattr(args, "planetary_geometry", None) or "auto",
             prefer_argon2=bool(getattr(args, "argon2", False)),
             interop=bool(getattr(args, "interop", False)),
             phonetic=bool(getattr(args, "phonetic", False))
@@ -849,6 +853,15 @@ def main(argv: list[str] | None = None) -> int:
         default="traditional_seal",
         choices=("traditional_seal", "intelligence_character", "spirit_character"),
         help="Planetary character class (default: traditional_seal)",
+    )
+    pc.add_argument(
+        "--planetary-geometry",
+        default="auto",
+        choices=("auto", "plate", "name_on_kamea", "reconstruction"),
+        help=(
+            "Planetary geometry source: auto (plate→name→reconstruct), "
+            "plate strokes, name_on_kamea, or reconstruction"
+        ),
     )
     pc.add_argument(
         "--argon2",

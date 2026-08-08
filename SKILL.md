@@ -3,7 +3,8 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.8.0
+version: 0.9.0
+
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -170,7 +171,7 @@ claim full embed.
 | `kamea_square_choice` | Operator override or digest-derived square |
 | `bind_runes` | Elder Futhark stick bind (**modern_derivation**) |
 | `rose_cross_path` | Hebrew 22-petal Rose Cross name path |
-| `planetary_seal` | Agrippan traditional / intelligence / spirit (opt-in; corpus name_on_kamea) |
+| `planetary_seal` | Agrippan traditional / intelligence / spirit (opt-in; plate strokes default) |
 | `intent_digest` | SHA-256 of normalized intent |
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
 | `svg_metadata` | SVG metadata digest / method bits |
@@ -333,6 +334,7 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [wizard.md](references/wizard.md) | Hermes guided forge interview |
 | [methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit corpus |
 | [planetary-character-corpus.json](references/planetary-character-corpus.json) | Agrippan names + construction flags |
+| [planetary-plate-strokes.json](references/planetary-plate-strokes.json) | Multi-stroke plate digitizations |
 | [receipts-and-ledger.md](references/receipts-and-ledger.md) | Run receipts + PROPOSED ledger |
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |
