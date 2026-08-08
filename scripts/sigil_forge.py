@@ -42,7 +42,7 @@ def cmd_construct(args: argparse.Namespace) -> int:
             square=args.square,
             seal_packet=bool(args.seal_packet),
         )
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 1
     # Print compact summary to stdout (full packet on --json)
