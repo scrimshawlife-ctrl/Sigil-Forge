@@ -109,7 +109,18 @@ Mirror the construction engine. Do not skip safety or invent intermediate geomet
    re-apply stego to a fresh procedural raster, or treat polished art as
    presentation-only and keep master SVG/PNG as the verifiable carrier.
    `gen_seed` channel is reserved for digest-derived seed when polish is used.
-   (Prompt builder may be added in a later task; host tools only — no required API.)
+   **Agent-only prompt builder** (no image API in this skill):
+
+   ```bash
+   # library: scripts/prompt_polish.py
+   # build_prompt(layout_summary, style) -> {prompt, negative, seed, geometry_lock}
+   # seed = int(intent_digest[:8], 16); geometry_lock from stroke_count / path bbox
+   ```
+
+   Pass a layout summary (at least `intent_digest`, prefer `stroke_count` and
+   `bbox` from the master). Write the returned package to the run dir if useful
+   and record `artifacts.polish_prompt_path` on the packet. Use host image tools
+   only with that package; never invent geometry or call a required remote API.
 8. **Verify** — Always before claiming integrity:
 
    ```bash
