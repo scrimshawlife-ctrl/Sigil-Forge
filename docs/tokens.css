@@ -1,0 +1,79 @@
+/* Hallmark · macrostructure: Marquee Hero · genre: atmospheric
+ * theme: custom (vibe: "molten brass on late-night plate steel" · paper oklch(12% 0.012 265) · accent oklch(72% 0.14 62) brass · Instrument Serif + Geist + JetBrains Mono)
+ * enrichment: E photographic fold (real hero asset) · nav: N9 · footer: Ft5
+ * audience: Hermes operators / craft practitioners · use: understand + install · tone: atmospheric-technical
+ * pre-emit critique: P5 H5 E5 S5 R4 V4
+ * axes: dark / classical-serif / warm-brass
+ */
+
+:root {
+  /* Paper band — dark */
+  --color-paper: oklch(12% 0.012 265);
+  --color-paper-2: oklch(16% 0.014 265);
+  --color-paper-3: oklch(20% 0.016 265);
+  --color-paper-nav: oklch(12% 0.012 265 / 0.82);
+  --color-paper-emit: oklch(72% 0.14 62 / 0.06);
+  --color-on-accent: oklch(14% 0.02 50);
+  --color-accent-border: oklch(72% 0.14 62 / 0.35);
+
+  /* Ink */
+  --color-ink: oklch(96% 0.008 70);
+  --color-ink-2: oklch(86% 0.012 70);
+  --color-muted: oklch(68% 0.02 70);
+
+  /* Accent — molten brass matching hero */
+  --color-accent: oklch(72% 0.14 62);
+  --color-accent-2: oklch(62% 0.12 48);
+  --color-glow: oklch(76% 0.14 62 / 0.35);
+  --color-focus: oklch(78% 0.12 62);
+
+  /* Hero veil stops */
+  --color-veil-0: oklch(12% 0.012 265 / 0.96);
+  --color-veil-1: oklch(12% 0.012 265 / 0.55);
+  --color-veil-2: oklch(12% 0.012 265 / 0.15);
+
+  /* Rules */
+  --color-rule: oklch(96% 0.008 70 / 0.12);
+  --color-rule-2: oklch(96% 0.008 70 / 0.06);
+  --rule-blueprint: oklch(96% 0.008 70 / 0.04);
+
+  /* Type */
+  --font-display: "Instrument Serif", "Tiempos Headline", ui-serif, Georgia, serif;
+  --font-body: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-display: clamp(2.75rem, 7vw + 0.5rem, 5.5rem);
+  --text-display-s: clamp(1.85rem, 3.5vw + 0.5rem, 2.75rem);
+  --text-4xl: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+  --text-xl: 1.25rem;
+  --text-lg: 1.125rem;
+  --text-md: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+  --text-micro: 0.6875rem;
+
+  /* Space — 4pt scale */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+  --space-3xl: 9rem;
+  --page-gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --measure: 62ch;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur-med: 280ms;
+  --dur-slow: 480ms;
+
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-pill: 999px;
+}
