@@ -1,0 +1,186 @@
+"""Full forge-run → wallpaper pipeline (background env + immutable glyph composite)."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from wallpaper.composite import (
+    composite_glyph_on_background,
+    load_operator_background,
+    procedural_background,
+    write_wallpaper_png,
+)
+from wallpaper.embed import embed_binding
+from wallpaper.prompt import build_background_prompt
+from wallpaper.seed import file_sha256
+from wallpaper.spec import SCHEMA_VERSION, build_wallpaper_spec, load_forge_run
+from wallpaper.verify_wallpaper import verify_wallpaper
+
+
+def build_wallpaper(
+    run_dir: Path | str,
+    *,
+    surface: str = "phone_lock",
+    mode: str = "focus",
+    intensity: str = "balanced",
+    placement: str | None = None,
+    symbolic_theme: str = "neutral",
+    visual_direction: str = "dark architectural minimalism",
+    style_preset: str | None = None,
+    background_method: str = "procedural",
+    background_path: Path | str | None = None,
+    embedded_payload: str = "intent_digest",
+    out_name: str | None = None,
+) -> dict[str, Any]:
+    """Build one wallpaper for a surface from an existing forge run directory.
+
+    Returns summary with paths and receipt status.
+    """
+    run_dir = Path(run_dir)
+    forge = load_forge_run(run_dir)
+    spec = build_wallpaper_spec(
+        run_dir,
+        surface=surface,
+        mode=mode,
+        intensity=intensity,
+        placement=placement,
+        symbolic_theme=symbolic_theme,
+        visual_direction=visual_direction,
+        background_method=background_method,
+        embedded_payload=embedded_payload,
+    )
+
+    wp_dir = run_dir / "wallpaper"
+    wp_dir.mkdir(parents=True, exist_ok=True)
+    receipts_dir = run_dir / "receipts"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+
+    # Prompts (for AI path; always written for provenance)
+    prompt_pkg = build_background_prompt(spec, style_preset=style_preset)
+    prompt_path = wp_dir / f"background-prompt-{surface}.json"
+    prompt_path.write_text(json.dumps(prompt_pkg, indent=2) + "\n", encoding="utf-8")
+    spec["generation"]["prompt_path"] = str(prompt_path)
+
+    w, h = spec["canvas"]["width"], spec["canvas"]["height"]
+    seed = int(spec["generation"]["seed"])
+    complexity = float(spec["presentation"]["background_complexity"])
+    theme = str(spec["presentation"]["symbolic_theme"])
+
+    # Background
+    bg_role = f"background-{surface}"
+    bg_file = wp_dir / f"background-{surface}.png"
+    if background_method == "operator_supplied" and background_path:
+        bp = Path(background_path)
+        rgb = load_operator_background(bp, w, h)
+        if rgb is None:
+            # fall back procedural but note
+            rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
+            spec["generation"]["background_method"] = "procedural"
+            spec.setdefault("notes", []).append(
+                "operator_background_unusable_fallback_procedural"
+            )
+        else:
+            spec["generation"]["background_method"] = "operator_supplied"
+    elif background_method == "ai_generated":
+        # Offline: write prompt only; use procedural stand-in until host supplies image
+        rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
+        spec["generation"]["background_method"] = "procedural"
+        spec.setdefault("notes", []).append(
+            "ai_generated_requested_procedural_standin_until_host_provides_background"
+        )
+    else:
+        rgb = procedural_background(w, h, seed=seed, complexity=complexity, theme=theme)
+
+    bg_sha = write_wallpaper_png(bg_file, w, h, rgb)
+
+    # Composite canonical glyph (immutable SVG paths → uniform transform)
+    glyph_svg = forge["glyph_svg"].read_text(encoding="utf-8")
+    # Privacy: ensure intent not in SVG text for scan baseline
+    composed = composite_glyph_on_background(
+        rgb,
+        w,
+        h,
+        glyph_svg=glyph_svg,
+        cx=float(spec["composition"]["x"]),
+        cy=float(spec["composition"]["y"]),
+        scale=float(spec["composition"]["scale"]),
+        opacity=float(spec["presentation"]["glyph_opacity"]),
+        glow=float(spec["presentation"].get("glow_strength") or 0),
+    )
+
+    out_name = out_name or f"{surface.replace('_', '-')}.png"
+    out_file = wp_dir / out_name
+    out_sha = write_wallpaper_png(out_file, w, h, composed)
+
+    # Spec digest for embedding
+    import hashlib
+
+    spec_for_hash = {k: v for k, v in spec.items() if k != "artifacts"}
+    spec_digest = hashlib.sha256(
+        json.dumps(spec_for_hash, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    emb = embed_binding(
+        out_file,
+        intent_digest=spec["source"]["intent_digest"],
+        wallpaper_spec_digest=spec_digest,
+        source_glyph_digest=spec["source"]["glyph_digest"],
+        mode=spec["privacy"].get("embedded_payload") or "none",
+    )
+    if emb:
+        out_sha = emb
+
+    # Artifacts list
+    artifacts = [
+        {"role": bg_role, "path": str(bg_file), "sha256": bg_sha},
+        {"role": f"wallpaper-{surface}", "path": str(out_file), "sha256": out_sha},
+        {
+            "role": "background_prompt",
+            "path": str(prompt_path),
+            "sha256": file_sha256(str(prompt_path)),
+        },
+    ]
+    spec["artifacts"] = artifacts
+
+    spec_path = wp_dir / f"wallpaper-spec-{surface}.json"
+    spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    # Forbidden phrases: normalized intent if present in packet
+    packet = forge["packet"]
+    forbidden = []
+    ni = packet.get("normalized_intent")
+    if ni and len(ni) >= 8:
+        forbidden.append(ni)
+
+    receipt = verify_wallpaper(
+        spec=spec,
+        output_path=out_file,
+        background_path=bg_file,
+        source_glyph_path=forge["glyph_svg"],
+        forbidden_phrases=forbidden,
+    )
+    receipt_path = receipts_dir / f"wallpaper-receipt-{surface}.json"
+    receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    return {
+        "ok": receipt.get("status") == "verified",
+        "surface": surface,
+        "wallpaper": str(out_file),
+        "background": str(bg_file),
+        "spec": str(spec_path),
+        "receipt": str(receipt_path),
+        "receipt_status": receipt.get("status"),
+        "geometry_preserved": receipt.get("geometry_preserved"),
+        "schema_version": SCHEMA_VERSION,
+    }
+
+
+def build_wallpapers_for_run(
+    run_dir: Path | str,
+    surfaces: list[str] | None = None,
+    **kwargs: Any,
+) -> list[dict[str, Any]]:
+    surfaces = surfaces or ["phone_lock", "phone_home", "desktop"]
+    return [build_wallpaper(run_dir, surface=s, **kwargs) for s in surfaces]
