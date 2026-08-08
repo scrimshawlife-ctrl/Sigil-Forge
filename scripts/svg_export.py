@@ -1,0 +1,45 @@
+"""Export fused Layout geometry to monochrome SVG (no plaintext intent)."""
+
+from __future__ import annotations
+
+from fuse import Layout
+
+
+def _fmt_pt(p: tuple[float, float]) -> str:
+    return f"{p[0]:.4f},{p[1]:.4f}"
+
+
+def _polyline(points: list[tuple[float, float]], stroke: str) -> str:
+    if not points:
+        return ""
+    pts = " ".join(_fmt_pt(p) for p in points)
+    return (
+        f'<polyline points="{pts}" fill="none" stroke="{stroke}" '
+        f'stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    )
+
+
+def layout_to_svg(
+    layout: Layout,
+    stroke: str = "#0a0a0a",
+    bg: str = "#f7f4ef",
+) -> str:
+    """Render layout as SVG string. Geometry only — no intent text."""
+    min_x, min_y, w, h = layout.view_box
+    mono = _polyline(layout.monogram_points, stroke)
+    kamea = _polyline(layout.kamea_points, stroke)
+    # Deliberately omit spare_letters / normalized intent from SVG body.
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'viewBox="{min_x:g} {min_y:g} {w:g} {h:g}" '
+        f'width="100%" height="100%">\n'
+        f'  <rect x="{min_x:g}" y="{min_y:g}" width="{w:g}" height="{h:g}" '
+        f'fill="{bg}"/>\n'
+        f'  <g id="spare-monogram">\n'
+        f"    {mono}\n"
+        f"  </g>\n"
+        f'  <g id="kamea-path">\n'
+        f"    {kamea}\n"
+        f"  </g>\n"
+        f"</svg>\n"
+    )

@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/forge-packet.schema.json",
+  "title": "Sigil-Forge forge packet",
+  "description": "Machine-readable forge packet (design §9).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "intent_digest",
+    "channels",
+    "methods",
+    "artifacts",
+    "crypto",
+    "verify",
+    "framing_notes"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["creative", "practice"]
+    },
+    "normalized_intent": {
+      "type": "string",
+      "description": "Local-only normalized intent; omit when seal_packet."
+    },
+    "intent_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 hex of normalized intent."
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "detail"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["applied", "skipped"] },
+          "detail": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "methods": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "spare": { "type": "object", "additionalProperties": true },
+        "kamea": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "svg": { "type": ["string", "null"] },
+        "png": { "type": ["string", "null"] },
+        "run_dir": { "type": "string" },
+        "run_id": { "type": "string" },
+        "packet_json": { "type": "string" },
+        "packet_md": { "type": "string" }
+      }
+    },
+    "crypto": {
+      "type": "object",
+      "required": ["key_policy", "ciphertext_present"],
+      "additionalProperties": true,
+      "properties": {
+        "algorithm": { "type": "string" },
+        "kdf": { "type": "string" },
+        "key_policy": {
+          "type": "string",
+          "enum": ["none", "ephemeral_run", "passphrase"]
+        },
+        "ciphertext_present": { "type": "boolean" }
+      }
+    },
+    "verify": {
+      "type": "string",
+      "description": "Exact command to re-check integrity."
+    },
+    "framing_notes": {
+      "type": "string"
+    },
+    "interop": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sealed_intent": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "AES-GCM seal blob when passphrase used."
+    }
+  }
+}
