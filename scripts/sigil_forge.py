@@ -12,10 +12,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 def cmd_help(_: argparse.Namespace) -> int:
     print(
-        "sigil-forge — multi-channel intent sigils\n"
+        "sigil-forge — multi-channel intent sigils (Hermes skill)\n"
         "commands: construct | verify | verify-proof | inspect | wallpaper | wizard | open | learn | ledger | "
         "policy | doctor | eval | check | help\n"
-        "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
+        "See SKILL.md, QUICKSTART.md, references/hermes-runtime-contract.md\n"
+        "PoI (on demand): references/proof-of-intent.md"
     )
     return 0
 
@@ -191,11 +192,14 @@ def cmd_check(_: argparse.Namespace) -> int:
         from verify import run as verify_run
 
         with tempfile.TemporaryDirectory(prefix="sigil-forge-check-") as tmp:
+            # write_receipt=False: never append skill-root receipt logs during check
+            # (install post-check must not pollute ~/.hermes/skills/sigil-forge/out/)
             packet = construct_run(
                 "I maintain calm focus while shipping Sigil-Forge",
                 mode="creative",
                 out_root=Path(tmp),
                 square="saturn",
+                write_receipt=False,
             )
             svg = Path(packet["artifacts"]["svg"])
             if not svg.is_file():
@@ -999,6 +1003,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
             out_root=tdp / "h",
             square="jupiter",
             kamea_encoding="hebrew_gematria",
+            write_receipt=False,
         )
         rec(
             "hebrew_encoding_label",
@@ -1011,6 +1016,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
             out_root=tdp / "m",
             square="luna",
             kamea_encoding="latin_mod9_v1",
+            write_receipt=False,
         )
         rec(
             "mod9_encoding_label",
@@ -1022,6 +1028,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
                 "aeiou you",
                 out_root=tdp / "e",
                 kamea_encoding="latin_mod9_v1",
+                write_receipt=False,
             )
             rec("empty_dual_craft", False, "expected NOT_COMPUTABLE")
         except ValueError as exc:
@@ -1032,6 +1039,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
             out_root=tdp / "p",
             spare_mode="pictorial",
             kamea_encoding="latin_mod9_v1",
+            write_receipt=False,
         )
         rec(
             "spare_pictorial_not_computable",
@@ -1043,6 +1051,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
             out_root=tdp / "ph",
             phonetic=True,
             kamea_encoding="latin_mod9_v1",
+            write_receipt=False,
         )
         by = {c["id"]: c for c in p4["channels"]}
         rec("phonetic_channel", by.get("phonetic_sigil", {}).get("status") == "applied")
@@ -1052,6 +1061,7 @@ def cmd_eval(_: argparse.Namespace) -> int:
             construct_run(
                 "forge an Enochian seal for the air tablet",
                 out_root=tdp / "enoch",
+                write_receipt=False,
             )
             rec(
                 "refuse_enochian_request",
@@ -1073,6 +1083,45 @@ def cmd_eval(_: argparse.Namespace) -> int:
             ledger_path=tdp / "learning-ledger.jsonl",
         )
         rec("ledger_proposed_only", entry.get("canon_status") == "PROPOSED")
+
+        # Proof-of-Intent public surfaces (always, offline)
+        rec("poi_intent_commitment", bool(p2.get("intent_commitment")))
+        rec("poi_sigil_root", bool(p2.get("sigil_root")))
+        rec(
+            "poi_forge_manifest",
+            (Path(p2["artifacts"]["run_dir"]) / "forge-manifest.json").is_file(),
+        )
+        # Capsule when passphrase + proof commitment
+        p5 = construct_run(
+            "I maintain calm focus",
+            out_root=tdp / "poi",
+            kamea_encoding="latin_mod9_v1",
+            passphrase="eval-poi-pass",
+            proof="commitment",
+            kdf="pbkdf2-sha256",
+            write_receipt=False,
+        )
+        cap = Path(p5["artifacts"]["run_dir"]) / "intent-capsule.json"
+        rec("poi_capsule_with_passphrase", cap.is_file())
+        rec(
+            "poi_zk_companion",
+            bool((p5.get("intent_commitment_zk") or {}).get("value")),
+        )
+
+    # Hermes skill packaging (frontmatter + pure core import)
+    try:
+        from forge_core import ForgeConfig, compute_forge
+        from normalize import normalize_intent
+        from validate_hermes_skill import validate as validate_hermes
+
+        hr = validate_hermes()
+        rec("hermes_frontmatter", bool(hr.get("ok")), str(hr.get("errors") or ""))
+        n = normalize_intent("I maintain calm focus")
+        core = compute_forge(n, ForgeConfig(kamea_encoding="latin_mod9_v1"))
+        rec("forge_core_digest", len(core.intent_digest) == 64)
+    except Exception as exc:  # noqa: BLE001
+        rec("hermes_frontmatter", False, str(exc))
+        rec("forge_core_digest", False, str(exc))
 
     print(json.dumps({"ok": ok_all, "cases": cases}, indent=2, sort_keys=True))
     return 0 if ok_all else 1

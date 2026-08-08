@@ -131,3 +131,60 @@ def test_install_dry_run():
     )
     assert r.returncode == 0, r.stderr + r.stdout
     assert "dry-run" in (r.stdout + r.stderr).lower() or "DRY RUN" in r.stdout
+
+
+def test_install_leaves_no_out_dir(tmp_path: Path):
+    """Post-install check must not leave skill-root out/ pollution."""
+    dest = tmp_path / "hermes-skills" / "sigil-forge-clean"
+    r = subprocess.run(
+        [
+            "bash",
+            str(INSTALL),
+            "--target",
+            str(dest),
+            "--allow-outside-home",
+        ],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+        env={**os.environ, "HOME": str(tmp_path / "home2")},
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    assert not (dest / "out").exists()
+
+
+def test_eval_includes_poi_and_hermes():
+    r = subprocess.run(
+        [sys.executable, str(CLI), "eval"],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    payload = json.loads(r.stdout)
+    assert payload["ok"] is True
+    by = {c["name"]: c for c in payload["cases"]}
+    for name in (
+        "poi_intent_commitment",
+        "poi_sigil_root",
+        "poi_capsule_with_passphrase",
+        "hermes_frontmatter",
+        "forge_core_digest",
+        "refuse_enochian_request",
+    ):
+        assert by[name]["ok"] is True, by[name]
+
+
+def test_help_points_to_installed_docs():
+    r = subprocess.run(
+        [sys.executable, str(CLI), "help"],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert r.returncode == 0
+    out = r.stdout
+    assert "SKILL.md" in out
+    assert "hermes-runtime-contract" in out
+    assert "proof-of-intent" in out
+    assert "docs/superpowers" not in out
