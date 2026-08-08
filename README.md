@@ -398,6 +398,19 @@ Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](refere
 Social / OG crop (for GitHub Settings → Social preview):  
 [`docs/assets/sigil-forge-social.jpg`](docs/assets/sigil-forge-social.jpg) (1280×640)
 
+### GitHub Pages
+
+Landing site lives under [`docs/`](docs/) (Hallmark atmospheric marquee):
+
+| File | Role |
+|------|------|
+| [`docs/index.html`](docs/index.html) | Landing page |
+| [`docs/tokens.css`](docs/tokens.css) · [`docs/site.css`](docs/site.css) | Design tokens + layout |
+| [`docs/assets/`](docs/assets/) | Hero + social images |
+
+Enable in the repo: **Settings → Pages → Deploy from branch → `/docs`**.  
+Local preview: open `docs/index.html` or serve `docs/` with any static server.
+
 ---
 
 ## License

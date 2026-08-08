@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sigil-Forge — multi-channel intent sigils</title>
+    <meta
+      name="description"
+      content="Offline Hermes skill that turns a statement of intent into a multi-channel sigil: glyph, forge packet, stego carriers, wallpapers, and Proof of Intent."
+    />
+    <meta name="theme-color" content="#0e0c14" />
+    <meta property="og:title" content="Sigil-Forge" />
+    <meta
+      property="og:description"
+      content="Hermes skill · offline-first · verifiable multi-channel intent sigils · MIT"
+    />
+    <meta property="og:image" content="assets/sigil-forge-social.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <a class="sr-only" href="#main">Skip to content</a>
+
+    <header class="nav-edge">
+      <a class="nav-edge__mark" href="#top">Sigil-Forge</a>
+      <div class="nav-edge__actions">
+        <a class="nav-edge__link" href="#pipeline">Pipeline</a>
+        <a class="nav-edge__link" href="#proof">Proof</a>
+        <a class="nav-edge__link" href="#install">Install</a>
+        <a
+          class="btn btn--primary"
+          href="https://github.com/scrimshawlife-ctrl/Sigil-Forge"
+          >GitHub</a
+        >
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="marquee" id="top" aria-label="Hero">
+        <div class="marquee__media">
+          <img
+            src="assets/sigil-forge-hero.png"
+            alt="Bronze monogram sigil on a dark geometric plate field"
+            width="1920"
+            height="1080"
+            fetchpriority="high"
+          />
+        </div>
+        <div class="marquee__veil" aria-hidden="true"></div>
+        <div class="marquee__copy">
+          <p class="eyebrow">v0.12.6 · Hermes skill · MIT</p>
+          <h1 class="marquee__title">
+            Intent, <span class="verb">forged</span> into channels.
+          </h1>
+          <p class="marquee__lede">
+            Offline multi-channel sigils: procedural glyph, forge packet,
+            steganography, wallpapers, and privacy-preserving Proof of Intent —
+            for Hermes agents and operators who want craft without cloud.
+          </p>
+        </div>
+      </section>
+
+      <aside class="meter" aria-label="Release readout">
+        <p class="meter__label meter__label--left">Release · 0.12.6</p>
+        <div class="meter__bars" id="meter-bars" aria-hidden="true"></div>
+        <p class="meter__label meter__label--right">Python · 3.10+</p>
+      </aside>
+
+      <section class="section" id="what">
+        <div class="section__head">
+          <p class="eyebrow">00 · Craft</p>
+          <h2 class="section__title">A skill, not a plugin.</h2>
+          <p class="section__body">
+            Sigil-Forge installs as a standalone Hermes skill
+            (<code>~/.hermes/skills/sigil-forge</code>). The agent owns intake and
+            framing; the engine owns geometry, digests, and carriers. No image
+            API required.
+          </p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <p class="card__eyebrow">Wizard</p>
+            <h3 class="card__title">Step runner</h3>
+            <p class="card__text">
+              One question per turn via <code>wizard --next</code>. Quick path
+              for most users; full path for craft options and Proof of Intent.
+            </p>
+          </article>
+          <article class="card">
+            <p class="card__eyebrow">Geometry</p>
+            <h3 class="card__title">Spare + kamea fuse</h3>
+            <p class="card__text">
+              Monogram reduction, magic-square paths, Rose Cross, bind-runes,
+              optional planetary plate strokes — never hand-invented by the agent.
+            </p>
+          </article>
+          <article class="card">
+            <p class="card__eyebrow">Carriers</p>
+            <h3 class="card__title">Stego + wallpaper</h3>
+            <p class="card__text">
+              SVG channels and PNG LSB (digest / SF11 root). Wallpapers composite
+              the immutable glyph over atmosphere — never redraw the topology.
+            </p>
+          </article>
+          <article class="card">
+            <p class="card__eyebrow">Provenance</p>
+            <h3 class="card__title">Proof of Intent</h3>
+            <p class="card__text">
+              Salted commitment, Merkle <code>sigil_root</code>, optional sealed
+              capsule. Proofs are provenance — not efficacy claims.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section--tight" id="pipeline">
+        <div class="section__head">
+          <p class="eyebrow">01 · Pipeline</p>
+          <h2 class="section__title">From intent to verify.</h2>
+          <p class="section__body">
+            Safety and authority-seal gates first. Then normalize, digest, fuse
+            layout, stego, packet, optional capsule — and recover the digest with
+            <code>verify</code>.
+          </p>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <p class="step__n">01</p>
+            <div>
+              <h3 class="step__title">Guide or construct</h3>
+              <p class="step__text">
+                Hermes loops the wizard step runner, or experts call
+                <code>construct --intent "…"</code> directly.
+              </p>
+            </div>
+          </li>
+          <li class="step">
+            <p class="step__n">02</p>
+            <div>
+              <h3 class="step__title">Emit the run</h3>
+              <p class="step__text">
+                <code>glyph.svg</code> / <code>glyph.png</code>,
+                <code>forge-packet.json</code>,
+                <code>forge-manifest.json</code>,
+                <code>sigil_root</code> — under
+                <code>out/sigil-forge/&lt;run-id&gt;/</code>.
+              </p>
+            </div>
+          </li>
+          <li class="step">
+            <p class="step__n">03</p>
+            <div>
+              <h3 class="step__title">Verify &amp; inspect</h3>
+              <p class="step__text">
+                Recover digest (and root when SF11). Optional
+                <code>open --capsule</code> and <code>verify-proof</code> for
+                sealed witnesses.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" id="proof">
+        <div class="section__head">
+          <p class="eyebrow">02 · Surfaces</p>
+          <h2 class="section__title">What a run leaves behind.</h2>
+        </div>
+        <table class="spec">
+          <tbody>
+            <tr>
+              <th scope="row">intent_digest</th>
+              <td>SHA-256 of normalized intent — geometry + legacy stego</td>
+            </tr>
+            <tr>
+              <th scope="row">intent_commitment</th>
+              <td>Salted per-run commitment (value public; nonce private)</td>
+            </tr>
+            <tr>
+              <th scope="row">sigil_root</th>
+              <td>Merkle root over public leaves — no self-reference</td>
+            </tr>
+            <tr>
+              <th scope="row">intent-capsule.json</th>
+              <td>Sealed witness when passphrase + <code>--proof commitment</code></td>
+            </tr>
+            <tr>
+              <th scope="row">proof modes</th>
+              <td>
+                <code>none</code> · <code>commitment</code> ·
+                <code>zk-knowledge</code> · <code>zk-forge</code>
+                (Noir/risc0 skip if unavailable)
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">policy</th>
+              <td>
+                No default efficacy claims; authority-seal requests excluded from
+                the default forge; learning ledger stays PROPOSED
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="install">
+        <div class="section__head">
+          <p class="eyebrow">03 · Install</p>
+          <h2 class="section__title">Clone, install, forge.</h2>
+          <p class="section__body">
+            Python 3.10+ stdlib for the core path. Optional
+            <code>argon2-cffi</code> and <code>jsonschema</code>. Lean install
+            excludes implementation plans under <code>docs/superpowers</code>.
+          </p>
+        </div>
+        <div class="terminal" tabindex="0">
+          <pre><span class="cmt"># install as Hermes skill</span>
+<span class="cmd">bash install.sh</span>
+<span class="cmt"># → ~/.hermes/skills/sigil-forge</span>
+
+<span class="cmt"># smoke</span>
+<span class="cmd">python3 scripts/sigil_forge.py check</span>
+
+<span class="cmt"># wizard (Hermes default loop)</span>
+<span class="cmd">python3 scripts/sigil_forge.py wizard --session-new --path quick</span>
+
+<span class="cmt"># expert construct + verify</span>
+<span class="cmd">python3 scripts/sigil_forge.py construct \</span>
+<span class="cmd">  --intent "I maintain calm focus" --out out/sigil-forge</span>
+<span class="cmd">python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg</span></pre>
+        </div>
+        <div class="cta-band">
+          <a
+            class="btn btn--primary"
+            href="https://github.com/scrimshawlife-ctrl/Sigil-Forge"
+            >Open repository</a
+          >
+          <a
+            class="btn btn--ghost"
+            href="https://github.com/scrimshawlife-ctrl/Sigil-Forge/blob/main/QUICKSTART.md"
+            >Quickstart</a
+          >
+          <a
+            class="btn btn--ghost"
+            href="https://github.com/scrimshawlife-ctrl/Sigil-Forge/blob/main/SKILL.md"
+            >SKILL.md</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot-stmt">
+      <p class="foot-stmt__line">
+        Methods are craft and encoding — not proof of metaphysics.
+      </p>
+      <div class="foot-stmt__meta">
+        <span class="wordmark">Sigil-Forge</span>
+        <nav class="foot-stmt__links" aria-label="Footer">
+          <a href="https://github.com/scrimshawlife-ctrl/Sigil-Forge">Source</a>
+          <a
+            href="https://github.com/scrimshawlife-ctrl/Sigil-Forge/blob/main/LICENSE"
+            >MIT</a
+          >
+          <a
+            href="https://github.com/scrimshawlife-ctrl/Sigil-Forge/blob/main/references/proof-of-intent.md"
+            >Proof of Intent</a
+          >
+        </nav>
+        <span class="muted">© 2026 · v0.12.6</span>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var host = document.getElementById("meter-bars");
+        if (!host) return;
+        var n = 64;
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < n; i++) {
+          var t = i / (n - 1);
+          // Measured envelope — sine * gaussian, not flat decoration
+          var h =
+            18 +
+            72 * Math.sin(t * Math.PI) * Math.exp(-Math.pow((t - 0.55) * 2.2, 2));
+          var o = 0.25 + 0.75 * Math.sin(t * Math.PI);
+          var s = document.createElement("span");
+          s.style.setProperty("--h", h.toFixed(1) + "%");
+          s.style.setProperty("--o", o.toFixed(3));
+          frag.appendChild(s);
+        }
+        host.appendChild(frag);
+      })();
+    </script>
+  </body>
+</html>
