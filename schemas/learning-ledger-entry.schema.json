@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/learning-ledger-entry.schema.json",
+  "title": "Sigil-Forge learning ledger entry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "ts",
+    "class",
+    "summary",
+    "canon_status"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "kind": { "type": "string", "const": "sigil_forge_learning_entry" },
+    "ts": { "type": "string" },
+    "unix": { "type": "integer" },
+    "class": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "run_id": { "type": ["string", "null"] },
+    "intent_digest": { "type": ["string", "null"] },
+    "channels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "canon_status": {
+      "type": "string",
+      "const": "PROPOSED",
+      "description": "Learning entries are always PROPOSED; never auto-canon."
+    },
+    "extra": { "type": "object" }
+  }
+}

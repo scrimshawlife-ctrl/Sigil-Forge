@@ -3,7 +3,7 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.2.0
+version: 0.3.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -137,6 +137,8 @@ claim full embed.
 | `spare_monogram` | Spare letter reduction → monogram silhouette |
 | `kamea_path` | Magic-square path |
 | `kamea_square_choice` | Operator override or digest-derived square |
+| `bind_runes` | Elder Futhark stick bind (centered fusion) |
+| `rose_cross_path` | 22-slot rose letter path |
 | `intent_digest` | SHA-256 of normalized intent |
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
 | `svg_metadata` | SVG metadata digest / method bits |
@@ -157,6 +159,9 @@ python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge
 python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
+python3 scripts/sigil_forge.py learn --class channel_preference \
+  --summary "bind_runes + rose_cross_path coherent" --channels bind_runes,rose_cross_path
+python3 scripts/sigil_forge.py ledger --limit 20
 python3 scripts/validate_hermes_skill.py   # frontmatter / Hermes hygiene
 ```
 
@@ -231,6 +236,9 @@ python3 scripts/sigil_forge.py construct \
 |-----|--------|
 | [methods-spare.md](references/methods-spare.md) | Spare reduction |
 | [methods-kamea.md](references/methods-kamea.md) | Kamea tables and path |
+| [methods-bind-runes.md](references/methods-bind-runes.md) | Elder Futhark bind-runes |
+| [methods-rose-cross.md](references/methods-rose-cross.md) | 22-slot rose path |
+| [receipts-and-ledger.md](references/receipts-and-ledger.md) | Run receipts + PROPOSED ledger |
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |
 | [profiles-practice.md](references/profiles-practice.md) | Practice tone |

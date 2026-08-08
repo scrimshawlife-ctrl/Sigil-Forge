@@ -28,7 +28,12 @@ def layout_to_svg(
     min_x, min_y, w, h = layout.view_box
     mono = _polyline(layout.monogram_points, stroke)
     kamea = _polyline(layout.kamea_points, stroke)
-    # Deliberately omit spare_letters / normalized intent from SVG body.
+    bind_parts = [
+        _polyline(poly, stroke) for poly in (layout.bind_polylines or [])
+    ]
+    bind_inner = "\n    ".join(p for p in bind_parts if p)
+    rose = _polyline(layout.rose_points or [], stroke)
+    # Deliberately omit spare_letters / normalized intent / rune names from SVG.
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" '
         f'viewBox="{min_x:g} {min_y:g} {w:g} {h:g}" '
@@ -40,6 +45,12 @@ def layout_to_svg(
         f"  </g>\n"
         f'  <g id="kamea-path">\n'
         f"    {kamea}\n"
+        f"  </g>\n"
+        f'  <g id="bind-runes">\n'
+        f"    {bind_inner}\n"
+        f"  </g>\n"
+        f'  <g id="rose-cross-path">\n'
+        f"    {rose}\n"
         f"  </g>\n"
         f"</svg>\n"
     )

@@ -33,11 +33,17 @@ does not require a rewrite. Implement these only after the v1 forge loop is soli
 - Stronger KDF (e.g. **Argon2id**) for passphrase sealing.  
 - Keep algorithm identifiers versioned in packet `crypto` fields.
 
-### Craft channels (examples)
+### Craft channels
 
-- Bind-runes, Rose Cross paths, multi-frame carriers.  
-- Each new channel: stable `id`, applied/skipped reporting, verify extract path,
-  privacy review. Do **not** silently repurpose Enochian seal semantics.
+- **Shipped (v0.3):** `bind_runes`, `rose_cross_path` (see methods-*.md).  
+- Later: multi-frame carriers, additional historical alphabets.  
+- Each new channel: stable `id`, applied/skipped reporting, privacy review.
+  Do **not** silently repurpose Enochian seal semantics.
+
+### Receipts and learning (shipped v0.3)
+
+- Run receipts: `run-receipt.json` + append-only `run-receipts.jsonl`.  
+- Learning ledger: `learn` / `ledger` CLI — **PROPOSED only**, never auto-canon.
 
 ### Interop
 

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from bind_runes import build_bind_polylines
 from kamea import KAMEA_SQUARES, plot_path, select_square
+from rose_cross import build_rose_path
 from spare import letter_sequence, reduce_letters
 
 # Canvas is always 0..100
@@ -30,6 +32,11 @@ class Layout:
     view_box: tuple[float, float, float, float]
     spare_letters: str
     square_name: str
+    # Expansion craft channels (v0.3+)
+    bind_polylines: list[list[tuple[float, float]]] = field(default_factory=list)
+    bind_runes: list[str] = field(default_factory=list)
+    rose_points: list[tuple[float, float]] = field(default_factory=list)
+    rose_slots: list[int] = field(default_factory=list)
 
 
 def _monogram_on_circle(letters: list[str]) -> list[tuple[float, float]]:
@@ -76,10 +83,17 @@ def build_layout(
     mono = _monogram_on_circle(letters)
     raw_kamea = plot_path(letters, square_name)
     kamea = _scale_kamea(raw_kamea, square_name)
+    # Bind-runes centered; rose path on mid radius (does not replace monogram)
+    bind_polys, bind_runes = build_bind_polylines(spare, cx=50.0, cy=50.0, scale=11.0)
+    rose_pts, rose_slots = build_rose_path(spare or normalized, cx=50.0, cy=50.0, radius=32.0)
     return Layout(
         monogram_points=mono,
         kamea_points=kamea,
         view_box=VIEW_BOX,
         spare_letters=spare,
         square_name=square_name,
+        bind_polylines=bind_polys,
+        bind_runes=bind_runes,
+        rose_points=rose_pts,
+        rose_slots=rose_slots,
     )

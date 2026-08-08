@@ -67,10 +67,12 @@ More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL
 
 | Output | Role |
 |--------|------|
-| Master glyph (SVG/PNG) | Spare monogram + kamea path fuse; offline PNG via layout raster |
+| Master glyph (SVG/PNG) | Spare monogram + kamea + bind-runes + rose path; offline PNG |
 | Forge packet | Channels, methods, digests, verify command |
+| Run receipt | `run-receipt.json` + append-only receipt log (no plaintext required) |
 | Stego carriers | SVG multi-channel + PNG LSB (digest-only on public PNG) |
 | Optional polish_prompt.json | Geometry-locked host image prompt + `gen_seed` |
+| Learning ledger | PROPOSED observations via `learn` / `ledger` (never auto-canon) |
 
 Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).
 

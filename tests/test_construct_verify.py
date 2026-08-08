@@ -50,6 +50,8 @@ def test_construct_packet_fields_and_channels(tmp_path: Path):
         "spare_monogram",
         "kamea_path",
         "kamea_square_choice",
+        "bind_runes",
+        "rose_cross_path",
         "intent_digest",
         "optional_ciphertext",
         "svg_metadata",
