@@ -4,11 +4,34 @@
   <img src="docs/assets/sigil-forge-hero.png" alt="Sigil-Forge — multi-channel intent sigils" width="100%" />
 </p>
 
-**Hermes skill** that turns a statement of intent into a **multi-channel sigil** with an explicit method ontology: Spare family (letter-monogram default), kamea name paths with pluggable encodings (`hebrew_gematria` default; `latin_mod9_v1` compatibility), Hebrew Rose Cross, optional Agrippan planetary seals/intelligence/spirit characters (corpus name-on-kamea), bind-runes labeled modern_derivation, plus stego carriers, wallpapers, and a guided **wizard** for Hermes.
+<p align="center">
+  <strong>v0.10.0</strong> · Hermes skill · offline-first · verifiable · MIT
+</p>
 
-Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** and **verifiable** — no image API required.
+**Sigil-Forge** turns a statement of intent into a **multi-channel sigil**: a procedural master glyph (SVG + PNG), a forge packet with method ontology and digests, steganographic carriers, optional device wallpapers, and a guided **wizard** for Hermes agents.
+
+Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** — no image API required.
 
 > Methods are craft history, symbolic compression, and data embedding — not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
+
+---
+
+## Features
+
+| Area | What ships |
+|------|------------|
+| **Wizard** | Step runner (`--next`), quick/full paths, sessions, per-step help |
+| **Craft** | Spare monogram, kamea paths, Hebrew Rose Cross, bind-runes (`modern_derivation`) |
+| **Encodings** | `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` |
+| **Planetary** | Traditional seal + intelligence/spirit; plate strokes → name_on_kamea → reconstruct |
+| **Stego** | SVG multi-channel + PNG LSB (digest-only on public media) |
+| **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
+| **Ops** | construct, verify, open, receipts, PROPOSED ledger, doctor, eval, check |
+| **Privacy** | Optional sealed packet; no plaintext intent in public carriers by default |
+
+**Not included (by design):** Goetic/Enochian authority seals in the default forge, efficacy claims, auto-canon learning, cloud image APIs inside the skill.
+
+---
 
 ## Install
 
@@ -16,7 +39,7 @@ Default framing is a **creative / focus tool** (clarify, compress, externalize).
 # Preview
 bash install.sh --dry-run
 
-# Default: ~/.hermes/skills/sigil-forge
+# Default → ~/.hermes/skills/sigil-forge
 bash install.sh
 
 # Custom location
@@ -26,63 +49,144 @@ bash install.sh --target /path/to/skills/sigil-forge
 bash install.sh --version
 ```
 
-Requires **Python 3** (stdlib). Core path needs no pip packages. Optional: `jsonschema` for stricter packet validation.
+**Requirements:** Python 3.10+ (stdlib). No pip packages for the core path. Optional: `jsonschema` for stricter packet validation; optional `argon2-cffi` for Argon2id sealing.
 
 From a clone without installing:
 
 ```bash
 python3 scripts/sigil_forge.py check
+python3 scripts/validate_hermes_skill.py   # Hermes frontmatter hygiene
 ```
 
-## Wizard (Hermes step-by-step)
+---
+
+## Quick start — wizard (recommended for Hermes)
+
+Hermes has no multi-page UI. The wizard is a **step runner**: one question per turn, then apply.
 
 ```bash
-# Recommended: quick path + step runner (one question per turn)
+# 1) Start a session (quick path: intent → mode → wallpaper)
 python3 scripts/sigil_forge.py wizard --session-new --path quick
+
+# 2) Each user answer — ask ONLY next.step, then merge
 python3 scripts/sigil_forge.py wizard --next --session <id> \
   --answers-json '{"intent":"I maintain calm focus"}'
-# …repeat --next until done…
-python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
 
-python3 scripts/sigil_forge.py wizard --list-corpus   # planetary names
+# 3) When next.done is true → forge
+python3 scripts/sigil_forge.py wizard --apply answers.json \
+  --path quick --out out/sigil-forge
+
+# 4) Verify
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 ```
 
-See [references/wizard.md](references/wizard.md).
+| Path | Audience | Steps |
+|------|----------|--------|
+| **`quick`** | Most users | intent, mode, wallpaper (+ surface/mode/theme if yes) |
+| **`full`** | Craft options | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet |
 
-## Construct (one example)
+Unanswered optional fields use defaults on apply. Bad intents return `refused: true` early (no artifacts).
+
+```bash
+python3 scripts/sigil_forge.py wizard --script --path quick   # full contract JSON
+python3 scripts/sigil_forge.py wizard --list-corpus           # planetary names/numbers
+python3 scripts/sigil_forge.py wizard --interactive --path quick  # human TTY
+```
+
+Details: [references/wizard.md](references/wizard.md) · agent contract: [SKILL.md](SKILL.md)
+
+---
+
+## Expert construct
 
 ```bash
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode creative \
+  --kamea-encoding hebrew_gematria \
   --out out/sigil-forge
 
-# Verify public artifact recovers intent digest
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
-# Optional: python3 scripts/sigil_forge.py verify glyph.svg --expected-digest <64-hex>
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
 ```
 
-**Warning:** `--passphrase` appears in the process list (`ps`/argv). Prefer:
+### Useful flags
 
 ```bash
+# Kamea encoding + square
+--kamea-encoding hebrew_gematria|latin_extended|latin_mod9_v1
+--square saturn|jupiter|mars|sol|venus|mercury|luna   # or omit for auto
+
+# Planetary character (opt-in; ≠ intent kamea path)
+--planetary-seal
+--planetary-seal-kind traditional_seal|intelligence_character|spirit_character
+--planetary-geometry auto|plate|name_on_kamea|reconstruction
+
+# Spare family
+--spare-mode letter_monogram|pictorial|automatic_drawing|mantric_alphabet|phonetic_mantric
+--phonetic
+
+# Privacy (prefer env over --passphrase — argv is visible in ps)
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
-python3 scripts/sigil_forge.py construct --intent "..." --seal-packet --out out/sigil-forge
+--seal-packet
+
+# Polish prompt package only (no image API)
+--polish --polish-style "ink on parchment"
+
+# One-shot wallpaper after construct
+--wallpaper --surface phone_lock --wp-mode focus --theme mercurial
+
+# Thin interop fields
+--interop
 ```
 
-Artifacts land under `out/sigil-forge/<run-id>/` (`glyph.svg`, `glyph.png`, `forge-packet.json`, `forge-packet.md`; optional `polish_prompt.json`). Run ids use timestamp + digest prefix so paths avoid full intent text.
+Open a sealed packet:
 
 ```bash
-# Geometry-locked polish package (no image API in this skill)
-python3 scripts/sigil_forge.py construct --intent "..." --polish --out out/sigil-forge
-
-# Open a sealed packet
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
 ```
 
-### Wallpapers (immutable glyph + atmosphere)
+Artifacts land under `out/sigil-forge/<run-id>/`. Run ids use timestamp + digest prefix so paths avoid full intent text.
+
+---
+
+## Planetary characters
+
+Opt-in geometry **separate** from the intent kamea path.
+
+| Kind | Default geometry (`auto`) |
+|------|---------------------------|
+| `traditional_seal` | Successive 1→n² path + kamea frame + ticks (plate) |
+| `intelligence_character` | Multi-stroke plate digitization (e.g. Iophiel) |
+| `spirit_character` | Multi-stroke plate digitization (e.g. Hismael) |
+
+Preference order: **plate → name_on_kamea → reconstruction**.
 
 ```bash
+python3 scripts/sigil_forge.py construct \
+  --intent "I maintain calm focus" \
+  --square jupiter \
+  --planetary-seal \
+  --planetary-seal-kind intelligence_character \
+  --planetary-geometry plate \
+  --out out/sigil-forge
+```
+
+- Names/numbers: [references/planetary-character-corpus.json](references/planetary-character-corpus.json)  
+- Plate strokes: [references/planetary-plate-strokes.json](references/planetary-plate-strokes.json)  
+- Notes: [references/methods-planetary-characters.md](references/methods-planetary-characters.md)  
+
+Plate geometry is a **scholarly vectorization** of Western ceremonial plate vocabulary — not a unique manuscript scan, and not Goetic/Enochian authority seals.
+
+---
+
+## Wallpapers
+
+Canonical `glyph.svg` is **immutable**. Atmosphere is procedural (offline), operator-supplied, or host AI; then composited deterministically.
+
+```bash
+# From an existing run
 python3 scripts/sigil_forge.py wallpaper \
   --run out/sigil-forge/<run-id> \
   --surface phone_lock \
@@ -90,52 +194,126 @@ python3 scripts/sigil_forge.py wallpaper \
   --theme mercurial \
   --style "dark architectural minimalism"
 
-# One-shot: construct + wallpaper
-python3 scripts/sigil_forge.py construct \
-  --intent "I maintain calm focus" \
-  --out out/sigil-forge \
-  --wallpaper --surface phone_lock --wp-mode focus
+# Multi-surface defaults
+python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id>
 
-# Host AI background (skill never redraws the glyph)
+# Host AI background (pre-rendered file)
 python3 scripts/sigil_forge.py wallpaper \
   --run out/sigil-forge/<run-id> \
   --surface phone_lock \
   --background-method ai_generated \
   --background /path/to/ai-bg.png \
   --provider host_file
+
+# Or shell host (placeholders: prompt_path out_path width height seed surface)
+export SIGIL_FORGE_BG_COMMAND='my-gen --prompt {prompt_path} --out {out_path} ...'
+python3 scripts/sigil_forge.py wallpaper --run ... --background-method ai_generated --require-ai
 ```
 
-Canonical `glyph.svg` is never AI-redrawn; backgrounds are procedural (offline),
-operator-supplied, or host-generated via file / `SIGIL_FORGE_BG_COMMAND`, then
-composited deterministically.
+| Axis | Values |
+|------|--------|
+| surface | phone_lock, phone_home, tablet, desktop, desktop_ultrawide |
+| mode | stealth, ambient, focus, ritual, immersive |
+| intensity | subtle, balanced, strong |
+| background | procedural, operator_supplied, ai_generated |
 
-More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL.md) · [wallpaper-framework.md](references/wallpaper-framework.md)
+Outputs: `wallpaper/`, `receipts/wallpaper-receipt-*.json`, prompt packages with canvas/seed/contract.
+
+See [references/wallpaper-framework.md](references/wallpaper-framework.md) · [references/wallpaper-prompt-contract.md](references/wallpaper-prompt-contract.md)
+
+---
 
 ## What you get
 
 | Output | Role |
 |--------|------|
-| Master glyph (SVG/PNG) | Spare monogram + kamea + bind-runes + rose path; offline PNG |
-| Forge packet | Channels, methods, digests, verify command |
-| Run receipt | `run-receipt.json` + append-only receipt log (no plaintext required) |
-| Stego carriers | SVG multi-channel + PNG LSB (digest-only on public PNG) |
-| Optional polish_prompt.json | Geometry-locked host image prompt + `gen_seed` |
-| Wallpapers | Device-aware composites under `wallpaper/` + `wallpaper-receipt` |
-| Host AI backgrounds | Prompt packages + `--background` / `--provider-command` (optional) |
-| Learning ledger | PROPOSED observations via `learn` / `ledger` (never auto-canon) |
-| Wizard | Guided Hermes interview (`wizard --script` / `--apply`) |
-| Planetary corpus | Intelligence/spirit names → name_on_kamea characters |
+| `glyph.svg` / `glyph.png` | Master geometry; offline PNG + LSB digest |
+| `forge-packet.json` (+ `.md`) | Channels, methods, ontology, digests, verify command |
+| `run-receipt.json` | Run integrity receipt |
+| Stego carriers | SVG metadata / path / metric channels + PNG LSB |
+| `polish_prompt.json` | Geometry-locked host polish package (optional) |
+| `wallpaper/` | Device composites + background prompts |
+| `receipts/` | Wallpaper receipts |
+| Learning ledger | PROPOSED only via `learn` / `ledger` (never auto-canon) |
 
-Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).  
-Wallpaper contract: [references/wallpaper-framework.md](references/wallpaper-framework.md).
+Public media must not contain plaintext intent by default. Packet may seal intent with a passphrase.
 
-## Design
+Channels: [references/channels-and-steganography.md](references/channels-and-steganography.md)
 
-Full product design (goals, channels, packet shape, layout):
+---
 
-- [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md)
+## CLI overview
 
-Implementation plan: [docs/superpowers/plans/2026-08-07-sigil-forge.md](docs/superpowers/plans/2026-08-07-sigil-forge.md)
+```text
+construct   Forge multi-channel sigil + packet
+verify      Recover intent digest from SVG/PNG
+wizard      Guided interview (--next / --apply / sessions)
+wallpaper   Immutable glyph + atmosphere composite
+open        Decrypt sealed_intent from forge-packet.json
+learn       Append PROPOSED ledger observation
+ledger      List recent ledger entries
+doctor      Environment / skill health
+eval        Offline behavioral evals
+check       Smoke-check tree, schemas, dry construct
+help        Command overview
+```
+
+```bash
+python3 scripts/sigil_forge.py help
+python3 scripts/sigil_forge.py doctor
+python3 scripts/sigil_forge.py eval
+```
+
+Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`.
+
+---
+
+## Safety & framing
+
+- Refuse harm, self-harm, non-consensual control before any encode  
+- Dual mode: `creative` (default) / `practice` (tone only)  
+- No efficacy language; methods ≠ metaphysics  
+- Enochian / goetic / authority seals **excluded** from the default forge  
+
+See [references/safety-and-framing.md](references/safety-and-framing.md) · [references/distinction-enochian.md](references/distinction-enochian.md)
+
+---
+
+## Development
+
+```bash
+# Tests (pytest; project may use .venv)
+python3 -m pytest -q
+
+# Hermes skill hygiene
+python3 scripts/validate_hermes_skill.py
+
+# Smoke
+python3 scripts/sigil_forge.py check
+```
+
+Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](references/expansion-spine.md)
+
+---
+
+## Documentation
+
+| Doc | Topic |
+|-----|--------|
+| [QUICKSTART.md](QUICKSTART.md) | Short command sequence |
+| [SKILL.md](SKILL.md) | Hermes behavior contract |
+| [references/wizard.md](references/wizard.md) | Step runner, paths, sessions |
+| [references/hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine |
+| [references/wallpaper-framework.md](references/wallpaper-framework.md) | Wallpaper pipeline |
+| [references/methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit |
+| [references/channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / privacy |
+| [references/expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
+| [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md) | Product design |
+
+Social / OG crop (for GitHub Settings → Social preview):  
+[`docs/assets/sigil-forge-social.jpg`](docs/assets/sigil-forge-social.jpg) (1280×640)
+
+---
 
 ## License
 
