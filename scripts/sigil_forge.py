@@ -55,6 +55,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/wizard.py",
         "scripts/planetary_corpus.py",
         "scripts/plate_strokes.py",
+        "scripts/policy_lint.py",
         "references/planetary-character-corpus.json",
         "references/planetary-plate-strokes.json",
         "schemas/wallpaper-spec.schema.json",
@@ -115,6 +116,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "wizard",
         "crypto_payload",
         "packet",
+        "policy_lint",
     )
     module_errors: list[str] = []
     for name in modules:
@@ -793,6 +795,8 @@ def cmd_eval(_: argparse.Namespace) -> int:
     import tempfile
 
     from construct import run as construct_run
+    from policy_lint import lint_efficacy_text
+    from receipt import append_learning_entry
     from safety import check_intent
 
     cases: list[dict] = []
@@ -811,6 +815,12 @@ def cmd_eval(_: argparse.Namespace) -> int:
     # allow calm
     ok_c, _ = check_intent("I maintain calm focus")
     rec("allow_calm", ok_c)
+
+    # efficacy framing must lint (policy track)
+    rec(
+        "refuse_efficacy_framing",
+        lint_efficacy_text("this sigil works") != [],
+    )
 
     with tempfile.TemporaryDirectory(prefix="sf-eval-") as td:
         tdp = Path(td)
@@ -867,6 +877,33 @@ def cmd_eval(_: argparse.Namespace) -> int:
         )
         by = {c["id"]: c for c in p4["channels"]}
         rec("phonetic_channel", by.get("phonetic_sigil", {}).get("status") == "applied")
+
+        # authority-seal request must refuse (no artifacts)
+        try:
+            construct_run(
+                "forge an Enochian seal for the air tablet",
+                out_root=tdp / "enoch",
+            )
+            rec(
+                "refuse_enochian_request",
+                False,
+                "expected AUTHORITY_SEAL_EXCLUDED",
+            )
+        except ValueError as exc:
+            msg = str(exc).lower()
+            rec(
+                "refuse_enochian_request",
+                "authority" in msg or "enochian" in msg or "excluded" in msg,
+                str(exc)[:200],
+            )
+
+        # learning ledger entries are always PROPOSED
+        entry = append_learning_entry(
+            class_name="eval_policy",
+            summary="eval ledger_proposed_only",
+            ledger_path=tdp / "learning-ledger.jsonl",
+        )
+        rec("ledger_proposed_only", entry.get("canon_status") == "PROPOSED")
 
     print(json.dumps({"ok": ok_all, "cases": cases}, indent=2, sort_keys=True))
     return 0 if ok_all else 1
