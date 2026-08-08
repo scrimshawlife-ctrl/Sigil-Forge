@@ -363,28 +363,14 @@ def test_all_vowels_yields_empty():
     assert reduce_letters(normalize_intent("aeiou you")) == ""
 ```
 
-`examples/intents/calm_focus.json`:
-```json
-{
-  "intent": "I maintain calm focus while shipping Sigil-Forge",
-  "normalized": "i maintain calm focus while shipping sigil-forge",
-  "spare_reduced": "mntnclmfcswhlshppngsglfrg"
-}
-```
+Golden file `examples/intents/calm_focus.json` — write **after** running the engine; short-phrase tests above are source of truth.
 
-Wait — reduction must drop **duplicate letters** globally (first occurrence only) and vowels. Recompute carefully for tests and fix golden file in implementation:
-
-Rule (locked v1):
+**Reduction rule (locked v1):**
 1. Keep only `a-z`
 2. Remove vowels `a e i o u y`
-3. Collapse to unique letters preserving first-seen order
+3. Unique letters, first-seen order preserved
 
-For `"i maintain calm focus"`:
-letters: i,m,a,i,n,t,a,i,n,c,a,l,m,f,o,c,u,s  
-no vowels: m,n,t,n,c,l,m,f,c,s  
-unique first-seen: m,n,t,c,l,f,s → `mntclfs`
-
-Update golden accordingly after computing full intent string in Task 3 implementation; test above is source of truth for short phrase.
+Example: `"i maintain calm focus"` → `mntclfs`
 
 - [ ] **Step 2: Run — expect FAIL**
 
@@ -558,19 +544,7 @@ git commit -m "feat: fuse monogram+kamea layout into SVG"
 **Files:**
 - Create: `scripts/aes_gcm_pure.py` (minimal pure AES-GCM or use only digest if AES too large — **locked: use `cryptography` as optional; if absent, provide Fernet-like seal via pure implementation**)
 
-**Pragmatic lock for implementers:** Implement seal/open with:
-
-```python
-# scripts/crypto_payload.py expanded
-import os, hashlib, hmac, secrets
-from dataclasses import dataclass
-
-# Use Python 3's available APIs:
-# PBKDF2: hashlib.pbkdf2_hmac
-# AES-GCM: implement via optional dependency cryptography;
-# FALLBACK: ChaCha-like is not in stdlib either.
-# REQUIRED for v1 tests: vendor a minimal aes_gcm (~single file) from a known test vector set.
-```
+**Implementation lock:** Vendor minimal AES-256-GCM in `scripts/aes_gcm_pure.py` (NIST test vectors in unit tests). PBKDF2 via `hashlib.pbkdf2_hmac("sha256", ...)`. No required pip deps.
 
 **Interfaces:**
 - `derive_key(passphrase: str, salt: bytes, iterations: int = 200_000) -> bytes`  # 32 bytes
