@@ -745,20 +745,105 @@ def run(
         packet["intent_commitment"] = pub_commit
         packet["compatibility"] = {"intent_digest": digest}
         packet["sigil_root"] = sigil_root
-        packet["proof"] = {
-            "mode": proof_mode,
-            "status": "applied" if proof_mode == "commitment" and passphrase else (
-                "skipped" if proof_mode in ("none", "zk-knowledge") else "applied"
-            ),
-            "detail": (
-                "commitment+capsule+root"
-                if passphrase
-                else "commitment+root (no capsule without passphrase)"
-            ),
+
+        # ZK companion commitment (fixed-width preimage for circuits)
+        from proofs.zk_commit import zk_commit
+
+        zk_rec = zk_commit(normalized, commitment_rec["nonce"])
+        packet["intent_commitment_zk"] = {
+            "scheme": zk_rec["scheme"],
+            "value": zk_rec["value"],
+            "intent_len": zk_rec["intent_len"],
+            "max_intent_bytes": zk_rec["max_intent_bytes"],
         }
-        if proof_mode == "zk-knowledge":
-            packet["proof"]["status"] = "skipped"
-            packet["proof"]["detail"] = "noir_unavailable_or_not_wired_in_v0.12.0"
+        if capsule is not None:
+            capsule.setdefault("public_bindings", {})["intent_commitment_zk"] = zk_rec[
+                "value"
+            ]
+            # rewrite capsule file with zk binding (public only)
+            (staging / "intent-capsule.json").write_text(
+                _json.dumps(capsule, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+        # Proof generation (optional; never fails the forge for missing Noir)
+        proof_block: dict[str, Any] = {
+            "mode": proof_mode,
+            "status": "skipped",
+            "detail": "proof mode none",
+        }
+        if proof_mode in ("commitment", "zk-knowledge") and passphrase and capsule:
+            proofs_dir = staging / "proofs"
+            proofs_dir.mkdir(parents=True, exist_ok=True)
+            public_inputs = {
+                "intent_commitment": pub_commit["value"],
+                "intent_commitment_zk": zk_rec["value"],
+                "sigil_root": sigil_root,
+                "forge_version": version,
+                "intent_len": zk_rec["intent_len"],
+            }
+            from proofs.local_knowledge import LocalCapsuleProvider
+            from proofs.manifest import write_proof_manifest
+            from proofs.noir_provider import NoirProvider
+
+            # Always write local capsule knowledge attestation when sealed
+            local = LocalCapsuleProvider().prove(
+                {"capsule": capsule, "passphrase": passphrase},
+                public_inputs,
+                out_dir=proofs_dir,
+            )
+            write_proof_manifest(proofs_dir, local)
+            proof_block = {
+                "mode": proof_mode,
+                "status": local.status,
+                "provider": local.provider,
+                "proof_kind": local.proof_kind,
+                "detail": local.detail,
+                "proof_path": local.proof_path,
+            }
+            artifacts["proofs_dir"] = str(final_dir / "proofs")
+
+            if proof_mode == "zk-knowledge":
+                noir = NoirProvider()
+                nres = noir.prove(
+                    {
+                        "normalized_intent": normalized,
+                        "nonce": commitment_rec["nonce"],
+                    },
+                    public_inputs,
+                    out_dir=proofs_dir,
+                )
+                # Prefer noir manifest when generated; keep local attestation file too
+                write_proof_manifest(
+                    proofs_dir,
+                    nres,
+                    extra={
+                        "local_attestation": local.to_dict(),
+                    },
+                )
+                proof_block = {
+                    "mode": proof_mode,
+                    "status": nres.status,
+                    "provider": nres.provider,
+                    "proof_kind": nres.proof_kind,
+                    "detail": nres.detail,
+                    "proof_path": nres.proof_path,
+                    "local_attestation_status": local.status,
+                }
+        elif proof_mode == "zk-knowledge" and not passphrase:
+            proof_block = {
+                "mode": proof_mode,
+                "status": "failed",
+                "detail": "zk-knowledge requires passphrase for capsule witness",
+            }
+        elif proof_mode == "commitment" and not passphrase:
+            proof_block = {
+                "mode": proof_mode,
+                "status": "skipped",
+                "detail": "commitment surfaces present; capsule skipped (no passphrase)",
+            }
+
+        packet["proof"] = proof_block
 
         # Validate before promote — incomplete runs never leave a public run dir.
         schema_path = skill_root() / "schemas" / "forge-packet.schema.json"

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/proof-manifest.schema.json",
+  "title": "Sigil-Forge Proof Manifest",
+  "type": "object",
+  "required": ["schema_version", "provider", "proof_kind", "status", "public_inputs"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "provider": { "type": "string" },
+    "proof_kind": { "type": "string" },
+    "circuit_version": { "type": ["string", "null"] },
+    "public_inputs": { "type": "object" },
+    "proof_file": { "type": ["string", "null"] },
+    "verification_key_digest": { "type": ["string", "null"] },
+    "status": {
+      "type": "string",
+      "enum": ["generated", "skipped", "failed", "verified"]
+    },
+    "detail": { "type": "string" },
+    "intent_disclosed": { "type": "boolean" }
+  }
+}
