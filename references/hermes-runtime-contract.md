@@ -1,6 +1,6 @@
 # Hermes runtime contract
 
-Version: **v3** (Sigil-Forge v0.12.4+)
+Version: **v3** (Sigil-Forge v0.12.5+)
 
 Sigil-Forge is a **standalone Hermes skill** (not a Hermes plugin).  
 Default install path: `~/.hermes/skills/sigil-forge`. Skill name: `sigil-forge`.

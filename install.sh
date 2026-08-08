@@ -203,6 +203,10 @@ post_check() {
   # Resolve skill root from install path (not the clone cwd)
   HERMES_SKILL_DIR="${dest}" python3 "${dest}/scripts/sigil_forge.py" check \
     || die "post-install check failed: HERMES_SKILL_DIR=${dest} python3 ${dest}/scripts/sigil_forge.py check"
+  # check uses temp dirs only; remove any accidental skill-root out/ pollution
+  if [[ -d "${dest}/out" ]]; then
+    rm -rf "${dest}/out"
+  fi
   log "Post-install check OK"
 }
 
