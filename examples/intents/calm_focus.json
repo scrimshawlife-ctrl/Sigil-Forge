@@ -2,7 +2,15 @@
   "intent": "I maintain calm focus",
   "normalized_intent": "i maintain calm focus",
   "spare_letters": "mntclfs",
-  "letter_sequence": ["m", "n", "t", "c", "l", "f", "s"],
+  "letter_sequence": [
+    "m",
+    "n",
+    "t",
+    "c",
+    "l",
+    "f",
+    "s"
+  ],
   "intent_digest": "2ab21980251c1b773368f6417ca58acf8a68e06ad22a671deab778ead925c89d",
   "reduction_rule": {
     "keep": "a-z",
