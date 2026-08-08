@@ -40,6 +40,7 @@ def test_list_providers():
     assert "none" in names
     assert "local_capsule" in names
     assert "noir" in names
+    assert "risc0" in names
 
 
 def test_construct_zk_knowledge_local_attestation(tmp_path: Path):
@@ -148,14 +149,16 @@ def test_noir_provider_skipped_without_nargo():
         assert "noir" in res.detail.lower() or "unavailable" in res.detail.lower()
 
 
-def test_zk_forge_rejected(tmp_path: Path):
-    import pytest
+def test_zk_forge_skips_via_risc0(tmp_path: Path):
+    """zk-forge is no longer a hard NOT_IMPLEMENTED; adapter skips offline."""
     from construct import run as cr
 
-    with pytest.raises(ValueError, match="NOT_IMPLEMENTED"):
-        cr(
-            "I maintain calm focus",
-            out_root=tmp_path,
-            kamea_encoding="latin_mod9_v1",
-            proof="zk-forge",
-        )
+    packet = cr(
+        "I maintain calm focus",
+        out_root=tmp_path,
+        kamea_encoding="latin_mod9_v1",
+        proof="zk-forge",
+    )
+    assert packet["proof"]["mode"] == "zk-forge"
+    assert packet["proof"]["provider"] == "risc0"
+    assert packet["proof"]["status"] in ("skipped", "generated", "failed")

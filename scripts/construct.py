@@ -10,18 +10,16 @@ from typing import Any
 
 from artifact_root import build_sigil_root
 from commitment import commit_intent, public_commitment
-from crypto_payload import intent_digest, resolve_kdf, seal_intent
+from crypto_payload import resolve_kdf, seal_intent
+from forge_core import ForgeConfig, compute_forge
 from forge_manifest import build_forge_manifest, write_manifest
 from phonetic import build_phonetic_artifact
-from fuse import build_layout
 from intent_capsule import build_capsule, ciphertext_digest
-from kamea import DEFAULT_KAMEA_ENCODING, KAMEA_SQUARES
 from normalize import normalize_intent
 from ontology import assert_not_entity_seal_request, default_packet_ontology
 from packet import build_packet, validate_packet, write_packet_files
 from paths import default_out_dir, make_run_id, run_dir as make_run_dir, skill_root
 from safety import check_intent
-from spare import reduce_letters
 from stego_png import embed_lsb, pack_payload
 from stego_svg import embed as stego_svg_embed
 from svg_export import layout_to_svg
@@ -216,8 +214,7 @@ def run(
     proof_mode = (proof or "none").strip().lower()
     if proof_mode not in ("none", "commitment", "zk-knowledge", "zk-forge"):
         raise ValueError(f"unsupported proof mode: {proof!r}")
-    if proof_mode == "zk-forge":
-        raise ValueError("NOT_IMPLEMENTED: zk-forge proof (reserved for later release)")
+    # zk-forge: optional risc0/zkVM adapter; skips when toolchain/guest absent
 
     passphrase = resolve_passphrase(passphrase)
     if seal_packet and not passphrase:
@@ -236,11 +233,30 @@ def run(
         raise ValueError(reason or "refused: harmful intent")
     assert_not_entity_seal_request(intent)
 
+    # --- pure forge core (deterministic geometry; no FS / clock / random) ---
     normalized = normalize_intent(intent)
-    digest = intent_digest(normalized)
-    # Privacy commitment (per-run nonce) — geometry still uses intent_digest
+    core = compute_forge(
+        normalized,
+        ForgeConfig(
+            mode=mode,
+            square=square,
+            kamea_encoding=kamea_encoding,
+            spare_mode=spare_mode,
+            planetary_seal=planetary_seal,
+            planetary_seal_kind=planetary_seal_kind,
+            planetary_geometry=planetary_geometry,
+            phonetic=phonetic,
+        ),
+    )
+    digest = core.intent_digest
+    layout = core.layout
+    spare = core.spare_letters
+    square_name = core.square_name
+    order = core.square_order
+    enc = core.kamea_encoding
+
+    # Privacy commitment (per-run nonce) — outside pure core; geometry uses digest
     commitment_rec = commit_intent(normalized)
-    enc = (kamea_encoding or DEFAULT_KAMEA_ENCODING).strip().lower()
 
     # KDF policy: explicit kdf wins; else prefer_argon2 → auto; else pbkdf2 default
     kdf_arg = kdf
@@ -299,32 +315,6 @@ def run(
             f"scheme={commitment_rec['scheme']} (nonce private)",
         )
     )
-
-    # --- fuse layout ---
-    layout = build_layout(
-        normalized,
-        digest,
-        square_override=square,
-        kamea_encoding=enc,
-        spare_mode=spare_mode,
-        include_planetary_seal=planetary_seal,
-        planetary_seal_kind=planetary_seal_kind,
-        planetary_geometry=planetary_geometry,
-    )
-    spare = layout.spare_letters or reduce_letters(normalized)
-    square_name = layout.square_name
-    order = len(KAMEA_SQUARES[square_name])
-
-    # Dual craft empty → fail closed (no fake empty glyph)
-    if (not layout.monogram_points and not layout.kamea_points) or (
-        not spare and not layout.kamea_points
-    ):
-        raise ValueError(
-            "NOT_COMPUTABLE: no monogram or kamea craft geometry after letter "
-            "reduction (e.g. all-vowel / no surviving consonants). Rewrite the "
-            "intent in present tense with consonants that survive Spare "
-            "reduction (drop vowels/y and duplicate letters), then re-run construct."
-        )
 
     if layout.monogram_points:
         craft_channels.append(
@@ -766,7 +756,7 @@ def run(
                 encoding="utf-8",
             )
 
-        # Proof generation (optional; never fails the forge for missing Noir)
+        # Proof generation (optional; never fails the forge for missing Noir/zkVM)
         proof_block: dict[str, Any] = {
             "mode": proof_mode,
             "status": "skipped",
@@ -830,6 +820,41 @@ def run(
                     "proof_path": nres.proof_path,
                     "local_attestation_status": local.status,
                 }
+        elif proof_mode == "zk-forge":
+            # Restricted forge_core zkVM path (risc0 adapter; skip if unavailable)
+            proofs_dir = staging / "proofs"
+            proofs_dir.mkdir(parents=True, exist_ok=True)
+            public_inputs = {
+                "intent_digest": digest,
+                "intent_commitment": pub_commit["value"],
+                "intent_commitment_zk": zk_rec["value"],
+                "sigil_root": sigil_root,
+                "forge_version": version,
+                "square_name": square_name,
+                "kamea_encoding": enc,
+            }
+            from proofs.manifest import write_proof_manifest
+            from proofs.risc0_provider import Risc0Provider
+
+            r0 = Risc0Provider()
+            rres = r0.prove(
+                {
+                    "normalized_intent": normalized,
+                    "forge_config": core.to_public_dict(),
+                },
+                public_inputs,
+                out_dir=proofs_dir,
+            )
+            write_proof_manifest(proofs_dir, rres)
+            proof_block = {
+                "mode": proof_mode,
+                "status": rres.status,
+                "provider": rres.provider,
+                "proof_kind": rres.proof_kind,
+                "detail": rres.detail,
+                "proof_path": rres.proof_path,
+            }
+            artifacts["proofs_dir"] = str(final_dir / "proofs")
         elif proof_mode == "zk-knowledge" and not passphrase:
             proof_block = {
                 "mode": proof_mode,
