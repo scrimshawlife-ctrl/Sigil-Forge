@@ -28,7 +28,7 @@ from paths import default_out_dir, skill_root
 from policy_lint import detect_authority_seal_request
 from safety import check_intent
 
-WIZARD_VERSION = "2.0.0"
+WIZARD_VERSION = "2.1.0"
 PATHS = ("quick", "full")
 
 # Ordered interview steps for Hermes agents and interactive CLI.
@@ -262,6 +262,39 @@ STEPS: list[dict[str, Any]] = [
         "skip_ok": True,
         "paths": ["full"],
     },
+    {
+        "id": "proof",
+        "prompt": (
+            "Proof-of-Intent mode? (none = commitment+root only; "
+            "commitment = sealed capsule; zk-knowledge = optional Noir + local attestation)"
+        ),
+        "type": "choice",
+        "choices": ["none", "commitment", "zk-knowledge", "zk-forge"],
+        "default": "none",
+        "help": (
+            "Provenance only — not efficacy. commitment/zk-knowledge need "
+            "SIGIL_FORGE_PASSPHRASE for the intent capsule. zk-forge skips if "
+            "risc0 guest unavailable. See references/proof-of-intent.md."
+        ),
+        "why": "Optional privacy binding + optional knowledge attestation.",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
+    {
+        "id": "kdf",
+        "prompt": "Key derivation for seal/capsule (auto prefers Argon2id when installed).",
+        "type": "choice",
+        "choices": ["auto", "argon2id", "pbkdf2-sha256"],
+        "default": "auto",
+        "help": "auto → Argon2id if argon2-cffi present, else PBKDF2. Offline-safe either way.",
+        "why": "Seal strength policy; does not change glyph geometry.",
+        "skip_ok": True,
+        "paths": ["full"],
+        "when": {
+            # ask when sealing packet or any proof mode that needs a capsule
+            "_poi_or_seal": True,
+        },
+    },
 ]
 
 
@@ -305,6 +338,8 @@ def wizard_script(path: str = "full") -> dict[str, Any]:
             "Do not claim the sigil works or replaces professional help.",
             "Wallpapers never AI-redraw the canonical glyph.",
             "Load references/wizard.md only when guiding; progressive disclosure.",
+            "Proof-of-Intent: load references/proof-of-intent.md when proof!=none; "
+            "never put commitment nonce in public media; no efficacy claims.",
         ],
         "loop": {
             "start": "python3 scripts/sigil_forge.py wizard --next --path quick",
@@ -364,6 +399,16 @@ def _step_active(step: dict[str, Any], answers: dict[str, Any]) -> bool:
     if not when:
         return True
     for k, need in when.items():
+        # Synthetic: kdf only when seal or proof needs passphrase material
+        if k == "_poi_or_seal":
+            seal = _coerce_bool(answers.get("seal_packet"))
+            proof = (answers.get("proof") or "none").strip().lower()
+            needs = seal or proof in ("commitment", "zk-knowledge")
+            if need and not needs:
+                return False
+            if not need and needs:
+                return False
+            continue
         if not _when_match(answers.get(k), need):
             return False
     return True
@@ -591,6 +636,12 @@ def answers_to_construct_kwargs(answers: dict[str, Any]) -> dict[str, Any]:
     seal_kind = answers.get("planetary_seal") or "none"
     planetary = seal_kind != "none"
     square = answers.get("square") or "auto"
+    proof = (answers.get("proof") or "none").strip().lower()
+    if proof not in ("none", "commitment", "zk-knowledge", "zk-forge"):
+        proof = "none"
+    kdf = (answers.get("kdf") or "auto").strip().lower()
+    if kdf not in ("auto", "argon2id", "pbkdf2-sha256"):
+        kdf = "auto"
     kwargs: dict[str, Any] = {
         "mode": answers.get("mode") or "creative",
         "kamea_encoding": answers.get("kamea_encoding") or "hebrew_gematria",
@@ -602,6 +653,8 @@ def answers_to_construct_kwargs(answers: dict[str, Any]) -> dict[str, Any]:
         "write_polish": bool(answers.get("polish")),
         "seal_packet": bool(answers.get("seal_packet")),
         "square": None if square in (None, "", "auto") else square,
+        "proof": proof,
+        "kdf": kdf,
     }
     wallpaper = {
         "enabled": bool(answers.get("wallpaper")),
@@ -629,14 +682,20 @@ def apply_answers(
     mapped = answers_to_construct_kwargs(report["answers"])
     intent = mapped["intent"]
     ck = mapped["construct"]
-    if ck.get("seal_packet"):
+    proof_mode = (ck.get("proof") or "none").strip().lower()
+    needs_pass = bool(ck.get("seal_packet")) or proof_mode in (
+        "commitment",
+        "zk-knowledge",
+    )
+    if needs_pass:
         pp = resolve_passphrase(passphrase)
         if not pp:
+            need = "seal_packet" if ck.get("seal_packet") else f"proof={proof_mode}"
             return {
                 "ok": False,
                 "phase": "validate",
                 "errors": [
-                    "seal_packet requires --passphrase or SIGIL_FORGE_PASSPHRASE"
+                    f"{need} requires --passphrase or SIGIL_FORGE_PASSPHRASE"
                 ],
                 "answers": report["answers"],
             }
@@ -664,10 +723,14 @@ def apply_answers(
         "path": report.get("path"),
         "answers": report["answers"],
         "intent_digest": packet.get("intent_digest"),
+        "intent_commitment": packet.get("intent_commitment"),
+        "sigil_root": packet.get("sigil_root"),
+        "proof": packet.get("proof"),
         "run_id": (packet.get("artifacts") or {}).get("run_id"),
         "run_dir": (packet.get("artifacts") or {}).get("run_dir"),
         "svg": (packet.get("artifacts") or {}).get("svg"),
         "packet_path": (packet.get("artifacts") or {}).get("packet_json"),
+        "intent_capsule": (packet.get("artifacts") or {}).get("intent_capsule"),
         "channels_applied": [
             c["id"]
             for c in packet.get("channels", [])
@@ -702,6 +765,19 @@ def apply_answers(
         f"python3 scripts/sigil_forge.py verify {result.get('svg')}",
         "Review forge-packet.json methods + ontology for provenance",
     ]
+    if result.get("svg"):
+        result["next"].append(
+            f"python3 scripts/sigil_forge.py inspect {result.get('svg')}"
+        )
+    if result.get("intent_capsule"):
+        result["next"].append(
+            "python3 scripts/sigil_forge.py open --capsule "
+            f"{result['intent_capsule']} --json"
+        )
+    if result.get("run_dir") and proof_mode in ("commitment", "zk-knowledge"):
+        result["next"].append(
+            f"python3 scripts/sigil_forge.py verify-proof {result['run_dir']}"
+        )
     return result
 
 

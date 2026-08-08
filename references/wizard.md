@@ -11,9 +11,13 @@ loops with `wizard --next`.
 | Path | Who | Steps |
 |------|-----|--------|
 | **quick** (recommended for new users) | Casual | intent → mode → wallpaper (+ surface/mode/theme if yes) |
-| **full** | Craft options | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet |
+| **full** | Craft options | + encoding, square, planetary seal/geometry, spare, phonetic, polish, seal_packet, **proof**, **kdf** (when seal/proof needs passphrase) |
 
 Unanswered optional steps fill from defaults on apply.
+
+Proof-of-Intent (`proof`): `none` | `commitment` | `zk-knowledge` | `zk-forge`.  
+`commitment` / `zk-knowledge` need `SIGIL_FORGE_PASSPHRASE` (capsule).  
+Load [proof-of-intent.md](proof-of-intent.md) only when guiding those steps.
 
 ## Hermes agent loop (required)
 
@@ -77,7 +81,7 @@ Conditional examples:
 }
 ```
 
-Full path may add: `kamea_encoding`, `square`, `planetary_seal`,
+Full path may add: `kamea_encoding`, `square`, `planetary_seal`, `proof`, `kdf`,
 `planetary_geometry`, `spare_mode`, `phonetic`, `polish`, `seal_packet`, …
 
 ## Sessions
@@ -101,4 +105,5 @@ Type `done` after intent to accept remaining defaults.
 
 - CLI: `python3 scripts/sigil_forge.py wizard --help`  
 - Planetary options: `methods-planetary-characters.md`  
-- Runtime: `hermes-runtime-contract.md`
+- Runtime: `hermes-runtime-contract.md`  
+- Proof of Intent: `proof-of-intent.md`

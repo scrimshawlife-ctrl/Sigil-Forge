@@ -5,7 +5,7 @@ description: >
   the user asks to be guided/wizard through sigil creation. Offline multi-channel
   construction; dual creative/practice framing; no efficacy claims. Prefer wizard
   --next step runner for new users.
-version: 0.12.5
+version: 0.12.6
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -174,7 +174,8 @@ disclosure). Expert operators may skip to construct.
 
    **Done when:** plaintext recovered or auth failure reported.
 10. **Proof of Intent (optional)** — Commitments, `sigil_root`, capsules, and
-    optional knowledge proofs. Load
+    optional knowledge proofs. On **full** wizard path, steps `proof` / `kdf`
+    map to construct. Load
     [references/proof-of-intent.md](references/proof-of-intent.md) only when the
     operator asks for commitment/capsule/proof surfaces. Geometry still uses
     `intent_digest`; never put the commitment nonce in public media.

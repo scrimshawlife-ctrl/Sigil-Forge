@@ -39,6 +39,8 @@ def test_full_path_includes_craft_steps():
     assert "kamea_encoding" in ids
     assert "planetary_seal" in ids
     assert "planetary_geometry" in ids
+    assert "proof" in ids
+    assert "kdf" in ids
 
 
 def test_next_starts_with_intent():
@@ -285,3 +287,118 @@ def test_default_answers_template():
     d = default_answers()
     assert d["mode"] == "creative"
     assert d["planetary_seal"] == "none"
+    assert d["proof"] == "none"
+    assert d["kdf"] == "auto"
+
+
+def test_next_asks_proof_on_full_path():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "kamea_encoding": "latin_mod9_v1",
+        "square": "auto",
+        "planetary_seal": "none",
+        "spare_mode": "letter_monogram",
+        "phonetic": False,
+        "polish": False,
+        "wallpaper": False,
+        "seal_packet": False,
+    }
+    nxt = next_step(answers, path="full")
+    assert nxt["done"] is False
+    assert nxt["step"]["id"] == "proof"
+
+
+def test_next_asks_kdf_when_proof_commitment():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "kamea_encoding": "latin_mod9_v1",
+        "square": "auto",
+        "planetary_seal": "none",
+        "spare_mode": "letter_monogram",
+        "phonetic": False,
+        "polish": False,
+        "wallpaper": False,
+        "seal_packet": False,
+        "proof": "commitment",
+    }
+    nxt = next_step(answers, path="full")
+    assert nxt["done"] is False
+    assert nxt["step"]["id"] == "kdf"
+
+
+def test_next_skips_kdf_when_proof_none():
+    answers = {
+        "intent": "I maintain calm focus",
+        "mode": "creative",
+        "kamea_encoding": "latin_mod9_v1",
+        "square": "auto",
+        "planetary_seal": "none",
+        "spare_mode": "letter_monogram",
+        "phonetic": False,
+        "polish": False,
+        "wallpaper": False,
+        "seal_packet": False,
+        "proof": "none",
+    }
+    nxt = next_step(answers, path="full")
+    assert nxt["done"] is True
+    assert nxt["ok"] is True
+
+
+def test_answers_to_kwargs_proof():
+    mapped = answers_to_construct_kwargs(
+        {
+            "intent": "I maintain calm focus",
+            "mode": "creative",
+            "kamea_encoding": "latin_mod9_v1",
+            "square": "auto",
+            "planetary_seal": "none",
+            "spare_mode": "letter_monogram",
+            "phonetic": False,
+            "polish": False,
+            "wallpaper": False,
+            "seal_packet": False,
+            "proof": "commitment",
+            "kdf": "pbkdf2-sha256",
+        }
+    )
+    assert mapped["construct"]["proof"] == "commitment"
+    assert mapped["construct"]["kdf"] == "pbkdf2-sha256"
+
+
+def test_apply_proof_commitment_requires_passphrase(tmp_path: Path):
+    result = apply_answers(
+        {
+            "intent": "I maintain calm focus",
+            "kamea_encoding": "latin_mod9_v1",
+            "proof": "commitment",
+            "wallpaper": False,
+        },
+        out_root=tmp_path,
+        path="full",
+    )
+    assert result["ok"] is False
+    assert any("passphrase" in e for e in (result.get("errors") or []))
+
+
+def test_apply_proof_commitment_with_passphrase(tmp_path: Path):
+    result = apply_answers(
+        {
+            "intent": "I maintain calm focus",
+            "kamea_encoding": "latin_mod9_v1",
+            "proof": "commitment",
+            "kdf": "pbkdf2-sha256",
+            "wallpaper": False,
+        },
+        out_root=tmp_path,
+        path="full",
+        passphrase="wizard-poi-pass",
+    )
+    assert result["ok"] is True, result
+    assert result.get("intent_commitment")
+    assert result.get("sigil_root")
+    assert result.get("intent_capsule")
+    assert Path(result["intent_capsule"]).is_file()
+    assert any("open --capsule" in n for n in result.get("next") or [])

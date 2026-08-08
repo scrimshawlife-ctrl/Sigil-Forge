@@ -26,6 +26,17 @@ Agents invoke scripts; they do not invent geometry or claim proof efficacy.
 
 ## Agent procedures
 
+### Wizard (Hermes full path)
+
+```bash
+# answers JSON may include "proof": "commitment", "kdf": "auto"
+export SIGIL_FORGE_PASSPHRASE='…'
+python3 scripts/sigil_forge.py wizard --apply answers.json --path full --out out/sigil-forge
+```
+
+Apply result includes `intent_capsule`, `sigil_root`, and next-hints for
+`open --capsule` / `verify-proof` / `inspect`.
+
 ### Construct with commitment capsule
 
 ```bash
