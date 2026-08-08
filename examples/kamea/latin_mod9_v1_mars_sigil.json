@@ -1,0 +1,57 @@
+{
+  "text": "Sigil",
+  "square": "mars",
+  "encoding": "latin_mod9_v1",
+  "original_numeric_sequence": [
+    1,
+    7,
+    3
+  ],
+  "reduced_numeric_sequence": [
+    1,
+    7,
+    3
+  ],
+  "reduction_operations": [],
+  "path": [
+    [
+      2.5,
+      3.5
+    ],
+    [
+      2.5,
+      0.5
+    ],
+    [
+      4.5,
+      0.5
+    ]
+  ],
+  "cell_check": [
+    {
+      "x": 2.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 2,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 2.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 2,
+      "value": 7,
+      "expected": 7
+    },
+    {
+      "x": 4.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 4,
+      "value": 3,
+      "expected": 3
+    }
+  ],
+  "claimed_historical_status": "modern_compatibility_mod9"
+}

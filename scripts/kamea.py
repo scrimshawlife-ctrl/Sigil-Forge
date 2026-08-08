@@ -92,7 +92,13 @@ LEGACY_KAMEA_ENCODING = "latin_mod9_v1"
 # Minimal latin → Hebrew letter transliteration for gematria (public mapping).
 # Multi-letter digraphs first. Ambiguous / unmapped latin fails closed unless
 # force_latin_skip=True (then letter is skipped with reduction note).
+# Longest digraphs first. Policy: unmapped latin letters are skipped with a
+# note (not invented). Empty result after transliteration is NOT_COMPUTABLE.
 _LATIN_HEBREW: list[tuple[str, str]] = [
+    ("sch", "ש"),
+    ("tch", "צ"),
+    ("tsh", "צ"),
+    ("dsh", "דש"),  # rare; handled as two letters via digraph+letter if split fails
     ("sh", "ש"),
     ("ch", "ח"),
     ("th", "ת"),
@@ -100,6 +106,9 @@ _LATIN_HEBREW: list[tuple[str, str]] = [
     ("tz", "צ"),
     ("kh", "כ"),
     ("ph", "פ"),
+    ("gh", "ג"),
+    ("ng", "נג"),
+    ("qu", "ק"),
     ("a", "א"),
     ("b", "ב"),
     ("c", "כ"),
@@ -123,7 +132,7 @@ _LATIN_HEBREW: list[tuple[str, str]] = [
     ("u", "ו"),
     ("v", "ו"),
     ("w", "ו"),
-    ("x", "ס"),
+    ("x", "קס"),  # expand to two letters in transliterate
     ("y", "י"),
     ("z", "ז"),
 ]
@@ -286,7 +295,11 @@ def reduce_into_square(
 
 
 def transliterate_latin_to_hebrew(text: str) -> tuple[list[str], list[str]]:
-    """Return (hebrew_letters, notes). Unmapped chars produce notes and are skipped."""
+    """Return (hebrew_letters, notes). Unmapped chars produce notes and are skipped.
+
+    Digraphs are longest-first. Multi-letter Hebrew expansions (e.g. x→קס)
+    append each letter. Empty output is allowed here; callers fail closed.
+    """
     s = "".join(ch for ch in text.lower() if ch.isalpha() or ch.isspace())
     s = "".join(s.split())  # collapse spaces for sequential digraph scan
     hebrew: list[str] = []
@@ -296,7 +309,18 @@ def transliterate_latin_to_hebrew(text: str) -> tuple[list[str], list[str]]:
         matched = False
         for lat, heb in _LATIN_HEBREW:
             if s.startswith(lat, i):
-                hebrew.append(heb)
+                # heb may be one or more Hebrew characters
+                for hch in heb:
+                    if hch in HEBREW_VALUES or hch in (
+                        "ך",
+                        "ם",
+                        "ן",
+                        "ף",
+                        "ץ",
+                    ):
+                        hebrew.append(hch)
+                    elif hch.strip():
+                        notes.append(f"non_value_hebrew:{hch!r}")
                 i += len(lat)
                 matched = True
                 break

@@ -1,0 +1,112 @@
+{
+  "text": "Michael",
+  "square": "jupiter",
+  "encoding": "hebrew_gematria",
+  "original_numeric_sequence": [
+    40,
+    10,
+    8,
+    1,
+    5,
+    30
+  ],
+  "reduced_numeric_sequence": [
+    4,
+    10,
+    8,
+    1,
+    5,
+    3
+  ],
+  "reduction_operations": [
+    {
+      "kind": "digit_sum",
+      "input": 40,
+      "output": 4,
+      "detail": "sum([4, 0]) for square max 16"
+    },
+    {
+      "kind": "digit_sum",
+      "input": 30,
+      "output": 3,
+      "detail": "sum([3, 0]) for square max 16"
+    }
+  ],
+  "path": [
+    [
+      0.5,
+      0.5
+    ],
+    [
+      2.5,
+      2.5
+    ],
+    [
+      3.5,
+      2.5
+    ],
+    [
+      3.5,
+      0.5
+    ],
+    [
+      0.5,
+      2.5
+    ],
+    [
+      2.5,
+      3.5
+    ]
+  ],
+  "cell_check": [
+    {
+      "x": 0.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 0,
+      "value": 4,
+      "expected": 4
+    },
+    {
+      "x": 2.5,
+      "y": 2.5,
+      "row": 2,
+      "col": 2,
+      "value": 10,
+      "expected": 10
+    },
+    {
+      "x": 3.5,
+      "y": 2.5,
+      "row": 2,
+      "col": 3,
+      "value": 8,
+      "expected": 8
+    },
+    {
+      "x": 3.5,
+      "y": 0.5,
+      "row": 0,
+      "col": 3,
+      "value": 1,
+      "expected": 1
+    },
+    {
+      "x": 0.5,
+      "y": 2.5,
+      "row": 2,
+      "col": 0,
+      "value": 5,
+      "expected": 5
+    },
+    {
+      "x": 2.5,
+      "y": 3.5,
+      "row": 3,
+      "col": 2,
+      "value": 3,
+      "expected": 3
+    }
+  ],
+  "claimed_historical_status": "historically_aligned_agrippan_style"
+}

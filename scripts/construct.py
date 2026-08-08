@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from crypto_payload import intent_digest, seal_intent
+from phonetic import build_phonetic_artifact
 from fuse import build_layout
 from kamea import DEFAULT_KAMEA_ENCODING, KAMEA_SQUARES
 from normalize import normalize_intent
@@ -51,6 +52,7 @@ _CHANNEL_ORDER = (
     "metric_quantize",
     "png_lsb",
     "gen_seed",
+    "phonetic_sigil",
 )
 
 
@@ -186,6 +188,9 @@ def run(
     spare_mode: str = "letter_monogram",
     planetary_seal: bool = False,
     planetary_seal_kind: str = "traditional_seal",
+    prefer_argon2: bool = False,
+    interop: bool = False,
+    phonetic: bool = False,
 ) -> dict[str, Any]:
     """Orchestrate full forge: safety → normalize → digest → seal? → fuse → stego → packet.
 
@@ -219,21 +224,26 @@ def run(
 
     # --- optional ciphertext (local packet only; not embedded in public PNG) ---
     if passphrase:
-        sealed_blob = seal_intent(intent, passphrase)
+        sealed_blob = seal_intent(intent, passphrase, prefer_argon2=prefer_argon2)
         craft_channels.append(
             _ch(
                 "optional_ciphertext",
                 "applied",
-                f"aes-256-gcm pbkdf2-sha256 iter={sealed_blob.get('iterations')}",
+                f"aes-256-gcm kdf={sealed_blob.get('kdf')} "
+                f"iter={sealed_blob.get('iterations')}",
             )
         )
         key_policy = "passphrase"
         crypto = {
             "algorithm": "aes-256-gcm",
-            "kdf": "pbkdf2-sha256",
+            "kdf": sealed_blob.get("kdf", "pbkdf2-sha256"),
             "key_policy": key_policy,
             "ciphertext_present": True,
         }
+        if sealed_blob.get("iterations") is not None:
+            crypto["iterations"] = sealed_blob["iterations"]
+        if sealed_blob.get("argon2"):
+            crypto["argon2"] = sealed_blob["argon2"]
     else:
         craft_channels.append(
             _ch("optional_ciphertext", "skipped", "no_passphrase")
@@ -437,7 +447,41 @@ def run(
             )
             polish_path_final = str(final_dir / "polish_prompt.json")
 
-        extras = [png_channel, gen_seed_channel]
+        # Assisted Spare seed artifact (non-monogram modes)
+        spare_seed_final: str | None = None
+        if spare_mode != "letter_monogram" and (layout.spare_result or {}).get(
+            "artifact"
+        ):
+            import json as _json
+
+            seed_path = staging / "spare-seed.json"
+            seed_path.write_text(
+                _json.dumps(layout.spare_result, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            spare_seed_final = str(final_dir / "spare-seed.json")
+
+        # Phonetic / mantric carrier (JSON only)
+        phonetic_channel = _ch("phonetic_sigil", "skipped", "not_requested")
+        phonetic_final: str | None = None
+        if phonetic or spare_mode == "phonetic_mantric":
+            import json as _json
+
+            ph = build_phonetic_artifact(
+                normalized, intent_digest=digest, mode="phonetic_mantric"
+            )
+            ph_path = staging / "phoneme-sequence.json"
+            ph_path.write_text(
+                _json.dumps(ph, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+            phonetic_final = str(final_dir / "phoneme-sequence.json")
+            phonetic_channel = _ch(
+                "phonetic_sigil",
+                "applied",
+                f"tokens={len(ph.get('phoneme_sequence') or [])}",
+            )
+
+        extras = [png_channel, gen_seed_channel, phonetic_channel]
 
         channels = _merge_channels(craft_channels, list(stego_channels), extras)
 
@@ -519,11 +563,25 @@ def run(
         }
         if polish_path_final:
             artifacts["polish_prompt_path"] = polish_path_final
+        if spare_seed_final:
+            artifacts["spare_seed_path"] = spare_seed_final
+        if phonetic_final:
+            artifacts["phoneme_sequence_path"] = phonetic_final
         if write_receipt:
             artifacts["receipt_json"] = str(receipt_path_final)
 
         verify_target = str(final_svg)
         verify_cmd = f"python3 scripts/sigil_forge.py verify {verify_target}"
+
+        interop_block: dict[str, Any] = {}
+        if interop:
+            # Thin dual-name export (Orchestra-compatible labels); empty-ok otherwise
+            interop_block = {
+                "intent_token": digest[:16],
+                "sigil_glyph": f"sf:{rid}",
+                "related_skills": [],
+                "note": "Thin interop export — not Enochian/Goetic authority seals",
+            }
 
         include_normalized = not seal_packet
         packet = build_packet(
@@ -539,6 +597,7 @@ def run(
             include_normalized=include_normalized,
             ontology=ontology,
             provenance=provenance,
+            interop=interop_block,
         )
         packet["schema_version"] = packet.get("schema_version") or SCHEMA_VERSION
 

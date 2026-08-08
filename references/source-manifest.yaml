@@ -1,0 +1,75 @@
+# Historical / methodological source manifest for Sigil-Forge methods.
+# Citations are pointers for provenance honesty, not endorsement of efficacy.
+
+version: "0.5.0"
+
+methods:
+  spare.letter_monogram:
+    family: intent_compression
+    sources:
+      - title: "The Book of Pleasure (self-love)"
+        author: "Austin Osman Spare"
+        note: "Letter-combination as fundamental concept among multiple methods"
+  spare.pictorial:
+    family: intent_compression
+    sources:
+      - title: "Daemons of Pleasure / automatic drawing writings"
+        author: "Austin Osman Spare"
+        note: "Pictorial/automatic modes; semantic geometry NOT_COMPUTABLE in engine"
+  spare.phonetic_mantric:
+    family: intent_compression
+    sources:
+      - title: "Chaos magic sigil practice surveys"
+        note: "Spoken/mantric forms as parallel encoding channels"
+
+  kamea.name_path:
+    family: name_path
+    sources:
+      - title: "Three Books of Occult Philosophy, Book II"
+        author: "Heinrich Cornelius Agrippa"
+        note: "Planetary tables; name paths via letter numeration / gematria practice"
+  kamea.encoding.hebrew_gematria:
+    family: name_path
+    sources:
+      - title: "Agrippa Book II / Western ceremonial kamea practice"
+        note: "Hebrew letter values with reduction into square range"
+  kamea.encoding.latin_mod9_v1:
+    family: name_path
+    sources:
+      - title: "Modern digital reduction (compatibility)"
+        note: "1–9 only; NOT full Agrippan fidelity"
+
+  rose_cross.hebrew_petal_path:
+    family: name_path
+    sources:
+      - title: "Golden Dawn Rose Cross Lamen"
+        note: "22 Hebrew letters on petals; sequential name tracing"
+
+  planetary.traditional_seal:
+    family: planetary_character
+    sources:
+      - title: "Agrippa Book II planetary seals/characters"
+        note: "Seals drawn from planetary tables (1..n² connectivity reconstruction)"
+  planetary.intelligence_character:
+    family: planetary_character
+    sources:
+      - title: "Agrippa planetary intelligences (engine reconstruction)"
+        note: "Odd-then-even path; documented reconstruction not unique MS glyph"
+  planetary.spirit_character:
+    family: planetary_character
+    sources:
+      - title: "Agrippa planetary spirits (engine reconstruction)"
+        note: "Reverse n²→1 path; documented reconstruction"
+
+  bind_rune.elder_futhark_modern:
+    family: alphabetic_ligature
+    sources:
+      - title: "Historical runic ligatures (runology)"
+        note: "Writing phenomenon; intent-bind systems are modern_derivation"
+    claimed_historical_status: modern_derivation
+
+excluded_default_forge:
+  enochian_seal:
+    note: "Authority/placement seals — separate namespace"
+  goetic_seal:
+    note: "Entity identifier seals — separate namespace"

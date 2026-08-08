@@ -3,7 +3,7 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.4.0
+version: 0.5.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -158,8 +158,11 @@ Details: `references/channels-and-steganography.md`.
 
 ```bash
 python3 scripts/sigil_forge.py help
+python3 scripts/sigil_forge.py doctor
+python3 scripts/sigil_forge.py eval
 python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge
+python3 scripts/sigil_forge.py construct --intent "…" --phonetic --interop --out out/sf
 python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
@@ -243,6 +246,7 @@ python3 scripts/sigil_forge.py construct \
 | [methods-bind-runes.md](references/methods-bind-runes.md) | Bind-runes (modern_derivation) |
 | [methods-rose-cross.md](references/methods-rose-cross.md) | Hebrew 22-petal Rose Cross |
 | [sigil-ontology.md](references/sigil-ontology.md) | Method taxonomy / families |
+| [source-manifest.yaml](references/source-manifest.yaml) | Method → source citations |
 | [receipts-and-ledger.md](references/receipts-and-ledger.md) | Run receipts + PROPOSED ledger |
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |
