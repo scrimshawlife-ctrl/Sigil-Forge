@@ -379,14 +379,35 @@ def encode_latin_extended(
     return original, reduced, ops, notes
 
 
+def _extract_hebrew_letters(text: str) -> list[str]:
+    """Pull Hebrew letters (including final forms) from mixed text."""
+    out: list[str] = []
+    for ch in text:
+        if ch in HEBREW_VALUES:
+            out.append(ch)
+        elif ch in ("ך", "ם", "ן", "ף", "ץ"):
+            # finals map in HEBREW_VALUES if present; else skip with caller notes
+            out.append(ch)
+    return out
+
+
 def encode_hebrew_gematria(
     text: str, square_name: str
 ) -> tuple[list[int], list[int], list[ReductionOp], list[str], str]:
-    """Hebrew gematria values from latin transliteration; reduce into square.
+    """Hebrew gematria values; reduce into square.
 
-    Returns original, reduced, ops, notes, transliteration_system id.
+    Prefer native Hebrew letters when present in ``text``; otherwise latin→Hebrew
+    transliteration. Returns original, reduced, ops, notes, transliteration_system id.
     """
-    hebrew, notes = transliterate_latin_to_hebrew(text)
+    notes: list[str] = []
+    native = _extract_hebrew_letters(text)
+    if native:
+        hebrew = native
+        translit = "native_hebrew"
+        notes.append("used_native_hebrew_letters")
+    else:
+        hebrew, notes = transliterate_latin_to_hebrew(text)
+        translit = "latin_to_hebrew_minimal_v1"
     if not hebrew:
         raise ValueError(
             "NOT_COMPUTABLE: no hebrew letters after transliteration "
@@ -417,7 +438,7 @@ def encode_hebrew_gematria(
         reduced.append(r)
     if not reduced:
         raise ValueError("NOT_COMPUTABLE: no numeric values after hebrew gematria")
-    return original, reduced, ops, notes, "latin_to_hebrew_minimal_v1"
+    return original, reduced, ops, notes, translit
 
 
 KAMEA_ENCODINGS: dict[str, str] = {

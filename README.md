@@ -4,7 +4,7 @@
   <img src="docs/assets/sigil-forge-hero.png" alt="Sigil-Forge — multi-channel intent sigils" width="100%" />
 </p>
 
-**Hermes skill** that turns a statement of intent into a **multi-channel sigil** with an explicit method ontology: Spare family (letter-monogram default), kamea name paths with pluggable encodings (`hebrew_gematria` default; `latin_mod9_v1` compatibility), Hebrew Rose Cross, optional Agrippan planetary seals, bind-runes labeled modern_derivation, plus stego carriers and receipts.
+**Hermes skill** that turns a statement of intent into a **multi-channel sigil** with an explicit method ontology: Spare family (letter-monogram default), kamea name paths with pluggable encodings (`hebrew_gematria` default; `latin_mod9_v1` compatibility), Hebrew Rose Cross, optional Agrippan planetary seals/intelligence/spirit characters (corpus name-on-kamea), bind-runes labeled modern_derivation, plus stego carriers, wallpapers, and a guided **wizard** for Hermes.
 
 Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** and **verifiable** — no image API required.
 
@@ -33,6 +33,17 @@ From a clone without installing:
 ```bash
 python3 scripts/sigil_forge.py check
 ```
+
+## Wizard (Hermes-friendly)
+
+```bash
+# Agent loads interview steps, asks the user, then applies answers
+python3 scripts/sigil_forge.py wizard --script
+python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --list-corpus   # planetary intelligence/spirit names
+```
+
+See [references/wizard.md](references/wizard.md).
 
 ## Construct (one example)
 
@@ -108,6 +119,8 @@ More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL
 | Wallpapers | Device-aware composites under `wallpaper/` + `wallpaper-receipt` |
 | Host AI backgrounds | Prompt packages + `--background` / `--provider-command` (optional) |
 | Learning ledger | PROPOSED observations via `learn` / `ledger` (never auto-canon) |
+| Wizard | Guided Hermes interview (`wizard --script` / `--apply`) |
+| Planetary corpus | Intelligence/spirit names → name_on_kamea characters |
 
 Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).  
 Wallpaper contract: [references/wallpaper-framework.md](references/wallpaper-framework.md).

@@ -3,7 +3,7 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.7.0
+version: 0.8.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -79,8 +79,19 @@ or replaces professional help.
 
 Each step ends with a checkable completion criterion.
 
+**Prefer the wizard** when the user is new, asks to be guided, or says “wizard”:
+
+```bash
+python3 scripts/sigil_forge.py wizard --script   # interview steps for you to ask
+# …collect answers conversationally…
+python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+```
+
+See [references/wizard.md](references/wizard.md). Expert operators may skip to construct.
+
 1. **Intake** — Capture present-tense intent, mode (`creative`|`practice`), optional
    passphrase / `SIGIL_FORGE_PASSPHRASE`, optional kamea square, style for polish.
+   Or run the **wizard** script and walk steps one at a time.
    **Done when:** intent string non-empty after strip; mode valid.
 2. **Safety / align** — Refuse violence, self-harm, non-consensual control, exploitation
    (`scripts/safety.py` + agent judgment). Empty noise → rewrite request.
@@ -159,7 +170,7 @@ claim full embed.
 | `kamea_square_choice` | Operator override or digest-derived square |
 | `bind_runes` | Elder Futhark stick bind (**modern_derivation**) |
 | `rose_cross_path` | Hebrew 22-petal Rose Cross name path |
-| `planetary_seal` | Agrippan traditional seal (opt-in; ≠ kamea path) |
+| `planetary_seal` | Agrippan traditional / intelligence / spirit (opt-in; corpus name_on_kamea) |
 | `intent_digest` | SHA-256 of normalized intent |
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
 | `svg_metadata` | SVG metadata digest / method bits |
@@ -185,6 +196,9 @@ python3 scripts/sigil_forge.py construct --intent "…" --phonetic --interop --o
 python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
 python3 scripts/sigil_forge.py construct --intent "…" --wallpaper --surface phone_lock \
   --wp-mode focus --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --script
+python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --list-corpus
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
   --surface phone_lock --mode focus --theme mercurial
@@ -202,6 +216,17 @@ Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMM
 visible in process lists). Construct uses atomic staging then promote.
 
 ## One-Shot Recipes
+
+### Wizard-guided forge (recommended for Hermes)
+
+```bash
+python3 scripts/sigil_forge.py wizard --script
+# Agent asks steps; writes answers.json then:
+python3 scripts/sigil_forge.py wizard --apply answers.json --out out/sigil-forge
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
+```
+
+**Done when:** wizard `ok: true`; verify recovers digest; no efficacy claims.
 
 ### Offline creative forge + verify
 
@@ -305,6 +330,9 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [source-manifest.yaml](references/source-manifest.yaml) | Method → source citations |
 | [wallpaper-framework.md](references/wallpaper-framework.md) | Wallpaper carrier pipeline |
 | [wallpaper-prompt-contract.md](references/wallpaper-prompt-contract.md) | Background-only AI prompts |
+| [wizard.md](references/wizard.md) | Hermes guided forge interview |
+| [methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit corpus |
+| [planetary-character-corpus.json](references/planetary-character-corpus.json) | Agrippan names + construction flags |
 | [receipts-and-ledger.md](references/receipts-and-ledger.md) | Run receipts + PROPOSED ledger |
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |

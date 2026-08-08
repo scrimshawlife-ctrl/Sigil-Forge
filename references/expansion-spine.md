@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.7.0** (this file tracks shipped vs remaining).
+**Current release: v0.8.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -16,14 +16,17 @@ compression, name paths, planetary characters, and entity seals.
 | v0.5 | Transliteration upgrade, kamea goldens, intelligence/spirit reconstructions, phonetic channel, doctor/eval, optional Argon2id, interop fields, source manifest |
 | v0.6 | Wallpaper framework: immutable glyph + atmosphere composite, device profiles, wallpaper-spec/receipt, CLI `wallpaper` |
 | v0.7 | Host AI background provider (file + shell command), enriched prompt packages, `construct --wallpaper` one-shot |
+| v0.8 | Planetary character corpus (name_on_kamea intel/spirit) + Hermes `wizard` guided interview |
 
 ### Craft / methods
-- Encodings: `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` (compat)
+- Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
 - Rose Cross: 22 Hebrew petals + markers
-- Planetary: traditional seal, intelligence (odds→evens), spirit (reverse)
+- Planetary: traditional seal; intelligence/spirit via **corpus name_on_kamea** (Agrippan names) with reconstruction fallback
+- Corpus: `references/planetary-character-corpus.json`
 - Bind-runes: **modern_derivation**
 - Spare family modes + phonetic JSON carrier
 - Ontology + `references/source-manifest.yaml`
+- Hermes **wizard**: `wizard --script` / `--apply` (see `references/wizard.md`)
 
 ### Wallpapers (v0.6–0.7)
 - Surfaces: `phone_lock`, `phone_home`, `tablet`, `desktop`, `desktop_ultrawide`
@@ -35,12 +38,12 @@ compression, name paths, planetary characters, and entity seals.
 - One-shot: `construct --wallpaper` (presentation via `--wp-mode`)
 
 ### Ops
-- CLI: construct, verify, wallpaper, open, learn, ledger, doctor, eval, check
+- CLI: construct, verify, wallpaper, wizard, open, learn, ledger, doctor, eval, check
 - Receipts + PROPOSED ledger
 - `validate_hermes_skill.py`
 
 ## Remaining / optional later
-- Full manuscript-accurate intelligence/spirit *grimoire* character corpus (beyond kamea-derived reconstructions)
+- Stroke-faithful MS plate digitizations for intelligence/spirit (beyond name_on_kamea)
 - Audio/MIDI for mantric carriers
 - Multi-frame storyboard carriers
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
