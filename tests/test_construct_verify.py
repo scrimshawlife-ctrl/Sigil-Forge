@@ -108,9 +108,18 @@ def test_construct_with_passphrase_seals(tmp_path: Path):
 
 
 def test_all_vowel_intent_not_computable(tmp_path: Path):
-    """All-vowel / no-consonant Spare reduction → NOT_COMPUTABLE (empty dual craft)."""
+    """All-vowel + latin_mod9 → empty monogram and empty kamea → NOT_COMPUTABLE.
+
+    With hebrew_gematria, vowels still transliterate; use latin_mod9_v1 to
+    assert dual-craft emptiness for letter_monogram.
+    """
     with pytest.raises(ValueError, match=r"^NOT_COMPUTABLE:") as ei:
-        construct_run("aeiou you", out_root=tmp_path)
+        construct_run(
+            "aeiou you",
+            out_root=tmp_path,
+            kamea_encoding="latin_mod9_v1",
+            spare_mode="letter_monogram",
+        )
     assert "rewrite" in str(ei.value).lower()
 
 

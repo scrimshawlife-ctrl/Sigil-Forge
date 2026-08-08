@@ -33,6 +33,21 @@ def layout_to_svg(
     ]
     bind_inner = "\n    ".join(p for p in bind_parts if p)
     rose = _polyline(layout.rose_points or [], stroke)
+    seal = _polyline(getattr(layout, "planetary_seal_path", None) or [], stroke)
+    # Markers for Rose Cross start/terminal (geometry only — no letter labels)
+    markers = ""
+    sm = getattr(layout, "rose_start_marker", None) or []
+    tm = getattr(layout, "rose_terminal_marker", None) or []
+    if len(sm) == 2:
+        markers += (
+            f'<circle id="rose-start" cx="{sm[0]:.4f}" cy="{sm[1]:.4f}" '
+            f'r="1.2" fill="none" stroke="{stroke}" stroke-width="0.8"/>'
+        )
+    if len(tm) == 2:
+        markers += (
+            f'<rect id="rose-terminal" x="{tm[0] - 1.0:.4f}" y="{tm[1] - 1.0:.4f}" '
+            f'width="2.0" height="2.0" fill="none" stroke="{stroke}" stroke-width="0.8"/>'
+        )
     # Deliberately omit spare_letters / normalized intent / rune names from SVG.
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" '
@@ -51,6 +66,10 @@ def layout_to_svg(
         f"  </g>\n"
         f'  <g id="rose-cross-path">\n'
         f"    {rose}\n"
+        f"    {markers}\n"
+        f"  </g>\n"
+        f'  <g id="planetary-seal">\n'
+        f"    {seal}\n"
         f"  </g>\n"
         f"</svg>\n"
     )

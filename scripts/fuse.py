@@ -1,25 +1,29 @@
-"""Fuse Spare monogram + kamea path into a single layout."""
+"""Fuse Spare monogram + kamea path + bind/rose into a single layout."""
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import Any
 
 from bind_runes import build_bind_polylines
-from kamea import KAMEA_SQUARES, plot_path, select_square
-from rose_cross import build_rose_path
-from spare import letter_sequence, reduce_letters
+from kamea import (
+    DEFAULT_KAMEA_ENCODING,
+    KAMEA_SQUARES,
+    build_kamea_path,
+    select_square,
+)
+from rose_cross import build_rose_cross_path
+from spare import letter_sequence, reduce_letters, run_spare
 
 # Canvas is always 0..100
 CANVAS = 100.0
 VIEW_BOX = (0.0, 0.0, CANVAS, CANVAS)
 
-# Monogram sits on an outer circle around canvas center
 _MONOGRAM_CX = CANVAS / 2.0
 _MONOGRAM_CY = CANVAS / 2.0
 _MONOGRAM_RADIUS = 40.0
 
-# Kamea scaled into concentric inner region (0.35–0.65 of canvas)
 _INNER_LO = 0.35 * CANVAS
 _INNER_HI = 0.65 * CANVAS
 _INNER_SPAN = _INNER_HI - _INNER_LO
@@ -32,21 +36,25 @@ class Layout:
     view_box: tuple[float, float, float, float]
     spare_letters: str
     square_name: str
-    # Expansion craft channels (v0.3+)
     bind_polylines: list[list[tuple[float, float]]] = field(default_factory=list)
     bind_runes: list[str] = field(default_factory=list)
     rose_points: list[tuple[float, float]] = field(default_factory=list)
     rose_slots: list[int] = field(default_factory=list)
+    rose_start_marker: list[float] = field(default_factory=list)
+    rose_terminal_marker: list[float] = field(default_factory=list)
+    kamea_provenance: dict[str, Any] = field(default_factory=dict)
+    rose_provenance: dict[str, Any] = field(default_factory=dict)
+    spare_result: dict[str, Any] = field(default_factory=dict)
+    planetary_seal_path: list[tuple[float, float]] = field(default_factory=list)
+    planetary_seal: dict[str, Any] = field(default_factory=dict)
 
 
 def _monogram_on_circle(letters: list[str]) -> list[tuple[float, float]]:
-    """Place unique letters on a circle (equal angles) in sequence order."""
     n = len(letters)
     if n == 0:
         return []
     pts: list[tuple[float, float]] = []
     for i in range(n):
-        # Start at top (-pi/2), equal steps; closed=False (polyline open)
         angle = -math.pi / 2.0 + (2.0 * math.pi * i) / n
         x = _MONOGRAM_CX + _MONOGRAM_RADIUS * math.cos(angle)
         y = _MONOGRAM_CY + _MONOGRAM_RADIUS * math.sin(angle)
@@ -54,17 +62,17 @@ def _monogram_on_circle(letters: list[str]) -> list[tuple[float, float]]:
     return pts
 
 
-def _scale_kamea(
-    raw: list[tuple[float, float]], square_name: str
+def _scale_unit_path(
+    raw: list[tuple[float, float]] | list[list[float]], square_name: str
 ) -> list[tuple[float, float]]:
-    """Scale plot_path unit-cell coords into the inner 0.35–0.65 region."""
     if not raw:
         return []
     order = len(KAMEA_SQUARES[square_name])
     if order <= 0:
         return []
     out: list[tuple[float, float]] = []
-    for x, y in raw:
+    for item in raw:
+        x, y = float(item[0]), float(item[1])
         sx = _INNER_LO + (x / order) * _INNER_SPAN
         sy = _INNER_LO + (y / order) * _INNER_SPAN
         out.append((sx, sy))
@@ -75,17 +83,61 @@ def build_layout(
     normalized: str,
     digest_hex: str,
     square_override: str | None = None,
+    *,
+    kamea_encoding: str = DEFAULT_KAMEA_ENCODING,
+    spare_mode: str = "letter_monogram",
+    include_planetary_seal: bool = False,
+    planetary_seal_kind: str = "traditional_seal",
 ) -> Layout:
-    """Compose Spare monogram + kamea path into one layout (canvas 0..100)."""
-    letters = letter_sequence(normalized)
-    spare = reduce_letters(normalized)
+    """Compose multi-method layout on canvas 0..100."""
+    spare_res = run_spare(normalized, mode=spare_mode, intent_digest=digest_hex)
+    letters = spare_res.letter_sequence
+    spare = spare_res.spare_letters
+    # Monogram geometry only for letter_monogram mode
+    mono = _monogram_on_circle(letters) if spare_mode == "letter_monogram" else []
+
     square_name = select_square(digest_hex, override=square_override)
-    mono = _monogram_on_circle(letters)
-    raw_kamea = plot_path(letters, square_name)
-    kamea = _scale_kamea(raw_kamea, square_name)
-    # Bind-runes centered; rose path on mid radius (does not replace monogram)
+    kamea_prov = build_kamea_path(
+        letters=normalized,
+        square_name=square_name,
+        encoding=kamea_encoding,
+        letter_list=letters if kamea_encoding.startswith("latin") else None,
+    )
+    raw_pts = [(p[0], p[1]) for p in kamea_prov.path]
+    kamea = _scale_unit_path(raw_pts, square_name)
+
     bind_polys, bind_runes = build_bind_polylines(spare, cx=50.0, cy=50.0, scale=11.0)
-    rose_pts, rose_slots = build_rose_path(spare or normalized, cx=50.0, cy=50.0, radius=32.0)
+
+    rose_prov_dict: dict[str, Any] = {}
+    rose_pts: list[tuple[float, float]] = []
+    rose_slots: list[int] = []
+    start_m: list[float] = []
+    term_m: list[float] = []
+    try:
+        rose = build_rose_cross_path(normalized, cx=50.0, cy=50.0, radius=32.0)
+        rose_prov_dict = rose.to_dict()
+        rose_pts = [(p[0], p[1]) for p in rose.coordinates]
+        rose_slots = list(rose.petal_indices)
+        start_m = list(rose.start_marker)
+        term_m = list(rose.terminal_marker)
+    except ValueError as exc:
+        rose_prov_dict = {"error": str(exc), "method_id": "rose_cross.hebrew_petal_path"}
+
+    seal_path: list[tuple[float, float]] = []
+    seal_dict: dict[str, Any] = {}
+    if include_planetary_seal:
+        from planetary_seals import seal_for
+
+        art = seal_for(
+            square_name,
+            kind=planetary_seal_kind,
+            digest_hex=digest_hex,
+        )
+        seal_dict = art.to_dict()
+        seal_path = _scale_unit_path(
+            [(p[0], p[1]) for p in art.path], square_name
+        )
+
     return Layout(
         monogram_points=mono,
         kamea_points=kamea,
@@ -96,4 +148,11 @@ def build_layout(
         bind_runes=bind_runes,
         rose_points=rose_pts,
         rose_slots=rose_slots,
+        rose_start_marker=start_m,
+        rose_terminal_marker=term_m,
+        kamea_provenance=kamea_prov.to_dict(),
+        rose_provenance=rose_prov_dict,
+        spare_result=spare_res.to_dict(),
+        planetary_seal_path=seal_path,
+        planetary_seal=seal_dict,
     )

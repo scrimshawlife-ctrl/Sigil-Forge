@@ -1,6 +1,6 @@
 # Sigil-Forge
 
-**Hermes skill** that turns a statement of intent into a **method-faithful, multi-channel sigil**: a procedural master glyph (SVG, optional PNG) fused from Spare-style letter reduction and classical kamea paths, plus a local forge packet with honest channel status and steganographic carriers.
+**Hermes skill** that turns a statement of intent into a **multi-channel sigil** with an explicit method ontology: Spare family (letter-monogram default), kamea name paths with pluggable encodings (`hebrew_gematria` default; `latin_mod9_v1` compatibility), Hebrew Rose Cross, optional Agrippan planetary seals, bind-runes labeled modern_derivation, plus stego carriers and receipts.
 
 Default framing is a **creative / focus tool** (clarify, compress, externalize). Optional **`practice`** mode uses practitioner-oriented language without efficacy claims. Construction is **offline-first** and **verifiable** — no image API required.
 

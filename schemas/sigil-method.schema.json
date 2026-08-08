@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/sigil-method.schema.json",
+  "title": "Sigil method ontology record",
+  "type": "object",
+  "required": [
+    "family",
+    "method_id",
+    "construction_type",
+    "determinism",
+    "claimed_historical_status",
+    "verification_method"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "family": {
+      "type": "string",
+      "enum": [
+        "intent_compression",
+        "name_path",
+        "planetary_character",
+        "alphabetic_ligature",
+        "encoded_carrier",
+        "intuitive_symbol"
+      ]
+    },
+    "method_id": { "type": "string", "minLength": 1 },
+    "construction_type": { "type": "string" },
+    "determinism": {
+      "type": "string",
+      "enum": [
+        "deterministic",
+        "assisted",
+        "corpus_backed",
+        "non_deterministic"
+      ]
+    },
+    "alphabet": { "type": ["string", "null"] },
+    "numeric_system": { "type": ["string", "null"] },
+    "claimed_historical_status": { "type": "string" },
+    "verification_method": { "type": "string" },
+    "source_tradition": { "type": ["string", "null"] },
+    "historical_period": { "type": ["string", "null"] },
+    "artifact_role": { "type": ["string", "null"] },
+    "geometry": { "type": ["string", "null"] },
+    "source_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "extra": { "type": "object" }
+  }
+}
