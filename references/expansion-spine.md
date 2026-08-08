@@ -14,6 +14,7 @@ compression, name paths, planetary characters, and entity seals.
 | v0.3 | `bind_runes`, `rose_cross_path`, run receipts, learning ledger |
 | v0.4 | Kamea multi-encoding + provenance, ontology, Spare family, Hebrew Rose Cross, planetary traditional seals |
 | v0.5 | Transliteration upgrade, kamea goldens, intelligence/spirit reconstructions, phonetic channel, doctor/eval, optional Argon2id, interop fields, source manifest |
+| v0.6 | Wallpaper framework: immutable glyph + atmosphere composite, device profiles, wallpaper-spec/receipt, CLI `wallpaper` |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` (compat)

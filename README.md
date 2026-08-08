@@ -61,7 +61,21 @@ export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
 ```
 
-More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL.md)
+### Wallpapers (immutable glyph + atmosphere)
+
+```bash
+python3 scripts/sigil_forge.py wallpaper \
+  --run out/sigil-forge/<run-id> \
+  --surface phone_lock \
+  --mode focus \
+  --theme mercurial \
+  --style "dark architectural minimalism"
+```
+
+Canonical `glyph.svg` is never AI-redrawn; backgrounds are procedural (offline)
+or operator/AI-supplied, then composited deterministically.
+
+More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL.md) · [wallpaper-framework.md](references/wallpaper-framework.md)
 
 ## What you get
 

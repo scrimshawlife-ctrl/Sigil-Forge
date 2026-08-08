@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | open | learn | ledger | doctor | eval | check | help\n"
+        "commands: construct | verify | wallpaper | open | learn | ledger | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -49,6 +49,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/receipt.py",
         "scripts/ontology.py",
         "scripts/planetary_seals.py",
+        "scripts/wallpaper/pipeline.py",
+        "schemas/wallpaper-spec.schema.json",
+        "schemas/wallpaper-receipt.schema.json",
         "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
@@ -398,6 +401,53 @@ def cmd_doctor(_: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def cmd_wallpaper(args: argparse.Namespace) -> int:
+    """Compose device wallpapers from a verified forge run (immutable glyph)."""
+    from wallpaper.pipeline import build_wallpaper, build_wallpapers_for_run
+
+    run_dir = Path(args.run)
+    try:
+        if args.surface:
+            results = [
+                build_wallpaper(
+                    run_dir,
+                    surface=args.surface.replace("-", "_"),
+                    mode=args.mode,
+                    intensity=args.intensity,
+                    placement=args.placement,
+                    symbolic_theme=args.theme,
+                    visual_direction=args.style or "dark architectural minimalism",
+                    style_preset=args.preset,
+                    background_method=args.background_method,
+                    background_path=Path(args.background) if args.background else None,
+                    embedded_payload=args.embed,
+                )
+            ]
+        else:
+            surfaces = [s.strip().replace("-", "_") for s in (args.surfaces or "").split(",") if s.strip()]
+            if not surfaces:
+                surfaces = ["phone_lock", "phone_home", "desktop"]
+            results = build_wallpapers_for_run(
+                run_dir,
+                surfaces=surfaces,
+                mode=args.mode,
+                intensity=args.intensity,
+                placement=args.placement,
+                symbolic_theme=args.theme,
+                visual_direction=args.style or "dark architectural minimalism",
+                style_preset=args.preset,
+                background_method=args.background_method,
+                background_path=Path(args.background) if args.background else None,
+                embedded_payload=args.embed,
+            )
+    except Exception as exc:  # noqa: BLE001
+        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+        return 1
+    ok = all(r.get("ok") for r in results)
+    print(json.dumps({"ok": ok, "results": results}, indent=2, sort_keys=True))
+    return 0 if ok else 1
+
+
 def cmd_eval(_: argparse.Namespace) -> int:
     """Offline behavioral evals for method corpus honesty."""
     import tempfile
@@ -635,6 +685,64 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("doctor", help="Environment and skill health report")
     sub.add_parser("eval", help="Offline behavioral eval suite")
 
+    pw = sub.add_parser(
+        "wallpaper",
+        help="Compose wallpapers from a forge run (canonical glyph + atmosphere)",
+    )
+    pw.add_argument(
+        "--run",
+        required=True,
+        help="Path to forge run directory (contains glyph.svg + forge-packet.json)",
+    )
+    pw.add_argument(
+        "--surface",
+        default=None,
+        help="Single surface: phone_lock|phone_home|tablet|desktop|desktop_ultrawide",
+    )
+    pw.add_argument(
+        "--surfaces",
+        default=None,
+        help="Comma-separated surfaces (default: phone_lock,phone_home,desktop)",
+    )
+    pw.add_argument(
+        "--mode",
+        default="focus",
+        choices=("stealth", "ambient", "focus", "ritual", "immersive"),
+    )
+    pw.add_argument(
+        "--intensity",
+        default="balanced",
+        choices=("subtle", "balanced", "strong"),
+    )
+    pw.add_argument(
+        "--placement",
+        default=None,
+        choices=("center", "upper_third", "lower_third", "left_field", "right_field", "custom"),
+    )
+    pw.add_argument("--theme", default="neutral", help="symbolic_theme")
+    pw.add_argument("--style", default=None, help="visual direction for background prompt")
+    pw.add_argument(
+        "--preset",
+        default=None,
+        choices=("obsidian", "solar", "lunar", "cyber", "parchment"),
+    )
+    pw.add_argument(
+        "--background-method",
+        default="procedural",
+        choices=("procedural", "ai_generated", "operator_supplied"),
+    )
+    pw.add_argument(
+        "--background",
+        default=None,
+        help="Operator-supplied background PNG (with operator_supplied method)",
+    )
+    pw.add_argument(
+        "--embed",
+        default="intent_digest",
+        choices=("none", "intent_digest", "channel_digest"),
+        help="Wallpaper LSB binding payload (never plaintext intent)",
+    )
+
     args = p.parse_args(argv)
     if args.cmd == "help":
         return cmd_help(args)
@@ -654,6 +762,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_doctor(args)
     if args.cmd == "eval":
         return cmd_eval(args)
+    if args.cmd == "wallpaper":
+        return cmd_wallpaper(args)
     return 2
 
 

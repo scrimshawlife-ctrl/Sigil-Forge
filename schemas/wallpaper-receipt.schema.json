@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/wallpaper-receipt.schema.json",
+  "title": "Sigil Forge Wallpaper Receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "wallpaper_spec_digest",
+    "source_glyph_digest",
+    "output_digest",
+    "geometry_preserved",
+    "plaintext_scan",
+    "safe_zone_check",
+    "dimensions_check",
+    "status"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "wallpaper_spec_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_glyph_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "background_digest": { "type": ["string", "null"] },
+    "output_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "geometry_preserved": { "type": "boolean" },
+    "plaintext_scan": { "type": "string", "enum": ["pass", "fail"] },
+    "safe_zone_check": { "type": "string", "enum": ["pass", "fail", "skip"] },
+    "dimensions_check": { "type": "string", "enum": ["pass", "fail"] },
+    "status": { "type": "string", "enum": ["verified", "failed"] },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

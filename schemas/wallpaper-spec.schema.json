@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sigil-forge.local/schemas/wallpaper-spec.schema.json",
+  "title": "Sigil Forge Wallpaper Specification",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "source",
+    "surface",
+    "canvas",
+    "composition",
+    "presentation",
+    "privacy",
+    "generation",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "source": {
+      "type": "object",
+      "required": ["forge_run_id", "intent_digest", "glyph_path", "glyph_digest"],
+      "properties": {
+        "forge_run_id": { "type": "string" },
+        "intent_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "glyph_path": { "type": "string" },
+        "glyph_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "forge_packet_path": { "type": ["string", "null"] }
+      }
+    },
+    "surface": {
+      "type": "string",
+      "enum": ["phone_lock", "phone_home", "tablet", "desktop", "desktop_ultrawide"]
+    },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height", "orientation"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 512 },
+        "height": { "type": "integer", "minimum": 512 },
+        "orientation": { "type": "string", "enum": ["portrait", "landscape"] },
+        "pixel_ratio": { "type": "number", "minimum": 1 }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "required": ["placement", "scale", "rotation", "safe_zones"],
+      "properties": {
+        "placement": {
+          "type": "string",
+          "enum": ["center", "upper_third", "lower_third", "left_field", "right_field", "custom"]
+        },
+        "x": { "type": "number", "minimum": 0, "maximum": 1 },
+        "y": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scale": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "rotation": { "type": "number", "minimum": -360, "maximum": 360 },
+        "safe_zones": { "type": "array" }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "required": ["mode", "intensity", "symbolic_theme", "glyph_opacity"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["stealth", "ambient", "focus", "ritual", "immersive"]
+        },
+        "intensity": {
+          "type": "string",
+          "enum": ["subtle", "balanced", "strong"]
+        },
+        "symbolic_theme": { "type": "string" },
+        "glyph_opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "stroke_scale": { "type": "number", "exclusiveMinimum": 0 },
+        "glow_strength": { "type": "number", "minimum": 0, "maximum": 1 },
+        "background_complexity": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["plaintext_intent_allowed", "embedded_payload"],
+      "properties": {
+        "plaintext_intent_allowed": { "type": "boolean", "const": false },
+        "embedded_payload": {
+          "type": "string",
+          "enum": ["none", "intent_digest", "channel_digest"]
+        }
+      }
+    },
+    "generation": {
+      "type": "object",
+      "required": ["seed", "background_method", "glyph_composite_method"],
+      "properties": {
+        "seed": { "type": "integer" },
+        "background_method": {
+          "type": "string",
+          "enum": ["procedural", "ai_generated", "operator_supplied"]
+        },
+        "provider": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] },
+        "prompt_path": { "type": ["string", "null"] },
+        "glyph_composite_method": {
+          "type": "string",
+          "enum": ["svg_overlay", "vector_render"]
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["role", "path", "sha256"],
+        "properties": {
+          "role": { "type": "string" },
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}
