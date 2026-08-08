@@ -20,13 +20,138 @@ def cmd_help(_: argparse.Namespace) -> int:
 
 
 def cmd_check(_: argparse.Namespace) -> int:
+    """Smoke-check skill tree: required files, schemas, imports, dry construct."""
+    import importlib
+    import tempfile
+
     from paths import skill_root
 
     root = skill_root()
-    required = ["scripts/paths.py", "VERSION"]
+    required = [
+        "VERSION",
+        "scripts/paths.py",
+        "scripts/sigil_forge.py",
+        "scripts/construct.py",
+        "scripts/verify.py",
+        "scripts/normalize.py",
+        "scripts/safety.py",
+        "scripts/spare.py",
+        "scripts/kamea.py",
+        "scripts/fuse.py",
+        "scripts/svg_export.py",
+        "scripts/stego_svg.py",
+        "scripts/stego_png.py",
+        "scripts/crypto_payload.py",
+        "scripts/packet.py",
+        "schemas/forge-packet.schema.json",
+        "schemas/construction-result.schema.json",
+        "schemas/channel-manifest.schema.json",
+    ]
     missing = [p for p in required if not (root / p).is_file()]
-    ok = not missing
-    print(json.dumps({"ok": ok, "root": str(root), "missing": missing}))
+
+    # Schemas must be valid JSON objects
+    schemas_ok = True
+    schema_errors: list[str] = []
+    for rel in (
+        "schemas/forge-packet.schema.json",
+        "schemas/construction-result.schema.json",
+        "schemas/channel-manifest.schema.json",
+    ):
+        path = root / rel
+        if not path.is_file():
+            schemas_ok = False
+            schema_errors.append(f"{rel}: missing")
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                schemas_ok = False
+                schema_errors.append(f"{rel}: not an object")
+        except (OSError, json.JSONDecodeError) as exc:
+            schemas_ok = False
+            schema_errors.append(f"{rel}: {exc}")
+
+    # Import core scripts modules
+    modules = (
+        "paths",
+        "construct",
+        "verify",
+        "normalize",
+        "safety",
+        "spare",
+        "kamea",
+        "fuse",
+        "svg_export",
+        "stego_svg",
+        "stego_png",
+        "crypto_payload",
+        "packet",
+    )
+    module_errors: list[str] = []
+    for name in modules:
+        try:
+            importlib.import_module(name)
+        except Exception as exc:  # noqa: BLE001
+            module_errors.append(f"{name}: {exc}")
+    modules_ok = not module_errors
+
+    # Dry construct + verify into a temp directory (no persistent out/)
+    construct_ok = False
+    verify_ok = False
+    construct_error: str | None = None
+    try:
+        from construct import run as construct_run
+        from verify import run as verify_run
+
+        with tempfile.TemporaryDirectory(prefix="sigil-forge-check-") as tmp:
+            packet = construct_run(
+                "I maintain calm focus while shipping Sigil-Forge",
+                mode="creative",
+                out_root=Path(tmp),
+                square="saturn",
+            )
+            svg = Path(packet["artifacts"]["svg"])
+            if not svg.is_file():
+                raise RuntimeError("dry construct did not write glyph.svg")
+            if not packet.get("intent_digest"):
+                raise RuntimeError("dry construct missing intent_digest")
+            construct_ok = True
+            v = verify_run(svg)
+            verify_ok = bool(v.get("ok")) and v.get("intent_digest") == packet[
+                "intent_digest"
+            ]
+            if not verify_ok:
+                construct_error = f"verify failed: {v}"
+    except Exception as exc:  # noqa: BLE001
+        construct_error = str(exc)
+        construct_ok = False
+        verify_ok = False
+
+    ok = (
+        not missing
+        and schemas_ok
+        and modules_ok
+        and construct_ok
+        and verify_ok
+    )
+    print(
+        json.dumps(
+            {
+                "ok": ok,
+                "root": str(root),
+                "missing": missing,
+                "schemas_ok": schemas_ok,
+                "schema_errors": schema_errors,
+                "modules_ok": modules_ok,
+                "module_errors": module_errors,
+                "construct_ok": construct_ok,
+                "verify_ok": verify_ok,
+                "construct_error": construct_error,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
     return 0 if ok else 1
 
 
