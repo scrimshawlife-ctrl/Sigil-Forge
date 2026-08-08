@@ -15,7 +15,9 @@ def cmd_help(_: argparse.Namespace) -> int:
         "sigil-forge — multi-channel intent sigils (Hermes skill)\n"
         "commands: construct | verify | verify-proof | inspect | wallpaper | wizard | open | learn | ledger | "
         "policy | doctor | eval | check | help\n"
+        "Product: wallpaper PNG with SF12 sealed vault (intent + methods in-image).\n"
         "See SKILL.md, QUICKSTART.md, references/hermes-runtime-contract.md\n"
+        "Wallpaper product: references/wallpaper-framework.md\n"
         "PoI (on demand): references/proof-of-intent.md"
     )
     return 0
@@ -56,6 +58,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/planetary_seals.py",
         "scripts/wallpaper/pipeline.py",
         "scripts/wallpaper/providers.py",
+        "scripts/wallpaper/vault.py",
         "scripts/wizard.py",
         "scripts/planetary_corpus.py",
         "scripts/plate_strokes.py",
@@ -391,18 +394,13 @@ def cmd_verify_proof(args: argparse.Namespace) -> int:
 
 
 def cmd_open(args: argparse.Namespace) -> int:
-    """Decrypt sealed_intent (packet) or sealed witness (intent capsule)."""
+    """Decrypt sealed packet, capsule, or wallpaper SF12 vault (product carrier)."""
     from construct import resolve_passphrase
     from crypto_payload import open_intent
 
     path = Path(args.packet)
     if not path.is_file():
         print(json.dumps({"ok": False, "error": f"not found: {path}"}), file=sys.stderr)
-        return 1
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 1
     passphrase = resolve_passphrase(args.passphrase)
     if not passphrase:
@@ -415,6 +413,46 @@ def cmd_open(args: argparse.Namespace) -> int:
             ),
             file=sys.stderr,
         )
+        return 1
+
+    # Wallpaper product: SF12 sealed vault inside PNG LSB
+    if getattr(args, "wallpaper", False) or path.suffix.lower() == ".png":
+        if getattr(args, "wallpaper", False) or path.suffix.lower() == ".png":
+            try:
+                from wallpaper.vault import open_wallpaper_vault
+
+                # Only treat as vault when --wallpaper or SF12 probe succeeds
+                if getattr(args, "wallpaper", False):
+                    result = open_wallpaper_vault(path, passphrase)
+                    if args.json:
+                        print(json.dumps(result, indent=2, sort_keys=True))
+                    else:
+                        print(result.get("intent") or result.get("normalized_intent") or "")
+                    return 0
+            except Exception as exc:  # noqa: BLE001
+                if getattr(args, "wallpaper", False):
+                    print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+                    return 1
+                # fall through for non-wallpaper png opens that are not vaults
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        # last chance: png vault without --wallpaper flag
+        if path.suffix.lower() == ".png":
+            try:
+                from wallpaper.vault import open_wallpaper_vault
+
+                result = open_wallpaper_vault(path, passphrase)
+                if args.json:
+                    print(json.dumps(result, indent=2, sort_keys=True))
+                else:
+                    print(result.get("intent") or result.get("normalized_intent") or "")
+                return 0
+            except Exception as exc2:  # noqa: BLE001
+                print(json.dumps({"ok": False, "error": str(exc2)}), file=sys.stderr)
+                return 1
+        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 1
 
     # Capsule mode: open intent-capsule.json sealed witness
@@ -741,12 +779,15 @@ def cmd_doctor(_: argparse.Namespace) -> int:
 
 def _wallpaper_kwargs(args: argparse.Namespace) -> dict:
     """Shared kwargs for wallpaper pipeline from CLI namespace."""
+    from construct import resolve_passphrase
+
     # Wallpaper presentation mode: wallpaper cmd uses --mode; construct uses --wp-mode
     # (construct already owns --mode for creative|practice framing).
     wp_mode = getattr(args, "wp_mode", None) or getattr(args, "mode", None) or "focus"
     # When construct --mode is creative/practice, ignore it for wallpapers
     if wp_mode in ("creative", "practice"):
         wp_mode = getattr(args, "wp_mode", None) or "focus"
+    embed = getattr(args, "embed", None) or "auto"
     return {
         "mode": wp_mode,
         "intensity": getattr(args, "intensity", "balanced") or "balanced",
@@ -761,7 +802,10 @@ def _wallpaper_kwargs(args: argparse.Namespace) -> dict:
         "provider_command": getattr(args, "provider_command", None),
         "model": getattr(args, "model", None),
         "require_ai": bool(getattr(args, "require_ai", False)),
-        "embedded_payload": getattr(args, "embed", None) or "intent_digest",
+        "embedded_payload": embed,
+        "passphrase": resolve_passphrase(getattr(args, "passphrase", None)),
+        "intent": getattr(args, "intent", None),
+        "kdf": getattr(args, "kdf", None) or "auto",
     }
 
 
@@ -1228,10 +1272,20 @@ def _add_wallpaper_options(parser: argparse.ArgumentParser, *, require_run: bool
     )
     parser.add_argument(
         "--embed",
-        default="intent_digest",
-        choices=("none", "intent_digest", "channel_digest"),
-        help="Wallpaper LSB binding payload (never plaintext intent)",
+        default="auto",
+        choices=("auto", "none", "intent_digest", "channel_digest", "sf11", "vault"),
+        help=(
+            "Wallpaper LSB product payload: auto=vault when passphrase else sf11; "
+            "vault seals intent+methods into SF12 (requires passphrase)"
+        ),
     )
+    # construct already owns --passphrase; wallpaper subcommand needs its own
+    if require_run:
+        parser.add_argument(
+            "--passphrase",
+            default=None,
+            help="Passphrase for SF12 wallpaper vault (prefer SIGIL_FORGE_PASSPHRASE)",
+        )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1387,16 +1441,21 @@ def main(argv: list[str] | None = None) -> int:
 
     po = sub.add_parser(
         "open",
-        help="Decrypt sealed_intent (packet) or sealed witness (--capsule)",
+        help="Decrypt packet, capsule, or wallpaper SF12 vault (product carrier)",
     )
     po.add_argument(
         "packet",
-        help="Path to forge-packet.json or intent-capsule.json (with --capsule)",
+        help="Path to forge-packet.json, intent-capsule.json, or wallpaper PNG",
     )
     po.add_argument(
         "--capsule",
         action="store_true",
         help="Open intent-capsule.json sealed witness (commitment-bound)",
+    )
+    po.add_argument(
+        "--wallpaper",
+        action="store_true",
+        help="Open SF12 sealed vault embedded in wallpaper PNG (end product)",
     )
     po.add_argument(
         "--passphrase",

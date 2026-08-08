@@ -34,10 +34,18 @@ def build_wallpaper(
     provider_command: str | None = None,
     model: str | None = None,
     require_ai: bool = False,
-    embedded_payload: str = "intent_digest",
+    embedded_payload: str = "auto",
     out_name: str | None = None,
+    passphrase: str | None = None,
+    intent: str | None = None,
+    kdf: str | None = "auto",
 ) -> dict[str, Any]:
     """Build one wallpaper for a surface from an existing forge run directory.
+
+    **Product (v0.13):** the wallpaper PNG is the end deliverable. When a
+    passphrase is available, intent + method provenance are sealed into SF12
+    LSB vault (``embedded_payload=auto|vault``). Corpus geometry stays in the
+    immutable glyph composite.
 
     Returns summary with paths and receipt status.
     """
@@ -138,15 +146,57 @@ def build_wallpaper(
         json.dumps(spec_for_hash, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
 
+    packet = forge["packet"]
+    embed_mode = (spec["privacy"].get("embedded_payload") or embedded_payload or "auto")
+    embed_mode = str(embed_mode).strip().lower()
+    if embed_mode == "auto":
+        # Product default: sealed vault when passphrase present, else SF11 public
+        embed_mode = "vault" if passphrase else (
+            "sf11" if packet.get("sigil_root") else "intent_digest"
+        )
+
+    sealed_blob = None
+    vault_status = "skipped"
+    if embed_mode == "vault":
+        if not passphrase:
+            vault_status = "failed_no_passphrase"
+            # Fall back to public SF11 so wallpaper still binds digests
+            embed_mode = "sf11" if packet.get("sigil_root") else "intent_digest"
+        else:
+            from wallpaper.vault import build_vault_document, seal_vault
+
+            version = "0.0.0"
+            try:
+                from paths import skill_root
+
+                vpath = skill_root() / "VERSION"
+                if vpath.is_file():
+                    version = vpath.read_text(encoding="utf-8").strip() or version
+            except Exception:
+                pass
+            vault_doc = build_vault_document(
+                packet=packet,
+                intent=intent,
+                wallpaper_spec=spec,
+                wallpaper_spec_digest=spec_digest,
+                skill_version=version,
+            )
+            sealed_blob = seal_vault(vault_doc, passphrase, kdf=kdf)
+            vault_status = "sealed"
+
     emb = embed_binding(
         out_file,
         intent_digest=spec["source"]["intent_digest"],
         wallpaper_spec_digest=spec_digest,
         source_glyph_digest=spec["source"]["glyph_digest"],
-        mode=spec["privacy"].get("embedded_payload") or "none",
+        mode=embed_mode,
+        sigil_root=packet.get("sigil_root"),
+        sealed_blob=sealed_blob,
     )
     if emb:
         out_sha = emb
+        if vault_status == "sealed":
+            vault_status = "embedded"
 
     # Artifacts list
     artifacts = [
@@ -159,16 +209,20 @@ def build_wallpaper(
         },
     ]
     spec["artifacts"] = artifacts
+    spec["privacy"]["embedded_payload"] = embed_mode
+    spec["privacy"]["vault_status"] = vault_status
+    spec["privacy"]["product"] = "wallpaper"
 
     spec_path = wp_dir / f"wallpaper-spec-{surface}.json"
     spec_path.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     # Forbidden phrases: normalized intent if present in packet
-    packet = forge["packet"]
     forbidden = []
     ni = packet.get("normalized_intent")
     if ni and len(ni) >= 8:
         forbidden.append(ni)
+    if intent and len(intent) >= 8:
+        forbidden.append(intent)
 
     receipt = verify_wallpaper(
         spec=spec,
@@ -189,28 +243,14 @@ def build_wallpaper(
         "intent_digest"
     )
     receipt["sigil_root"] = packet.get("sigil_root")
-    # Prefer embedding SF11 when root known
-    if receipt.get("sigil_root") and receipt.get("intent_digest"):
-        try:
-            from stego_envelope import pack_sf11
-            from stego_png import embed_lsb, read_rgb_png, write_rgb_png
-
-            w, h, rgb = read_rgb_png(out_file.read_bytes())
-            clean = write_rgb_png(w, h, rgb)
-            payload = pack_sf11(
-                intent_digest=str(receipt["intent_digest"]),
-                sigil_root=str(receipt["sigil_root"]),
-            )
-            out_file.write_bytes(embed_lsb(clean, payload))
-            out_sha = file_sha256(str(out_file))
-            receipt["output_digest"] = out_sha
-            # update artifacts sha for wallpaper role
-            for a in artifacts:
-                if a.get("role", "").startswith("wallpaper-"):
-                    a["sha256"] = out_sha
-            emb = out_sha
-        except Exception:
-            pass
+    receipt["embedded_payload"] = embed_mode
+    receipt["vault_status"] = vault_status
+    receipt["product"] = "wallpaper"
+    if emb:
+        receipt["output_digest"] = out_sha
+        for a in artifacts:
+            if a.get("role", "").startswith("wallpaper-"):
+                a["sha256"] = out_sha
 
     receipt_path = receipts_dir / f"wallpaper-receipt-{surface}.json"
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -218,6 +258,7 @@ def build_wallpaper(
     return {
         "ok": receipt.get("status") == "verified",
         "surface": surface,
+        "product": "wallpaper",
         "wallpaper": str(out_file),
         "background": str(bg_file),
         "background_method": bg.background_method,
@@ -229,6 +270,8 @@ def build_wallpaper(
         "geometry_preserved": receipt.get("geometry_preserved"),
         "intent_commitment": receipt.get("intent_commitment"),
         "sigil_root": receipt.get("sigil_root"),
+        "embedded_payload": embed_mode,
+        "vault_status": vault_status,
         "notes": list(bg.notes),
         "schema_version": SCHEMA_VERSION,
     }

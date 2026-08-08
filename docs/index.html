@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sigil-Forge — multi-channel intent sigils</title>
+    <title>Sigil-Forge — intent layered into the wallpaper</title>
     <meta
       name="description"
-      content="Offline Hermes skill that turns a statement of intent into a multi-channel sigil: glyph, forge packet, stego carriers, wallpapers, and Proof of Intent."
+      content="Offline Hermes skill: corpus methods forge glyph geometry; the wallpaper PNG is the product — intent and methods encrypted into the image."
     />
     <meta name="theme-color" content="#0e0c14" />
     <meta property="og:title" content="Sigil-Forge" />
@@ -54,20 +54,20 @@
         </div>
         <div class="marquee__veil" aria-hidden="true"></div>
         <div class="marquee__copy">
-          <p class="eyebrow">v0.12.6 · Hermes skill · MIT</p>
+          <p class="eyebrow">v0.13.0 · Hermes skill · MIT</p>
           <h1 class="marquee__title">
-            Intent, <span class="verb">forged</span> into channels.
+            Intent, <span class="verb">layered</span> into the image.
           </h1>
           <p class="marquee__lede">
-            Offline multi-channel sigils: procedural glyph, forge packet,
-            steganography, wallpapers, and privacy-preserving Proof of Intent —
-            for Hermes agents and operators who want craft without cloud.
+            Corpus methods forge the glyph. The end product is the wallpaper —
+            atmosphere, geometry, and an encrypted vault of intent and method
+            provenance sealed into the PNG.
           </p>
         </div>
       </section>
 
       <aside class="meter" aria-label="Release readout">
-        <p class="meter__label meter__label--left">Release · 0.12.6</p>
+        <p class="meter__label meter__label--left">Release · 0.13.0</p>
         <div class="meter__bars" id="meter-bars" aria-hidden="true"></div>
         <p class="meter__label meter__label--right">Python · 3.10+</p>
       </aside>
@@ -101,19 +101,19 @@
             </p>
           </article>
           <article class="card">
-            <p class="card__eyebrow">Carriers</p>
-            <h3 class="card__title">Stego + wallpaper</h3>
+            <p class="card__eyebrow">Product</p>
+            <h3 class="card__title">Wallpaper vault</h3>
             <p class="card__text">
-              SVG channels and PNG LSB (digest / SF11 root). Wallpapers composite
-              the immutable glyph over atmosphere — never redraw the topology.
+              Composite + SF12 LSB vault: intent and methods encrypted in the
+              image. Public digests for verify; passphrase opens the vault.
             </p>
           </article>
           <article class="card">
             <p class="card__eyebrow">Provenance</p>
-            <h3 class="card__title">Proof of Intent</h3>
+            <h3 class="card__title">Layered encoding</h3>
             <p class="card__text">
-              Salted commitment, Merkle <code>sigil_root</code>, optional sealed
-              capsule. Proofs are provenance — not efficacy claims.
+              Geometry respects Spare/kamea/Rose/bind/planetary corpus. Packet
+              files are workspace — the handoff is the wallpaper PNG.
             </p>
           </article>
         </div>
@@ -222,18 +222,16 @@
         <div class="terminal" tabindex="0">
           <pre><span class="cmt"># install as Hermes skill</span>
 <span class="cmd">bash install.sh</span>
-<span class="cmt"># → ~/.hermes/skills/sigil-forge</span>
 
-<span class="cmt"># smoke</span>
-<span class="cmd">python3 scripts/sigil_forge.py check</span>
-
-<span class="cmt"># wizard (Hermes default loop)</span>
-<span class="cmd">python3 scripts/sigil_forge.py wizard --session-new --path quick</span>
-
-<span class="cmt"># expert construct + verify</span>
+<span class="cmt"># product path — wallpaper with sealed vault</span>
+<span class="cmd">export SIGIL_FORGE_PASSPHRASE='…'</span>
 <span class="cmd">python3 scripts/sigil_forge.py construct \</span>
-<span class="cmd">  --intent "I maintain calm focus" --out out/sigil-forge</span>
-<span class="cmd">python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg</span></pre>
+<span class="cmd">  --intent "I maintain calm focus" \</span>
+<span class="cmd">  --wallpaper --surface phone_lock --embed vault</span>
+
+<span class="cmt"># open the deliverable</span>
+<span class="cmd">python3 scripts/sigil_forge.py open --wallpaper \</span>
+<span class="cmd">  out/sigil-forge/*/wallpaper/phone-lock.png --json</span></pre>
         </div>
         <div class="cta-band">
           <a
@@ -272,7 +270,7 @@
             >Proof of Intent</a
           >
         </nav>
-        <span class="muted">© 2026 · v0.12.6</span>
+        <span class="muted">© 2026 · v0.13.0</span>
       </div>
     </footer>
 
