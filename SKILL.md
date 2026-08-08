@@ -40,9 +40,11 @@ intake, mode framing, safety judgment, and optional host image polish.
 Sigil-Forge turns a statement of intent into:
 
 1. A **procedural master glyph** (SVG + offline PNG) fusing Spare monogram geometry
-   with a classical kamea path.
-2. A **local forge packet** with channel status, methods, crypto policy, and verify command.
+   with kamea / rose / bind-runes (and optional planetary seals).
+2. A **local forge packet** with method ontology, channels, crypto policy, and verify command.
 3. **Steganographic carriers** (digest/channel bits — not plaintext intent by default).
+4. Optional **wallpapers**: device-aware composition of the **immutable** glyph over
+   atmosphere (procedural or host-supplied). The model never redraws canonical geometry.
 
 Default framing is a **creative / focus tool**. Optional **`practice`** mode changes
 tone only. Methods are craft + encoding — never proof of metaphysics.
@@ -114,7 +116,17 @@ Each step ends with a checkable completion criterion.
    ```
 
    **Done when:** `ok: true` and digest matches packet (or honest failure detail).
-8. **Open sealed intent** (if sealed):
+8. **Optional wallpapers** — Only after master verify:
+
+   ```bash
+   python3 scripts/sigil_forge.py wallpaper \
+     --run out/sigil-forge/<run-id> \
+     --surface phone_lock --mode focus --theme mercurial
+   ```
+
+   **Done when:** `wallpaper/` + `receipts/wallpaper-receipt-*.json` exist;
+   receipt `geometry_preserved: true`; `glyph.svg` digest unchanged.
+9. **Open sealed intent** (if sealed):
 
    ```bash
    export SIGIL_FORGE_PASSPHRASE='…'
@@ -151,8 +163,10 @@ claim full embed.
 | `metric_quantize` | `data-sf-metric` digest nibble attributes |
 | `png_lsb` | Offline layout raster + LSB (digest-only payload) |
 | `gen_seed` | Digest-derived seed when `--polish` / write_polish |
+| `phonetic_sigil` | Optional phoneme-sequence JSON (`--phonetic`) |
 
-Details: `references/channels-and-steganography.md`.
+Details: `references/channels-and-steganography.md`. Wallpapers are a
+**presentation layer**, not an additional forge channel.
 
 ## CLI
 
@@ -213,17 +227,30 @@ python3 scripts/sigil_forge.py construct \
 
 **Done when:** `polish_prompt.json` exists; `gen_seed` is `applied`; master still verifies.
 
+### Phone/desktop wallpaper
+
+```bash
+python3 scripts/sigil_forge.py construct --intent "I maintain calm focus" --out out/sigil-forge
+RUN=$(ls -d out/sigil-forge/*/ | head -1)
+python3 scripts/sigil_forge.py verify "${RUN}glyph.svg"
+python3 scripts/sigil_forge.py wallpaper --run "$RUN" --surfaces phone_lock,phone_home,desktop
+```
+
+**Done when:** wallpapers under `wallpaper/`; receipts `status: verified`;
+`glyph.svg` hash unchanged.
+
 ## Common Pitfalls
 
 1. **Inventing geometry** — monogram/kamea points come only from `scripts/`.
 2. **Claiming stego success** when `verify` fails or channel is `skipped`.
-3. **Leaking plaintext intent** into public SVG/PNG (default policy forbids).
+3. **Leaking plaintext intent** into public SVG/PNG/wallpapers (default policy forbids).
 4. **Treating PNG as full ciphertext** — public PNG LSB is digest-only; seal is packet-local.
 5. **All-vowel intents** — raise `NOT_COMPUTABLE:`; rewrite with consonants.
 6. **`--passphrase` on argv** — prefer `SIGIL_FORGE_PASSPHRASE`.
 7. **Collapsing Enochian seals** into Spare intent glyphs.
 8. **Mutating `references/`** or auto-promoting artifacts to canon.
 9. **Premature completion** — deliver without verify when integrity was claimed.
+10. **AI-redrawing the sigil for wallpaper** — generate atmosphere only; composite the master SVG.
 
 ## Verification Checklist
 
@@ -236,6 +263,7 @@ python3 scripts/sigil_forge.py construct \
 - [ ] Public media has no default plaintext intent
 - [ ] Framing matches mode; **no efficacy claims**
 - [ ] If polished: `polish_prompt.json` + `gen_seed` applied; master still verifies
+- [ ] If wallpaper: receipts `geometry_preserved: true`; no plaintext intent; glyph digest unchanged
 - [ ] `python3 scripts/sigil_forge.py check` → `ok: true`
 - [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release)
 

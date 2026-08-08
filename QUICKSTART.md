@@ -1,10 +1,11 @@
 # Sigil-Forge quickstart
 
-Five commands from zero to a verified glyph (run from the skill root — clone or install dir).
+Run from the skill root (clone or install dir). **Current version: 0.6.0.**
 
 ```bash
 # 1. Smoke-check the skill tree
 python3 scripts/sigil_forge.py check
+# Optional: python3 scripts/sigil_forge.py doctor
 
 # 2. Construct a creative forge packet + master glyph
 python3 scripts/sigil_forge.py construct \
@@ -15,7 +16,19 @@ python3 scripts/sigil_forge.py construct \
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
 
-# 4. (Optional) Practice seal + open (prefer env over --passphrase)
+# 4. Compose device wallpapers (immutable glyph + atmosphere)
+#    Replace <run-id> with the directory name under out/sigil-forge/
+python3 scripts/sigil_forge.py wallpaper \
+  --run out/sigil-forge/<run-id> \
+  --surface phone_lock \
+  --mode focus \
+  --theme mercurial \
+  --style "dark architectural minimalism"
+
+# Or multi-surface defaults:
+# python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id>
+
+# 5. (Optional) Practice seal + open (prefer env over --passphrase)
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
@@ -24,8 +37,8 @@ python3 scripts/sigil_forge.py construct \
   --out out/sigil-forge
 python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
 
-# 5. (Dev) Tests + Hermes frontmatter hygiene
-python3 -m pytest -v
+# 6. (Dev) Tests + Hermes frontmatter hygiene
+python3 -m pytest -q
 python3 scripts/validate_hermes_skill.py
 ```
 
@@ -36,4 +49,8 @@ bash install.sh --dry-run    # preview
 bash install.sh              # → ~/.hermes/skills/sigil-forge
 ```
 
-See [README.md](README.md) for overview and [SKILL.md](SKILL.md) for the Hermes agent contract.
+Wallpaper outputs live under `<run-id>/wallpaper/` and `<run-id>/receipts/`.
+Canonical `glyph.svg` is never rewritten by wallpaper generation.
+
+See [README.md](README.md), [SKILL.md](SKILL.md), and
+[references/wallpaper-framework.md](references/wallpaper-framework.md).

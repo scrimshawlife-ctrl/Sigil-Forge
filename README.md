@@ -86,9 +86,11 @@ More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL
 | Run receipt | `run-receipt.json` + append-only receipt log (no plaintext required) |
 | Stego carriers | SVG multi-channel + PNG LSB (digest-only on public PNG) |
 | Optional polish_prompt.json | Geometry-locked host image prompt + `gen_seed` |
+| Wallpapers | Device-aware composites under `wallpaper/` + `wallpaper-receipt` |
 | Learning ledger | PROPOSED observations via `learn` / `ledger` (never auto-canon) |
 
-Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).
+Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).  
+Wallpaper contract: [references/wallpaper-framework.md](references/wallpaper-framework.md).
 
 ## Design
 

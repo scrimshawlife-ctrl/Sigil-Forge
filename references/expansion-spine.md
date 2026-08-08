@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.5.0** (this file tracks shipped vs remaining).
+**Current release: v0.6.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -24,17 +24,25 @@ compression, name paths, planetary characters, and entity seals.
 - Spare family modes + phonetic JSON carrier
 - Ontology + `references/source-manifest.yaml`
 
+### Wallpapers (v0.6)
+- Surfaces: `phone_lock`, `phone_home`, `tablet`, `desktop`, `desktop_ultrawide`
+- Modes: stealth / ambient / focus / ritual / immersive
+- Canonical glyph immutable; background = procedural (offline) or operator/AI-supplied
+- Spec + receipt under `wallpaper/` and `receipts/`; optional LSB digest binding
+
 ### Ops
-- CLI: construct, verify, open, learn, ledger, doctor, eval, check
+- CLI: construct, verify, wallpaper, open, learn, ledger, doctor, eval, check
 - Receipts + PROPOSED ledger
 - `validate_hermes_skill.py`
 
 ## Remaining / optional later
+- Host AI background provider wire-up (ComfyUI / image_gen) using existing prompt packages
 - Full manuscript-accurate intelligence/spirit *grimoire* character corpus (beyond kamea-derived reconstructions)
 - Audio/MIDI for mantric carriers
 - Multi-frame storyboard carriers
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
 - Deeper geometric multi-channel steganalysis
+- `forge --wallpaper` one-shot multi-surface pipeline convenience
 
 ## Explicit non-goals
 - Goetic / Enochian / authority seals in the **default** forge
