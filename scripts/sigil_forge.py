@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | wallpaper | open | learn | ledger | doctor | eval | check | help\n"
+        "commands: construct | verify | wallpaper | wizard | open | learn | ledger | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -51,6 +51,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/planetary_seals.py",
         "scripts/wallpaper/pipeline.py",
         "scripts/wallpaper/providers.py",
+        "scripts/wizard.py",
+        "scripts/planetary_corpus.py",
+        "references/planetary-character-corpus.json",
         "schemas/wallpaper-spec.schema.json",
         "schemas/wallpaper-receipt.schema.json",
         "scripts/validate_hermes_skill.py",
@@ -104,6 +107,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "receipt",
         "ontology",
         "planetary_seals",
+        "planetary_corpus",
+        "wizard",
         "crypto_payload",
         "packet",
     )
@@ -505,6 +510,76 @@ def cmd_wallpaper(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def cmd_wizard(args: argparse.Namespace) -> int:
+    """Hermes-facing guided forge wizard."""
+    from wizard import (
+        apply_answers,
+        default_answers,
+        interactive_answers,
+        load_answers_file,
+        validate_answers,
+        wizard_script,
+    )
+
+    if getattr(args, "script", False):
+        print(json.dumps(wizard_script(), indent=2, sort_keys=True))
+        return 0
+    if getattr(args, "defaults", False):
+        print(json.dumps({"answers": default_answers()}, indent=2, sort_keys=True))
+        return 0
+    if getattr(args, "list_corpus", False):
+        from planetary_corpus import list_corpus_summary, load_corpus
+
+        data = load_corpus()
+        print(
+            json.dumps(
+                {
+                    "corpus_id": data.get("corpus_id"),
+                    "source_tradition": data.get("source_tradition"),
+                    "planets": list_corpus_summary(),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    answers: dict
+    if getattr(args, "interactive", False):
+        answers = interactive_answers()
+    elif getattr(args, "apply", None):
+        try:
+            answers = load_answers_file(args.apply)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+    elif getattr(args, "answers_json", None):
+        try:
+            answers = json.loads(args.answers_json)
+            if not isinstance(answers, dict):
+                raise ValueError("answers-json must be an object")
+        except (json.JSONDecodeError, ValueError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+    else:
+        # Default: emit script so Hermes/agents know what to do
+        print(json.dumps(wizard_script(), indent=2, sort_keys=True))
+        return 0
+
+    if getattr(args, "validate_only", False):
+        report = validate_answers(answers)
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0 if report["ok"] else 1
+
+    result = apply_answers(
+        answers,
+        out_root=Path(args.out) if getattr(args, "out", None) else None,
+        passphrase=getattr(args, "passphrase", None),
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result.get("ok") else 1
+
+
 def cmd_eval(_: argparse.Namespace) -> int:
     """Offline behavioral evals for method corpus honesty."""
     import tempfile
@@ -856,6 +931,56 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("doctor", help="Environment and skill health report")
     sub.add_parser("eval", help="Offline behavioral eval suite")
 
+    pwz = sub.add_parser(
+        "wizard",
+        help="Guided forge interview (Hermes agent script or --apply answers)",
+    )
+    pwz.add_argument(
+        "--script",
+        action="store_true",
+        help="Print interview steps JSON for Hermes (default if no apply)",
+    )
+    pwz.add_argument(
+        "--defaults",
+        action="store_true",
+        help="Print default answers template JSON",
+    )
+    pwz.add_argument(
+        "--list-corpus",
+        action="store_true",
+        help="List planetary intelligence/spirit corpus names",
+    )
+    pwz.add_argument(
+        "--apply",
+        default=None,
+        help="Path to answers JSON; run construct (+ optional wallpaper)",
+    )
+    pwz.add_argument(
+        "--answers-json",
+        default=None,
+        help="Inline answers JSON object string",
+    )
+    pwz.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Human TTY prompts (not for Hermes)",
+    )
+    pwz.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate answers without constructing",
+    )
+    pwz.add_argument(
+        "--out",
+        default=None,
+        help="Output root for --apply (default: out/sigil-forge)",
+    )
+    pwz.add_argument(
+        "--passphrase",
+        default=None,
+        help="Seal passphrase if answers.seal_packet (prefer SIGIL_FORGE_PASSPHRASE)",
+    )
+
     pw = sub.add_parser(
         "wallpaper",
         help="Compose wallpapers from a forge run (canonical glyph + atmosphere)",
@@ -883,6 +1008,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_eval(args)
     if args.cmd == "wallpaper":
         return cmd_wallpaper(args)
+    if args.cmd == "wizard":
+        return cmd_wizard(args)
     return 2
 
 

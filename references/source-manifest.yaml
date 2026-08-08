@@ -1,7 +1,7 @@
 # Historical / methodological source manifest for Sigil-Forge methods.
 # Citations are pointers for provenance honesty, not endorsement of efficacy.
 
-version: "0.5.0"
+version: "0.8.0"
 
 methods:
   spare.letter_monogram:
@@ -53,13 +53,17 @@ methods:
   planetary.intelligence_character:
     family: planetary_character
     sources:
-      - title: "Agrippa planetary intelligences (engine reconstruction)"
-        note: "Odd-then-even path; documented reconstruction not unique MS glyph"
+      - title: "Agrippa planetary intelligences"
+        note: "v0.8 corpus name_on_kamea (Hebrew/latin names); fallback odds→evens reconstruction"
+      - title: "references/planetary-character-corpus.json"
+        note: "Names, numbers, construction flags"
   planetary.spirit_character:
     family: planetary_character
     sources:
-      - title: "Agrippa planetary spirits (engine reconstruction)"
-        note: "Reverse n²→1 path; documented reconstruction"
+      - title: "Agrippa planetary spirits"
+        note: "v0.8 corpus name_on_kamea; fallback reverse successive reconstruction"
+      - title: "references/planetary-character-corpus.json"
+        note: "Names, numbers, construction flags"
 
   bind_rune.elder_futhark_modern:
     family: alphabetic_ligature

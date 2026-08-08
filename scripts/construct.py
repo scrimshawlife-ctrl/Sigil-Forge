@@ -535,6 +535,7 @@ def run(
             include_rose=True,
             include_planetary_seal=bool(planetary_seal),
             planet=square_name if planetary_seal else None,
+            planetary_seal_kind=planetary_seal_kind,
         )
         provenance = {
             "kamea": kprov,

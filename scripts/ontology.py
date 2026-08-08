@@ -109,6 +109,7 @@ def default_packet_ontology(
     include_rose: bool = True,
     include_planetary_seal: bool = False,
     planet: str | None = None,
+    planetary_seal_kind: str = "traditional_seal",
 ) -> dict[str, Any]:
     """Ontology block embedded in forge packets."""
     methods: list[dict[str, Any]] = []
@@ -202,21 +203,44 @@ def default_packet_ontology(
         )
 
     if include_planetary_seal and planet:
+        kind = (planetary_seal_kind or "traditional_seal").strip().lower()
+        if kind == "intelligence_character":
+            mid = f"planetary.intelligence_character.{planet}"
+            ctype = "agrippan_intelligence_character"
+            hist = "corpus_name_path_agrippan"
+            refs = [
+                "Agrippa Book II planetary intelligences",
+                "references/planetary-character-corpus.json",
+            ]
+        elif kind == "spirit_character":
+            mid = f"planetary.spirit_character.{planet}"
+            ctype = "agrippan_spirit_character"
+            hist = "corpus_name_path_agrippan"
+            refs = [
+                "Agrippa Book II planetary spirits",
+                "references/planetary-character-corpus.json",
+            ]
+        else:
+            mid = f"planetary.traditional_seal.{planet}"
+            ctype = "agrippan_planetary_seal"
+            hist = "historically_aligned_agrippan_character"
+            refs = ["Agrippa Book II planetary seals"]
         methods.append(
             method_record(
                 family=FAMILY_PLANETARY_CHARACTER,
-                method_id=f"planetary.traditional_seal.{planet}",
-                construction_type="agrippan_planetary_seal",
+                method_id=mid,
+                construction_type=ctype,
                 determinism="deterministic",
-                alphabet=None,
-                numeric_system=None,
-                claimed_historical_status="historically_aligned_agrippan_character",
+                alphabet="hebrew" if kind != "traditional_seal" else None,
+                numeric_system="hebrew_gematria" if kind != "traditional_seal" else None,
+                claimed_historical_status=hist,
                 verification_method="seal_geometry_reproducible",
                 source_tradition="Agrippa planetary seals/characters",
                 historical_period="renaissance+",
                 artifact_role="planetary_character",
                 geometry="seal_polyline_set",
-                source_refs=["Agrippa Book II planetary seals"],
+                source_refs=refs,
+                extra={"planetary_seal_kind": kind},
             )
         )
 

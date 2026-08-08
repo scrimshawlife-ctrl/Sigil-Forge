@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_id": "planetary_character_agrippa_v1",
+  "title": "Planetary intelligence & spirit character corpus",
+  "source_tradition": "Agrippa Three Books of Occult Philosophy, Book II (Western ceremonial tables)",
+  "notes": [
+    "Intelligence/spirit geometries prefer name_on_kamea using the corpus names on the planetary square.",
+    "Traditional seals remain successive 1..n² on the kamea (table reconstruction).",
+    "Fallback engine reconstructions (odds-then-evens / reverse successive) are labeled engine_reconstruction_documented.",
+    "Names and numbers are provenance metadata for craft honesty — not entity-authority seals and not Goetic/Enochian defaults."
+  ],
+  "planets": {
+    "saturn": {
+      "order": 3,
+      "intelligence": {
+        "name_latin": "Agiel",
+        "name_hebrew": "אגיאל",
+        "number": 45,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Zazel",
+        "name_hebrew": "זאזל",
+        "number": 45,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "jupiter": {
+      "order": 4,
+      "intelligence": {
+        "name_latin": "Iophiel",
+        "name_hebrew": "יופיאל",
+        "number": 136,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Hismael",
+        "name_hebrew": "הסמאל",
+        "number": 136,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "mars": {
+      "order": 5,
+      "intelligence": {
+        "name_latin": "Graphiel",
+        "name_hebrew": "גראפיאל",
+        "number": 325,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Bartzabel",
+        "name_hebrew": "ברצבאל",
+        "number": 325,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "sol": {
+      "order": 6,
+      "intelligence": {
+        "name_latin": "Nakhiel",
+        "name_hebrew": "נכיאל",
+        "number": 111,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Sorath",
+        "name_hebrew": "סורת",
+        "number": 666,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "venus": {
+      "order": 7,
+      "intelligence": {
+        "name_latin": "Hagiel",
+        "name_hebrew": "הגיאל",
+        "number": 49,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Kedemel",
+        "name_hebrew": "קדמאל",
+        "number": 175,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "mercury": {
+      "order": 8,
+      "intelligence": {
+        "name_latin": "Tiriel",
+        "name_hebrew": "טיריאל",
+        "number": 260,
+        "construction": "name_on_kamea"
+      },
+      "spirit": {
+        "name_latin": "Taphthartharath",
+        "name_hebrew": "תפתרתרת",
+        "number": 2080,
+        "construction": "name_on_kamea"
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    },
+    "luna": {
+      "order": 9,
+      "intelligence": {
+        "name_latin": "Malkah",
+        "name_hebrew": "מלכה",
+        "name_full_latin": "Malkah be-Tarshishim ve-ad Ruachoth Shechalim",
+        "number": 3321,
+        "construction": "name_on_kamea",
+        "notes": [
+          "Full classical title is long; corpus uses short working name Malkah/מלכה for path fidelity"
+        ]
+      },
+      "spirit": {
+        "name_latin": "Schad Barschemoth",
+        "name_hebrew": "שדברשמות",
+        "name_full_latin": "Schad Barschemoth ha-Shartathan",
+        "number": 3321,
+        "construction": "name_on_kamea",
+        "notes": [
+          "Working form for path encoding; full title retained in name_full_latin"
+        ]
+      },
+      "traditional_seal": { "construction": "successive_1_to_n2" }
+    }
+  }
+}
