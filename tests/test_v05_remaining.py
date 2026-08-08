@@ -64,14 +64,16 @@ def test_intelligence_and_spirit_have_geometry():
     intel = intelligence_character("jupiter")
     spirit = spirit_character("jupiter")
     trad = traditional_seal_path("jupiter")
-    # v0.8+: corpus name_on_kamea (variable length); traditional still 1..n²
+    # v0.9+: plate strokes default; traditional plate primary still 1..n² cells
     assert len(trad.path) == 16
+    assert len(trad.strokes) >= 2
     assert len(intel.path) >= 2
     assert len(spirit.path) >= 2
     assert intel.path != trad.path
     assert spirit.path != trad.path
     assert intel.provenance.get("not_traditional_seal") is True
     assert intel.claimed_historical_status in (
+        "stroke_digitization_plate_v1",
         "corpus_name_path_agrippan",
         "engine_reconstruction_documented",
     )

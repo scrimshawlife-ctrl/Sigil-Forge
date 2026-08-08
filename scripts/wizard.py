@@ -59,8 +59,7 @@ STEPS: list[dict[str, Any]] = [
         "id": "planetary_seal",
         "prompt": (
             "Optional planetary character (distinct from intent kamea path): "
-            "none, traditional_seal, intelligence_character (corpus name-on-kamea), "
-            "or spirit_character."
+            "none, traditional_seal, intelligence_character, or spirit_character."
         ),
         "type": "choice",
         "choices": [
@@ -70,6 +69,17 @@ STEPS: list[dict[str, Any]] = [
             "spirit_character",
         ],
         "default": "none",
+    },
+    {
+        "id": "planetary_geometry",
+        "prompt": (
+            "Planetary geometry source (used when a seal/character is selected): "
+            "auto (plate strokes → name_on_kamea → reconstruction), plate, "
+            "name_on_kamea, or reconstruction."
+        ),
+        "type": "choice",
+        "choices": ["auto", "plate", "name_on_kamea", "reconstruction"],
+        "default": "auto",
     },
     {
         "id": "spare_mode",
@@ -262,6 +272,7 @@ def answers_to_construct_kwargs(answers: dict[str, Any]) -> dict[str, Any]:
         "spare_mode": answers.get("spare_mode") or "letter_monogram",
         "planetary_seal": planetary,
         "planetary_seal_kind": seal_kind if planetary else "traditional_seal",
+        "planetary_geometry": answers.get("planetary_geometry") or "auto",
         "phonetic": bool(answers.get("phonetic")),
         "write_polish": bool(answers.get("polish")),
         "seal_packet": bool(answers.get("seal_packet")),

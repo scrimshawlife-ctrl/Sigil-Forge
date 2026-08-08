@@ -1,0 +1,974 @@
+{
+  "schema_version": "1.0.0",
+  "plate_corpus_id": "planetary_plate_strokes_v1",
+  "title": "Planetary plate stroke digitizations",
+  "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+  "notes": [
+    "traditional_seal plates are generated (successive path + frame + ticks)",
+    "intelligence/spirit use unit_box multi-stroke digitizations below",
+    "claimed_historical_status: stroke_digitization_plate_v1",
+    "Never claim unique MS authority or entity coercion"
+  ],
+  "entries": {
+    "saturn": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Agiel",
+        "entity_number": 45,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.08
+            ],
+            [
+              0.5,
+              0.78
+            ]
+          ],
+          [
+            [
+              0.28,
+              0.22
+            ],
+            [
+              0.72,
+              0.22
+            ]
+          ],
+          [
+            [
+              0.32,
+              0.78
+            ],
+            [
+              0.68,
+              0.78
+            ],
+            [
+              0.62,
+              0.92
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.45
+            ],
+            [
+              0.72,
+              0.55
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Zazel",
+        "entity_number": 45,
+        "strokes": [
+          [
+            [
+              0.22,
+              0.15
+            ],
+            [
+              0.78,
+              0.15
+            ],
+            [
+              0.78,
+              0.55
+            ],
+            [
+              0.22,
+              0.55
+            ],
+            [
+              0.22,
+              0.15
+            ]
+          ],
+          [
+            [
+              0.22,
+              0.55
+            ],
+            [
+              0.5,
+              0.88
+            ],
+            [
+              0.78,
+              0.55
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.55
+            ],
+            [
+              0.5,
+              0.35
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "jupiter": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Iophiel",
+        "entity_number": 136,
+        "strokes": [
+          [
+            [
+              0.35,
+              0.12
+            ],
+            [
+              0.35,
+              0.85
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.12
+            ],
+            [
+              0.7,
+              0.12
+            ],
+            [
+              0.7,
+              0.4
+            ],
+            [
+              0.35,
+              0.4
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.55
+            ],
+            [
+              0.68,
+              0.55
+            ],
+            [
+              0.68,
+              0.85
+            ]
+          ],
+          [
+            [
+              0.55,
+              0.4
+            ],
+            [
+              0.55,
+              0.55
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Hismael",
+        "entity_number": 136,
+        "strokes": [
+          [
+            [
+              0.2,
+              0.2
+            ],
+            [
+              0.8,
+              0.2
+            ],
+            [
+              0.8,
+              0.8
+            ],
+            [
+              0.2,
+              0.8
+            ]
+          ],
+          [
+            [
+              0.2,
+              0.5
+            ],
+            [
+              0.8,
+              0.5
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.2
+            ],
+            [
+              0.5,
+              0.8
+            ]
+          ],
+          [
+            [
+              0.3,
+              0.3
+            ],
+            [
+              0.45,
+              0.45
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "mars": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Graphiel",
+        "entity_number": 325,
+        "strokes": [
+          [
+            [
+              0.3,
+              0.85
+            ],
+            [
+              0.3,
+              0.25
+            ],
+            [
+              0.7,
+              0.25
+            ]
+          ],
+          [
+            [
+              0.55,
+              0.25
+            ],
+            [
+              0.78,
+              0.12
+            ]
+          ],
+          [
+            [
+              0.55,
+              0.25
+            ],
+            [
+              0.78,
+              0.38
+            ]
+          ],
+          [
+            [
+              0.3,
+              0.55
+            ],
+            [
+              0.6,
+              0.55
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Bartzabel",
+        "entity_number": 325,
+        "strokes": [
+          [
+            [
+              0.25,
+              0.75
+            ],
+            [
+              0.5,
+              0.15
+            ],
+            [
+              0.75,
+              0.75
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.55
+            ],
+            [
+              0.65,
+              0.55
+            ]
+          ],
+          [
+            [
+              0.72,
+              0.18
+            ],
+            [
+              0.88,
+              0.08
+            ]
+          ],
+          [
+            [
+              0.72,
+              0.18
+            ],
+            [
+              0.88,
+              0.28
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "sol": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Nakhiel",
+        "entity_number": 111,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.18
+            ],
+            [
+              0.68,
+              0.25
+            ],
+            [
+              0.78,
+              0.42
+            ],
+            [
+              0.78,
+              0.58
+            ],
+            [
+              0.68,
+              0.75
+            ],
+            [
+              0.5,
+              0.82
+            ],
+            [
+              0.32,
+              0.75
+            ],
+            [
+              0.22,
+              0.58
+            ],
+            [
+              0.22,
+              0.42
+            ],
+            [
+              0.32,
+              0.25
+            ],
+            [
+              0.5,
+              0.18
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.32
+            ],
+            [
+              0.5,
+              0.68
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.5
+            ],
+            [
+              0.65,
+              0.5
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Sorath",
+        "entity_number": 666,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.1
+            ],
+            [
+              0.5,
+              0.9
+            ]
+          ],
+          [
+            [
+              0.2,
+              0.5
+            ],
+            [
+              0.8,
+              0.5
+            ]
+          ],
+          [
+            [
+              0.28,
+              0.28
+            ],
+            [
+              0.72,
+              0.72
+            ]
+          ],
+          [
+            [
+              0.72,
+              0.28
+            ],
+            [
+              0.28,
+              0.72
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.1
+            ],
+            [
+              0.62,
+              0.22
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "venus": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Hagiel",
+        "entity_number": 49,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.12
+            ],
+            [
+              0.72,
+              0.28
+            ],
+            [
+              0.72,
+              0.48
+            ],
+            [
+              0.5,
+              0.62
+            ],
+            [
+              0.28,
+              0.48
+            ],
+            [
+              0.28,
+              0.28
+            ],
+            [
+              0.5,
+              0.12
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.62
+            ],
+            [
+              0.5,
+              0.88
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.75
+            ],
+            [
+              0.65,
+              0.75
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Kedemel",
+        "entity_number": 175,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.15
+            ],
+            [
+              0.75,
+              0.35
+            ],
+            [
+              0.65,
+              0.6
+            ],
+            [
+              0.5,
+              0.55
+            ],
+            [
+              0.35,
+              0.6
+            ],
+            [
+              0.25,
+              0.35
+            ],
+            [
+              0.5,
+              0.15
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.55
+            ],
+            [
+              0.5,
+              0.88
+            ]
+          ],
+          [
+            [
+              0.38,
+              0.72
+            ],
+            [
+              0.62,
+              0.72
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "mercury": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Tiriel",
+        "entity_number": 260,
+        "strokes": [
+          [
+            [
+              0.5,
+              0.2
+            ],
+            [
+              0.5,
+              0.75
+            ]
+          ],
+          [
+            [
+              0.35,
+              0.35
+            ],
+            [
+              0.65,
+              0.35
+            ],
+            [
+              0.65,
+              0.55
+            ],
+            [
+              0.35,
+              0.55
+            ],
+            [
+              0.35,
+              0.35
+            ]
+          ],
+          [
+            [
+              0.38,
+              0.2
+            ],
+            [
+              0.5,
+              0.08
+            ],
+            [
+              0.62,
+              0.2
+            ]
+          ],
+          [
+            [
+              0.4,
+              0.75
+            ],
+            [
+              0.6,
+              0.75
+            ],
+            [
+              0.6,
+              0.88
+            ],
+            [
+              0.4,
+              0.88
+            ],
+            [
+              0.4,
+              0.75
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Taphthartharath",
+        "entity_number": 2080,
+        "strokes": [
+          [
+            [
+              0.25,
+              0.25
+            ],
+            [
+              0.75,
+              0.25
+            ],
+            [
+              0.75,
+              0.55
+            ],
+            [
+              0.25,
+              0.55
+            ],
+            [
+              0.25,
+              0.25
+            ]
+          ],
+          [
+            [
+              0.25,
+              0.55
+            ],
+            [
+              0.15,
+              0.75
+            ],
+            [
+              0.35,
+              0.85
+            ]
+          ],
+          [
+            [
+              0.75,
+              0.55
+            ],
+            [
+              0.85,
+              0.75
+            ],
+            [
+              0.65,
+              0.85
+            ]
+          ],
+          [
+            [
+              0.4,
+              0.35
+            ],
+            [
+              0.6,
+              0.45
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.25
+            ],
+            [
+              0.5,
+              0.12
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    },
+    "luna": {
+      "intelligence_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Malkah",
+        "entity_number": 3321,
+        "strokes": [
+          [
+            [
+              0.62,
+              0.18
+            ],
+            [
+              0.42,
+              0.22
+            ],
+            [
+              0.3,
+              0.4
+            ],
+            [
+              0.3,
+              0.6
+            ],
+            [
+              0.42,
+              0.78
+            ],
+            [
+              0.62,
+              0.82
+            ]
+          ],
+          [
+            [
+              0.55,
+              0.28
+            ],
+            [
+              0.48,
+              0.4
+            ],
+            [
+              0.48,
+              0.6
+            ],
+            [
+              0.55,
+              0.72
+            ]
+          ],
+          [
+            [
+              0.62,
+              0.5
+            ],
+            [
+              0.78,
+              0.5
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      },
+      "spirit_character": {
+        "coordinate_space": "unit_box",
+        "construction": "stroke_digitization_v1",
+        "fidelity": "scholarly_stroke_digitization",
+        "source": "Scholarly multi-stroke vectorization v1 in the Western ceremonial plate vocabulary (Agrippa Book II / Barrett Magus tradition). Not a unique manuscript plate scan; not Goetic/Enochian authority seals.",
+        "entity_name_latin": "Schad Barschemoth",
+        "entity_number": 3321,
+        "strokes": [
+          [
+            [
+              0.55,
+              0.12
+            ],
+            [
+              0.35,
+              0.2
+            ],
+            [
+              0.25,
+              0.4
+            ],
+            [
+              0.28,
+              0.65
+            ],
+            [
+              0.45,
+              0.85
+            ],
+            [
+              0.7,
+              0.8
+            ],
+            [
+              0.78,
+              0.55
+            ]
+          ],
+          [
+            [
+              0.55,
+              0.12
+            ],
+            [
+              0.7,
+              0.25
+            ],
+            [
+              0.78,
+              0.55
+            ]
+          ],
+          [
+            [
+              0.4,
+              0.45
+            ],
+            [
+              0.62,
+              0.55
+            ]
+          ],
+          [
+            [
+              0.5,
+              0.7
+            ],
+            [
+              0.5,
+              0.9
+            ]
+          ]
+        ],
+        "notes": [
+          "unit_box strokes mapped onto planetary kamea frame at render time",
+          "Prefer plate geometry when planetary_geometry=auto|plate"
+        ]
+      }
+    }
+  }
+}

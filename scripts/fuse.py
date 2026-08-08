@@ -46,6 +46,7 @@ class Layout:
     rose_provenance: dict[str, Any] = field(default_factory=dict)
     spare_result: dict[str, Any] = field(default_factory=dict)
     planetary_seal_path: list[tuple[float, float]] = field(default_factory=list)
+    planetary_seal_strokes: list[list[tuple[float, float]]] = field(default_factory=list)
     planetary_seal: dict[str, Any] = field(default_factory=dict)
 
 
@@ -88,6 +89,7 @@ def build_layout(
     spare_mode: str = "letter_monogram",
     include_planetary_seal: bool = False,
     planetary_seal_kind: str = "traditional_seal",
+    planetary_geometry: str = "auto",
 ) -> Layout:
     """Compose multi-method layout on canvas 0..100."""
     spare_res = run_spare(normalized, mode=spare_mode, intent_digest=digest_hex)
@@ -124,6 +126,7 @@ def build_layout(
         rose_prov_dict = {"error": str(exc), "method_id": "rose_cross.hebrew_petal_path"}
 
     seal_path: list[tuple[float, float]] = []
+    seal_strokes: list[list[tuple[float, float]]] = []
     seal_dict: dict[str, Any] = {}
     if include_planetary_seal:
         from planetary_seals import seal_for
@@ -132,10 +135,18 @@ def build_layout(
             square_name,
             kind=planetary_seal_kind,
             digest_hex=digest_hex,
+            geometry=planetary_geometry,
         )
         seal_dict = art.to_dict()
-        seal_path = _scale_unit_path(
-            [(p[0], p[1]) for p in art.path], square_name
+        raw_strokes = art.strokes or ([art.path] if art.path else [])
+        for poly in raw_strokes:
+            scaled = _scale_unit_path([(p[0], p[1]) for p in poly], square_name)
+            if scaled:
+                seal_strokes.append(scaled)
+        seal_path = (
+            seal_strokes[0]
+            if seal_strokes
+            else _scale_unit_path([(p[0], p[1]) for p in art.path], square_name)
         )
 
     return Layout(
@@ -154,5 +165,6 @@ def build_layout(
         rose_provenance=rose_prov_dict,
         spare_result=spare_res.to_dict(),
         planetary_seal_path=seal_path,
+        planetary_seal_strokes=seal_strokes,
         planetary_seal=seal_dict,
     )

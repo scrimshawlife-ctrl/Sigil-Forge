@@ -3,18 +3,40 @@
 Opt-in via `--planetary-seal` / wizard `planetary_seal`. Distinct from
 `kamea_path(intent)`.
 
-## Corpus
+## Geometry preference (`--planetary-geometry`)
+
+| Mode | Behavior |
+|------|----------|
+| `auto` (default) | **plate** → name_on_kamea → reconstruction |
+| `plate` | Multi-stroke plate digitizations only |
+| `name_on_kamea` | Corpus name path on planetary square |
+| `reconstruction` | Successive / odds-evens / reverse |
+
+## Plate strokes (v0.9)
+
+Data: [`planetary-plate-strokes.json`](planetary-plate-strokes.json)
+
+| Kind | Plate construction | Status |
+|------|-------------------|--------|
+| `traditional_seal` | successive 1→n² + kamea frame + start/end ticks | `stroke_digitization_plate_v1` |
+| `intelligence_character` | multi-stroke unit_box digitization per planet | `stroke_digitization_plate_v1` |
+| `spirit_character` | multi-stroke unit_box digitization per planet | `stroke_digitization_plate_v1` |
+
+Plate geometry is a **scholarly vectorization** of the Western ceremonial plate
+vocabulary (Agrippa / Barrett Magus lineage) — not a unique manuscript scan and
+not Goetic/Enochian authority seals.
+
+## Name corpus
 
 Data: [`planetary-character-corpus.json`](planetary-character-corpus.json)
 
 | Kind | Construction | Status label |
 |------|----------------|--------------|
-| `traditional_seal` | successive 1→n² on planetary kamea | historically_aligned_agrippan_character |
-| `intelligence_character` | **name_on_kamea** of corpus intelligence name (Hebrew preferred) | corpus_name_path_agrippan |
+| `intelligence_character` | **name_on_kamea** of corpus intelligence name | corpus_name_path_agrippan |
 | `spirit_character` | **name_on_kamea** of corpus spirit name | corpus_name_path_agrippan |
 
-Fallback if name path fails: odds→evens (intelligence) or reverse successive
-(spirit), labeled `engine_reconstruction_documented`.
+Fallback: odds→evens (intelligence) or reverse successive (spirit), labeled
+`engine_reconstruction_documented`.
 
 ## Names (summary)
 
@@ -40,5 +62,6 @@ python3 scripts/sigil_forge.py construct \
   --square jupiter \
   --planetary-seal \
   --planetary-seal-kind intelligence_character \
+  --planetary-geometry plate \
   --out out/sigil-forge
 ```

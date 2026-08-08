@@ -188,6 +188,7 @@ def run(
     spare_mode: str = "letter_monogram",
     planetary_seal: bool = False,
     planetary_seal_kind: str = "traditional_seal",
+    planetary_geometry: str = "auto",
     prefer_argon2: bool = False,
     interop: bool = False,
     phonetic: bool = False,
@@ -267,6 +268,7 @@ def run(
         spare_mode=spare_mode,
         include_planetary_seal=planetary_seal,
         planetary_seal_kind=planetary_seal_kind,
+        planetary_geometry=planetary_geometry,
     )
     spare = layout.spare_letters or reduce_letters(normalized)
     square_name = layout.square_name
@@ -394,23 +396,32 @@ def run(
             kamea_points=list(layout.kamea_points),
         )
         # Re-apply with full layout if simple mono/kamea path was used
-        if png_path_str and (layout.bind_polylines or layout.rose_points):
+        if png_path_str and (
+            layout.bind_polylines
+            or layout.rose_points
+            or layout.planetary_seal_strokes
+            or layout.planetary_seal_path
+        ):
             try:
                 from layout_raster import layout_to_png_bytes
                 from stego_png import embed_lsb, pack_payload as _pack
 
+                seal_strokes = layout.planetary_seal_strokes or (
+                    [layout.planetary_seal_path] if layout.planetary_seal_path else None
+                )
                 full_png = layout_to_png_bytes(
                     layout.monogram_points,
                     layout.kamea_points,
                     bind_polylines=layout.bind_polylines,
                     rose_points=layout.rose_points,
+                    planetary_seal_strokes=seal_strokes,
                 )
                 stego_full = embed_lsb(full_png, _pack(bytes.fromhex(digest)))
                 (staging / "glyph.png").write_bytes(stego_full)
                 png_channel = _ch(
                     "png_lsb",
                     "applied",
-                    "LSB digest-only via layout_raster+bind+rose",
+                    "LSB digest-only via layout_raster+bind+rose+seal",
                 )
             except Exception:  # noqa: BLE001
                 pass

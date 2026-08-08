@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.8.0** (this file tracks shipped vs remaining).
+**Current release: v0.9.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -17,12 +17,14 @@ compression, name paths, planetary characters, and entity seals.
 | v0.6 | Wallpaper framework: immutable glyph + atmosphere composite, device profiles, wallpaper-spec/receipt, CLI `wallpaper` |
 | v0.7 | Host AI background provider (file + shell command), enriched prompt packages, `construct --wallpaper` one-shot |
 | v0.8 | Planetary character corpus (name_on_kamea intel/spirit) + Hermes `wizard` guided interview |
+| v0.9 | Stroke-faithful plate digitizations (multi-stroke); geometry auto plate→name→reconstruct |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
 - Rose Cross: 22 Hebrew petals + markers
-- Planetary: traditional seal; intelligence/spirit via **corpus name_on_kamea** (Agrippan names) with reconstruction fallback
-- Corpus: `references/planetary-character-corpus.json`
+- Planetary geometry: **plate** (multi-stroke) → name_on_kamea → reconstruction (`--planetary-geometry`)
+- Plate corpus: `references/planetary-plate-strokes.json`
+- Name corpus: `references/planetary-character-corpus.json`
 - Bind-runes: **modern_derivation**
 - Spare family modes + phonetic JSON carrier
 - Ontology + `references/source-manifest.yaml`
@@ -43,7 +45,7 @@ compression, name paths, planetary characters, and entity seals.
 - `validate_hermes_skill.py`
 
 ## Remaining / optional later
-- Stroke-faithful MS plate digitizations for intelligence/spirit (beyond name_on_kamea)
+- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization)
 - Audio/MIDI for mantric carriers
 - Multi-frame storyboard carriers
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields

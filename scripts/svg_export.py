@@ -33,7 +33,13 @@ def layout_to_svg(
     ]
     bind_inner = "\n    ".join(p for p in bind_parts if p)
     rose = _polyline(layout.rose_points or [], stroke)
-    seal = _polyline(getattr(layout, "planetary_seal_path", None) or [], stroke)
+    seal_strokes = getattr(layout, "planetary_seal_strokes", None) or []
+    if seal_strokes:
+        seal = "\n    ".join(
+            p for p in (_polyline(poly, stroke) for poly in seal_strokes) if p
+        )
+    else:
+        seal = _polyline(getattr(layout, "planetary_seal_path", None) or [], stroke)
     # Markers for Rose Cross start/terminal (geometry only — no letter labels)
     markers = ""
     sm = getattr(layout, "rose_start_marker", None) or []

@@ -1,7 +1,7 @@
 # Historical / methodological source manifest for Sigil-Forge methods.
 # Citations are pointers for provenance honesty, not endorsement of efficacy.
 
-version: "0.8.0"
+version: "0.9.0"
 
 methods:
   spare.letter_monogram:
@@ -48,20 +48,26 @@ methods:
   planetary.traditional_seal:
     family: planetary_character
     sources:
-      - title: "Agrippa Book II planetary seals/characters"
-        note: "Seals drawn from planetary tables (1..n² connectivity reconstruction)"
+      - title: "Agrippa Book II successive seals"
+        note: "v0.9 plate = successive path + kamea frame + ticks (default)"
+      - title: "Agrippa Book II planetary tables"
+        note: "Bare successive 1..n² available via --planetary-geometry reconstruction"
   planetary.intelligence_character:
     family: planetary_character
     sources:
-      - title: "Agrippa planetary intelligences"
-        note: "v0.8 corpus name_on_kamea (Hebrew/latin names); fallback odds→evens reconstruction"
+      - title: "Agrippa / Barrett plate tradition"
+        note: "v0.9 multi-stroke plate digitization (default); name_on_kamea; reconstruction fallback"
+      - title: "references/planetary-plate-strokes.json"
+        note: "Scholarly stroke vectorizations unit_box"
       - title: "references/planetary-character-corpus.json"
         note: "Names, numbers, construction flags"
   planetary.spirit_character:
     family: planetary_character
     sources:
-      - title: "Agrippa planetary spirits"
-        note: "v0.8 corpus name_on_kamea; fallback reverse successive reconstruction"
+      - title: "Agrippa / Barrett plate tradition"
+        note: "v0.9 multi-stroke plate digitization (default); name_on_kamea; reconstruction fallback"
+      - title: "references/planetary-plate-strokes.json"
+        note: "Scholarly stroke vectorizations unit_box"
       - title: "references/planetary-character-corpus.json"
         note: "Names, numbers, construction flags"
 
