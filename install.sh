@@ -102,15 +102,36 @@ validate_target() {
 
 validate_source() {
   log "Validating source at ${ROOT}"
+  # Hermes skill runtime surface (agent contract + offline engine + PoI)
   local required=(
     "SKILL.md"
     "VERSION"
+    "QUICKSTART.md"
+    "install.sh"
     "scripts/sigil_forge.py"
     "scripts/construct.py"
     "scripts/verify.py"
+    "scripts/forge_core.py"
+    "scripts/intent_capsule.py"
+    "scripts/commitment.py"
+    "scripts/crypto_domains.py"
+    "scripts/stego_envelope.py"
+    "scripts/inspect_artifact.py"
+    "scripts/validate_hermes_skill.py"
+    "scripts/proofs/__init__.py"
+    "scripts/proofs/registry.py"
+    "scripts/proofs/zk_commit.py"
+    "scripts/proofs/risc0_provider.py"
+    "scripts/wizard.py"
+    "references/hermes-runtime-contract.md"
+    "references/proof-of-intent.md"
     "schemas/forge-packet.schema.json"
     "schemas/construction-result.schema.json"
     "schemas/channel-manifest.schema.json"
+    "schemas/intent-capsule.schema.json"
+    "schemas/artifact-root.schema.json"
+    "schemas/forge-manifest.schema.json"
+    "schemas/proof-manifest.schema.json"
   )
   local f
   for f in "${required[@]}"; do
@@ -118,6 +139,10 @@ validate_source() {
   done
   python3 -c "import ast, pathlib; ast.parse(pathlib.Path(r'''${ROOT}/scripts/sigil_forge.py''').read_text())" \
     || die "scripts/sigil_forge.py failed syntax check"
+  # Frontmatter hygiene before copy (fail closed on bad skill packaging)
+  if ! python3 "${ROOT}/scripts/validate_hermes_skill.py" >/dev/null; then
+    die "validate_hermes_skill.py failed — fix SKILL.md frontmatter before install"
+  fi
   log "Source validation OK"
 }
 
@@ -126,7 +151,7 @@ sync_tree() {
   log "Installing to ${dest}"
   if [[ $DRY_RUN -eq 1 ]]; then
     printf '[dry-run] copy skill tree %q → %q\n' "$ROOT" "$dest"
-    printf '[dry-run] exclude: .git out/ .venv __pycache__ .pytest_cache .superpowers *.pyc\n'
+    printf '[dry-run] exclude: .git out/ .venv __pycache__ .pytest_cache .superpowers docs/superpowers .worktrees *.pyc\n'
     return 0
   fi
   mkdir -p "$dest"
@@ -142,6 +167,8 @@ sync_tree() {
       --exclude '.superpowers' \
       --exclude '*.pyc' \
       --exclude '.worktrees' \
+      --exclude 'docs/superpowers' \
+      --exclude 'docs/superpowers/' \
       "${ROOT}/" "${dest}/"
   else
     tar -C "${ROOT}" \
@@ -152,6 +179,7 @@ sync_tree() {
       --exclude '.pytest_cache' \
       --exclude '.superpowers' \
       --exclude '.worktrees' \
+      --exclude 'docs/superpowers' \
       -cf - . | tar -C "${dest}" -xf -
   fi
   chmod +x "${dest}/install.sh" 2>/dev/null || true
@@ -164,12 +192,17 @@ sync_tree() {
 post_check() {
   local dest="$1"
   if [[ $DRY_RUN -eq 1 ]]; then
-    printf '[dry-run] python3 %q/scripts/sigil_forge.py check\n' "$dest"
+    printf '[dry-run] python3 %q/scripts/validate_hermes_skill.py\n' "$dest"
+    printf '[dry-run] HERMES_SKILL_DIR=%q python3 %q/scripts/sigil_forge.py check\n' "$dest" "$dest"
     return 0
   fi
-  log "Post-install check"
-  python3 "${dest}/scripts/sigil_forge.py" check \
-    || die "post-install check failed: python3 ${dest}/scripts/sigil_forge.py check"
+  log "Post-install Hermes frontmatter check"
+  python3 "${dest}/scripts/validate_hermes_skill.py" \
+    || die "post-install validate_hermes_skill failed"
+  log "Post-install engine check"
+  # Resolve skill root from install path (not the clone cwd)
+  HERMES_SKILL_DIR="${dest}" python3 "${dest}/scripts/sigil_forge.py" check \
+    || die "post-install check failed: HERMES_SKILL_DIR=${dest} python3 ${dest}/scripts/sigil_forge.py check"
   log "Post-install check OK"
 }
 
