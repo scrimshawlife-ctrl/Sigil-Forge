@@ -1,12 +1,13 @@
 ---
 name: sigil-forge
-description: >-
-  Use when: sigil, intent, kamea, Spare, stego forge needed.
-  Builds multi-channel forge packets and procedural glyphs with
-  optional steganography. Creative or practice framing; offline-first.
-  Never invents geometry or claims supernatural efficacy.
-version: 0.1.1
+description: >
+  Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
+  Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
+version: 0.2.0
+author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
+platforms: [linux, macos, windows]
+dependencies: []
 metadata:
   hermes:
     tags:
@@ -14,75 +15,74 @@ metadata:
       - Sigil
       - Intent
       - Steganography
+      - SymbolicDesign
     category: creative
+    related_skills: []
+triggers:
+  - sigil
+  - sigil forge
+  - intent glyph
+  - kamea
+  - spare monogram
+  - steganography
+  - forge packet
+  - chaos magic sigil
 ---
 
 # Sigil-Forge
 
-Hermes skill contract for multi-channel intent sigils. The agent owns intake,
-mode, safety, narrative, and optional host image polish. Deterministic Python
-under `scripts/` owns normalize → digest → fuse → stego → packet → verify.
+Standalone Hermes skill. Hermes loads this directory; `SKILL.md` is the behavior
+contract. Deterministic construction lives under `scripts/`; the agent owns
+intake, mode framing, safety judgment, and optional host image polish.
 
 ## Overview
 
 Sigil-Forge turns a statement of intent into:
 
-1. A **procedural master glyph** (SVG, optional PNG) fusing Spare-style monogram
-   geometry with a classical kamea path.
-2. A **local forge packet** (`forge-packet.json` + Markdown summary) with channel
-   status, methods, artifacts, crypto policy, and verify command.
-3. **Steganographic carriers** on public media (digest / channel bits — not
-   plaintext intent by default).
+1. A **procedural master glyph** (SVG + offline PNG) fusing Spare monogram geometry
+   with a classical kamea path.
+2. A **local forge packet** with channel status, methods, crypto policy, and verify command.
+3. **Steganographic carriers** (digest/channel bits — not plaintext intent by default).
 
-Default framing is a **creative / focus tool** (clarify, compress, externalize).
-Optional **`practice`** mode uses practitioner-oriented language without efficacy
-claims. Methods are craft history, symbolic compression, and data embedding —
-not proof of metaphysics.
+Default framing is a **creative / focus tool**. Optional **`practice`** mode changes
+tone only. Methods are craft + encoding — never proof of metaphysics.
 
-**Authority:** all creative outputs are proposal-only. Never claim the sigil
-“works,” causes external events, or replaces professional help.
+**Authority:** proposal-only. Never claim the sigil “works,” causes external events,
+or replaces professional help.
 
-## When to Use / Not
+## When to Use
 
-### Use when
+- User wants a **sigil**, **intent glyph**, **forge packet**, or multi-encoded symbol
+- User mentions **Spare**, **kamea** / magic squares, or **steganography** of intent
+- User wants offline, verifiable construction (no image API required)
+- User chooses creative journaling/habit cue **or** personal practice framing
 
-- User wants a **sigil**, **intent glyph**, **forge packet**, or multi-encoded symbol.
-- User mentions **Spare**, **kamea** / magic squares, or **steganography** of intent.
-- User wants offline, verifiable construction (no image API required).
-- User chooses creative journaling/habit cue **or** personal practice framing.
+### When not to use
 
-### Do not use when
-
-- General image generation, cinema, or Kubrick-style production pipelines.
-- **Enochian seals**, authority/placement seals, or Orchestra dual-naming as
-  primary product (see [references/distinction-enochian.md](references/distinction-enochian.md)).
-- Full ritual liturgy, banishing systems, or results-magic / outcome engines.
-- Harmful intents (violence, self-harm, non-consensual control, exploitation) —
-  refuse before any encode or stego.
-- User asks you to invent glyph geometry or report stego success without `verify`.
+- General image gen, cinema, or Kubrick-style production (use kubrick)
+- **Enochian seals** / authority placement (see `references/distinction-enochian.md`)
+- Full ritual liturgy, banishing systems, or results-magic engines
+- Harmful intents — refuse before any encode
+- Requests to invent geometry or claim stego success without `verify`
 
 ## Prerequisites
 
-- Python 3 with stdlib (skill root = install dir or clone).
-- Optional: `jsonschema` for stricter packet validation; raster backend for PNG LSB.
-- Honor `HERMES_SKILL_DIR` when set; otherwise resolve skill root from this tree.
-- Write artifacts under user `--out` or default `out/sigil-forge/<run-id>/`.
-  **Never mutate `references/` during ordinary runs.**
+- Python 3.10+ with stdlib (no required pip packages for core path)
+- Optional: `jsonschema` for stricter packet validation; external SVG raster if desired
+- Honor `HERMES_SKILL_DIR` when set; write under `--out` or `out/sigil-forge/<run-id>/`
+- **Never mutate `references/` during ordinary runs**
 
 ## Procedure
 
-Mirror the construction engine. Do not skip safety or invent intermediate geometry.
+Each step ends with a checkable completion criterion.
 
-1. **Intake** — Collect present-tense statement of intent; mode
-   (`creative` default | `practice`); optional passphrase; optional kamea square
-   override (`saturn`…`luna`); cultural exclusions if stated.
-2. **Safety / align** — Run refusal heuristics (and agent judgment). Empty or
-   pure-noise intent → request rewrite. Harmful intent → refuse; do not soft-build.
-   Details: [references/safety-and-framing.md](references/safety-and-framing.md).
-3. **Normalize** — Engine: NFKC, strip, lowercase, collapse whitespace
-   (`scripts/normalize.py`). Digest = SHA-256 hex of normalized intent.
-4. **Construct via scripts** — Prefer CLI or equivalent library call; do not
-   hand-draw paths:
+1. **Intake** — Capture present-tense intent, mode (`creative`|`practice`), optional
+   passphrase / `SIGIL_FORGE_PASSPHRASE`, optional kamea square, style for polish.
+   **Done when:** intent string non-empty after strip; mode valid.
+2. **Safety / align** — Refuse violence, self-harm, non-consensual control, exploitation
+   (`scripts/safety.py` + agent judgment). Empty noise → rewrite request.
+   **Done when:** `check_intent` ok **or** clear refusal with no artifacts.
+3. **Construct via engine** — Do not hand-draw paths:
 
    ```bash
    python3 scripts/sigil_forge.py construct \
@@ -91,164 +91,152 @@ Mirror the construction engine. Do not skip safety or invent intermediate geomet
      --out out/sigil-forge
    ```
 
-   Pipeline inside `construct`: safety → normalize → digest → optional AES-GCM
-   seal → Spare monogram + kamea path fuse → SVG + SVG stego → optional PNG LSB
-   → forge packet. Method detail:
-   [methods-spare.md](references/methods-spare.md),
-   [methods-kamea.md](references/methods-kamea.md),
-   [channels-and-steganography.md](references/channels-and-steganography.md).
-5. **Dual-mode notes** — Apply profile tone only to narrative / `framing_notes`.
+   Optional: `--seal-packet` (with env passphrase), `--polish` (writes
+   `polish_prompt.json`, applies `gen_seed`), `--square venus`.
+   **Done when:** run dir contains `glyph.svg`, `forge-packet.json`, and channel
+   list with every fixed channel `applied` or `skipped(reason)`.
+4. **Dual-mode notes** — Apply profile tone only to narrative / `framing_notes`.
    Construction is identical across modes.
-   [profiles-creative.md](references/profiles-creative.md),
-   [profiles-practice.md](references/profiles-practice.md).
-6. **Deliver** — Paths to `glyph.svg`, optional `glyph.png`, `forge-packet.json`,
-   `forge-packet.md`; channel summary (`applied` / `skipped` with reason).
-7. **Optional AI polish (geometry-locked)** — Only after master glyph exists.
-   May change style, medium, lighting, texture under geometry locks derived from
-   the procedural master. Never replace construction. If polish breaks PNG stego:
-   re-apply stego to a fresh procedural raster, or treat polished art as
-   presentation-only and keep master SVG/PNG as the verifiable carrier.
-   `gen_seed` channel is reserved for digest-derived seed when polish is used.
-   **Agent-only prompt builder** (no image API in this skill):
-
-   ```bash
-   # library: scripts/prompt_polish.py
-   # build_prompt(layout_summary, style) -> {prompt, negative, seed, geometry_lock}
-   # seed = int(intent_digest[:8], 16); geometry_lock from stroke_count / path bbox
-   ```
-
-   Pass a layout summary (at least `intent_digest`, prefer `stroke_count` and
-   `bbox` from the master). Write the returned package to the run dir if useful
-   and record `artifacts.polish_prompt_path` on the packet. Use host image tools
-   only with that package; never invent geometry or call a required remote API.
-8. **Verify** — Always before claiming integrity:
+   **Done when:** framing matches mode; no efficacy language.
+5. **Deliver** — Paths + channel summary. Public media must not contain plaintext intent.
+   **Done when:** operator has packet path and SVG path; privacy holds.
+6. **Optional polish** — Geometry-locked host image tools only after master exists.
+   Prefer construct `--polish` or `prompt_polish.build_prompt`. Master remains verify source.
+   **Done when:** if polish used, `polish_prompt.json` exists and `gen_seed` is `applied`.
+7. **Verify** — Before claiming integrity:
 
    ```bash
    python3 scripts/sigil_forge.py verify path/to/glyph.svg
-   # or glyph.png when png_lsb was applied
+   python3 scripts/sigil_forge.py verify path/to/glyph.png  # when png_lsb applied
    ```
 
-9. **Never claim efficacy** — Describe craft, encoding, and verify results only.
+   **Done when:** `ok: true` and digest matches packet (or honest failure detail).
+8. **Open sealed intent** (if sealed):
+
+   ```bash
+   export SIGIL_FORGE_PASSPHRASE='…'
+   python3 scripts/sigil_forge.py open path/to/forge-packet.json
+   ```
+
+   **Done when:** plaintext recovered or auth failure reported.
 
 ## Modes
 
 | Mode | Default | Emphasis |
 |------|---------|----------|
-| `creative` | Yes | Focus externalization, journaling/habit cue, art; no charge language |
-| `practice` | Opt-in | Same engine; optional short personal use notes (gaze, place, discard); still no efficacy claims |
+| `creative` | Yes | Focus externalization, journaling/habit cue, art |
+| `practice` | Opt-in | Same engine; optional personal use notes; still no efficacy claims |
 
-## Channels (v1)
+## Channels (fixed set)
 
-Every successful forge **attempts** the fixed set. Each row is `applied` or
-`skipped` with reason in the packet. Capacity failures skip remainder — never
+Every successful forge **attempts** all IDs below. Capacity failures skip — never
 claim full embed.
 
 | ID | Role |
 |----|------|
 | `spare_monogram` | Spare letter reduction → monogram silhouette |
-| `kamea_path` | Magic-square path on selected planet square |
+| `kamea_path` | Magic-square path |
 | `kamea_square_choice` | Operator override or digest-derived square |
 | `intent_digest` | SHA-256 of normalized intent |
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
-| `svg_metadata` | Namespaced SVG metadata (digest / method bits) |
-| `path_epsilon` | Sub-visual coordinate perturbations from digest bits |
-| `path_order` | Construction-order / manifest binding (monogram group before kamea) |
-| `metric_quantize` | `data-sf-metric` digest nibble attributes on path groups |
-| `png_lsb` | Raster LSB when PNG available (digest-only payload in v1) |
-| `gen_seed` | AI polish seed channel (skipped until polish used) |
+| `svg_metadata` | SVG metadata digest / method bits |
+| `path_epsilon` | Coordinate parity bits from digest |
+| `path_order` | Construction-order binding (monogram before kamea) |
+| `metric_quantize` | `data-sf-metric` digest nibble attributes |
+| `png_lsb` | Offline layout raster + LSB (digest-only payload) |
+| `gen_seed` | Digest-derived seed when `--polish` / write_polish |
 
-Full capacity notes: [references/channels-and-steganography.md](references/channels-and-steganography.md).
+Details: `references/channels-and-steganography.md`.
 
 ## CLI
 
 ```bash
-# Smoke-check skill tree
+python3 scripts/sigil_forge.py help
 python3 scripts/sigil_forge.py check
-
-# Construct (creative default)
-python3 scripts/sigil_forge.py construct \
-  --intent "I maintain calm focus while shipping" \
-  --mode creative \
-  --out out/sigil-forge
-
-# Practice mode + passphrase seal (omit plaintext intent with --seal-packet)
-# Prefer SIGIL_FORGE_PASSPHRASE over --passphrase (argv is visible in ps).
-export SIGIL_FORGE_PASSPHRASE='operator-secret'
-python3 scripts/sigil_forge.py construct \
-  --intent "I maintain calm focus" \
-  --mode practice \
-  --seal-packet \
-  --out out/sigil-forge
-
-# Kamea square override
-python3 scripts/sigil_forge.py construct \
-  --intent "I maintain calm focus" \
-  --square venus \
-  --out out/sigil-forge
-
-# Full JSON packet on stdout
-python3 scripts/sigil_forge.py construct --intent "..." --json --out out/sigil-forge
-
-# Verify public artifact
+python3 scripts/sigil_forge.py construct --intent "…" --out out/sigil-forge
+python3 scripts/sigil_forge.py construct --intent "…" --polish --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
+python3 scripts/sigil_forge.py open out/sigil-forge/<run-id>/forge-packet.json
+python3 scripts/validate_hermes_skill.py   # frontmatter / Hermes hygiene
 ```
 
-Env: `HERMES_SKILL_DIR` overrides skill root; `SIGIL_FORGE_PASSPHRASE` supplies
-seal passphrase without argv exposure. Run ids are timestamp + digest prefix
-(paths avoid full intent text). Construct writes to a staging dir and promotes
-only after packet validation (atomic run dir).
+Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`. Prefer env over `--passphrase`
+(argv is visible in process lists). Construct uses atomic staging then promote.
 
-## Pitfalls
+## One-Shot Recipes
 
-- **Do not invent geometry** — monogram and kamea points come from `scripts/` only.
-- **Do not claim stego success** if `verify` fails or channel is `skipped`.
-- **Public SVG/PNG must not contain plaintext intent** under default policy.
-- **Passphrase ciphertext** lives in the local packet; v1 public PNG LSB is
-  digest-only — do not imply full intent is stego’d into the PNG.
-- **PNG may be skipped** (`no_raster_backend`, filter/capacity errors) — still a
-  successful forge if SVG + packet exist.
-- **Empty dual craft** (no monogram and no kamea points, e.g. all-vowel intent)
-  raises `NOT_COMPUTABLE:` with rewrite guidance — do not invent geometry.
-- **`--passphrase` appears in the process list** (shell argv); prefer
-  `SIGIL_FORGE_PASSPHRASE` when secrecy matters.
-- **Do not collapse Enochian / authority seals** into Spare-style intent glyphs.
-- **Never mutate `references/`** or promote artifacts to “canon” without the human.
-- **Stego is for operator sovereignty**, not assisting covert harm — safety first.
-
-## Verification
-
-Checklist before declaring a forge complete:
-
-- [ ] Safety gate passed (or refusal delivered without artifacts).
-- [ ] `forge-packet.json` present with `schema_version`, `mode`, `intent_digest`,
-      `channels[]`, `methods`, `artifacts`, `crypto`, `verify`, `framing_notes`.
-- [ ] `glyph.svg` written under run dir; channels reported honestly.
-- [ ] `python3 scripts/sigil_forge.py verify <artifact>` recovers matching digest
-      (or clear failure report — no fake integrity).
-- [ ] Public media privacy: no default plaintext intent in SVG/PNG.
-- [ ] Framing matches mode; **no efficacy claims**.
-- [ ] Optional polish (if any) geometry-locked; master remains verifiable carrier.
-
-Smoke:
+### Offline creative forge + verify
 
 ```bash
-python3 scripts/sigil_forge.py check
-python3 -m pytest -v   # from skill root when developing
+python3 scripts/sigil_forge.py construct \
+  --intent "I maintain calm focus while shipping" \
+  --out out/sigil-forge
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 ```
+
+**Done when:** verify `ok: true`; SVG and PNG present; `png_lsb` applied.
+
+### Practice seal without argv passphrase
+
+```bash
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
+python3 scripts/sigil_forge.py construct \
+  --intent "I speak clearly and keep my word" \
+  --mode practice --seal-packet --out out/sigil-forge
+python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
+```
+
+**Done when:** packet omits `normalized_intent`; `open` recovers the original intent.
+
+### Polish prompt for host image tools
+
+```bash
+python3 scripts/sigil_forge.py construct \
+  --intent "I build durable systems under pressure" \
+  --polish --polish-style "ink on parchment" \
+  --out out/sigil-forge
+```
+
+**Done when:** `polish_prompt.json` exists; `gen_seed` is `applied`; master still verifies.
+
+## Common Pitfalls
+
+1. **Inventing geometry** — monogram/kamea points come only from `scripts/`.
+2. **Claiming stego success** when `verify` fails or channel is `skipped`.
+3. **Leaking plaintext intent** into public SVG/PNG (default policy forbids).
+4. **Treating PNG as full ciphertext** — public PNG LSB is digest-only; seal is packet-local.
+5. **All-vowel intents** — raise `NOT_COMPUTABLE:`; rewrite with consonants.
+6. **`--passphrase` on argv** — prefer `SIGIL_FORGE_PASSPHRASE`.
+7. **Collapsing Enochian seals** into Spare intent glyphs.
+8. **Mutating `references/`** or auto-promoting artifacts to canon.
+9. **Premature completion** — deliver without verify when integrity was claimed.
+
+## Verification Checklist
+
+- [ ] Safety gate passed (or refusal with no artifacts)
+- [ ] `forge-packet.json` has `schema_version`, `mode`, `intent_digest`, `channels[]`,
+      `methods`, `artifacts`, `crypto`, `verify`, `framing_notes`
+- [ ] Every fixed channel is `applied` or `skipped` with reason
+- [ ] `glyph.svg` present; `glyph.png` when `png_lsb` applied
+- [ ] `verify` recovers matching digest (SVG and PNG when present)
+- [ ] Public media has no default plaintext intent
+- [ ] Framing matches mode; **no efficacy claims**
+- [ ] If polished: `polish_prompt.json` + `gen_seed` applied; master still verifies
+- [ ] `python3 scripts/sigil_forge.py check` → `ok: true`
+- [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release)
 
 ## References
 
 | Doc | Topic |
 |-----|--------|
-| [methods-spare.md](references/methods-spare.md) | Spare reduction and monogram |
-| [methods-kamea.md](references/methods-kamea.md) | Kamea tables, cipher, path |
-| [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs, capacity, failure |
-| [profiles-creative.md](references/profiles-creative.md) | Creative mode tone |
-| [profiles-practice.md](references/profiles-practice.md) | Practice mode tone |
-| [safety-and-framing.md](references/safety-and-framing.md) | Refusals and no-efficacy rules |
-| [hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine ownership |
-| [expansion-spine.md](references/expansion-spine.md) | Future CLI / receipts / interop |
-| [distinction-enochian.md](references/distinction-enochian.md) | Intent sigils ≠ Enochian seals |
+| [methods-spare.md](references/methods-spare.md) | Spare reduction |
+| [methods-kamea.md](references/methods-kamea.md) | Kamea tables and path |
+| [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
+| [profiles-creative.md](references/profiles-creative.md) | Creative tone |
+| [profiles-practice.md](references/profiles-practice.md) | Practice tone |
+| [safety-and-framing.md](references/safety-and-framing.md) | Refusals / no-efficacy |
+| [hermes-runtime-contract.md](references/hermes-runtime-contract.md) | Agent vs engine |
+| [expansion-spine.md](references/expansion-spine.md) | Future growth |
+| [distinction-enochian.md](references/distinction-enochian.md) | Intent ≠ Enochian seals |
 
-Runtime contract: [references/hermes-runtime-contract.md](references/hermes-runtime-contract.md).
 Design: [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md).

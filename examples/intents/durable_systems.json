@@ -1,0 +1,22 @@
+{
+  "intent": "I build durable systems under pressure",
+  "normalized_intent": "i build durable systems under pressure",
+  "spare_letters": "bldrstmnp",
+  "letter_sequence": [
+    "b",
+    "l",
+    "d",
+    "r",
+    "s",
+    "t",
+    "m",
+    "n",
+    "p"
+  ],
+  "intent_digest": "43650d96cc7efe457221b20e8ae127f07e765ee28ec5b46613db6d291aca3fbb",
+  "reduction_rule": {
+    "keep": "a-z",
+    "strip_vowels": "aeiouy",
+    "unique": "first-seen order"
+  }
+}

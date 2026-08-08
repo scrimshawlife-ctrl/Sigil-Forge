@@ -1,0 +1,20 @@
+{
+  "intent": "I rest deeply and rise restored",
+  "normalized_intent": "i rest deeply and rise restored",
+  "spare_letters": "rstdpln",
+  "letter_sequence": [
+    "r",
+    "s",
+    "t",
+    "d",
+    "p",
+    "l",
+    "n"
+  ],
+  "intent_digest": "f67c21b6cf5a6eb1ca359cb5441b8bbed26594e6d97a471558c4e8b74350d673",
+  "reduction_rule": {
+    "keep": "a-z",
+    "strip_vowels": "aeiouy",
+    "unique": "first-seen order"
+  }
+}

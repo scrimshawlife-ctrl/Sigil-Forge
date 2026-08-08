@@ -11,19 +11,22 @@ python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --out out/sigil-forge
 
-# 3. Verify SVG stego recovers the intent digest
+# 3. Verify SVG + PNG stego recover the intent digest
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
+python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.png
 
-# 4. (Optional) Practice mode + local passphrase seal (prefer env over --passphrase)
+# 4. (Optional) Practice seal + open (prefer env over --passphrase)
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct \
   --intent "I maintain calm focus" \
   --mode practice \
   --seal-packet \
   --out out/sigil-forge
+python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
 
-# 5. (Dev) Run the test suite
+# 5. (Dev) Tests + Hermes frontmatter hygiene
 python3 -m pytest -v
+python3 scripts/validate_hermes_skill.py
 ```
 
 **Install to Hermes** (optional):

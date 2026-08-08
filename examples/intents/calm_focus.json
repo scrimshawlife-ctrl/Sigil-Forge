@@ -1,7 +1,7 @@
 {
-  "intent": "I maintain calm focus",
-  "normalized_intent": "i maintain calm focus",
-  "spare_letters": "mntclfs",
+  "intent": "I maintain calm focus while shipping Sigil-Forge",
+  "normalized_intent": "i maintain calm focus while shipping sigil-forge",
+  "spare_letters": "mntclfswhpgr",
   "letter_sequence": [
     "m",
     "n",
@@ -9,9 +9,14 @@
     "c",
     "l",
     "f",
-    "s"
+    "s",
+    "w",
+    "h",
+    "p",
+    "g",
+    "r"
   ],
-  "intent_digest": "2ab21980251c1b773368f6417ca58acf8a68e06ad22a671deab778ead925c89d",
+  "intent_digest": "14a878a7d0fdf4776f58d60ac02962c6cd585b12b6d8c4377443ce33dc244439",
   "reduction_rule": {
     "keep": "a-z",
     "strip_vowels": "aeiouy",

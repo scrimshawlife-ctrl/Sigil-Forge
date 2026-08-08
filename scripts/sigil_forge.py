@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | check | help\n"
+        "commands: construct | verify | open | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
     return 0
@@ -29,6 +29,7 @@ def cmd_check(_: argparse.Namespace) -> int:
     root = skill_root()
     required = [
         "VERSION",
+        "SKILL.md",
         "scripts/paths.py",
         "scripts/sigil_forge.py",
         "scripts/construct.py",
@@ -41,6 +42,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/svg_export.py",
         "scripts/stego_svg.py",
         "scripts/stego_png.py",
+        "scripts/layout_raster.py",
+        "scripts/prompt_polish.py",
+        "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
         "schemas/forge-packet.schema.json",
@@ -84,6 +88,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "svg_export",
         "stego_svg",
         "stego_png",
+        "layout_raster",
+        "prompt_polish",
         "crypto_payload",
         "packet",
     )
@@ -168,6 +174,8 @@ def cmd_construct(args: argparse.Namespace) -> int:
             passphrase=passphrase,
             square=args.square,
             seal_packet=bool(args.seal_packet),
+            write_polish=bool(getattr(args, "polish", False)),
+            polish_style=getattr(args, "polish_style", None),
         )
     except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
@@ -205,6 +213,65 @@ def cmd_verify(args: argparse.Namespace) -> int:
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("ok") else 1
+
+
+def cmd_open(args: argparse.Namespace) -> int:
+    """Decrypt sealed_intent from a forge-packet.json using passphrase/env."""
+    from construct import resolve_passphrase
+    from crypto_payload import open_intent
+
+    path = Path(args.packet)
+    if not path.is_file():
+        print(json.dumps({"ok": False, "error": f"not found: {path}"}), file=sys.stderr)
+        return 1
+    try:
+        packet = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+        return 1
+    sealed = packet.get("sealed_intent")
+    if not isinstance(sealed, dict):
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": "packet has no sealed_intent (construct without seal?)",
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    passphrase = resolve_passphrase(args.passphrase)
+    if not passphrase:
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": "passphrase required (--passphrase or SIGIL_FORGE_PASSPHRASE)",
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        text = open_intent(sealed, passphrase)
+    except Exception as exc:  # noqa: BLE001
+        print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
+        return 1
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "intent": text,
+                    "intent_digest": packet.get("intent_digest"),
+                },
+                indent=2,
+            )
+        )
+    else:
+        print(text)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -249,6 +316,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Print full forge-packet JSON",
     )
+    pc.add_argument(
+        "--polish",
+        action="store_true",
+        help="Write geometry-locked polish_prompt.json and apply gen_seed channel",
+    )
+    pc.add_argument(
+        "--polish-style",
+        default=None,
+        help="Optional style hint for polish prompt (with --polish)",
+    )
 
     pv = sub.add_parser("verify", help="Verify artifact recovers intent digest")
     pv.add_argument("artifact", help="Path to glyph.svg or glyph.png")
@@ -256,6 +333,25 @@ def main(argv: list[str] | None = None) -> int:
         "--expected-digest",
         default=None,
         help="Optional 64-hex digest that recovered value must match",
+    )
+
+    po = sub.add_parser(
+        "open",
+        help="Decrypt sealed_intent from forge-packet.json",
+    )
+    po.add_argument(
+        "packet",
+        help="Path to forge-packet.json (with sealed_intent)",
+    )
+    po.add_argument(
+        "--passphrase",
+        default=None,
+        help="Seal passphrase (prefer SIGIL_FORGE_PASSPHRASE)",
+    )
+    po.add_argument(
+        "--json",
+        action="store_true",
+        help="Print JSON wrapper instead of raw intent text",
     )
 
     args = p.parse_args(argv)
@@ -267,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_construct(args)
     if args.cmd == "verify":
         return cmd_verify(args)
+    if args.cmd == "open":
+        return cmd_open(args)
     return 2
 
 

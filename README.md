@@ -22,7 +22,7 @@ bash install.sh --target /path/to/skills/sigil-forge
 bash install.sh --version
 ```
 
-Requires **Python 3** (stdlib). Optional: `jsonschema` for stricter packet validation; a raster backend for PNG LSB.
+Requires **Python 3** (stdlib). Core path needs no pip packages. Optional: `jsonschema` for stricter packet validation.
 
 From a clone without installing:
 
@@ -50,7 +50,16 @@ export SIGIL_FORGE_PASSPHRASE='operator-secret'
 python3 scripts/sigil_forge.py construct --intent "..." --seal-packet --out out/sigil-forge
 ```
 
-Artifacts land under `out/sigil-forge/<run-id>/` (`glyph.svg`, optional `glyph.png`, `forge-packet.json`, `forge-packet.md`). Run ids use timestamp + digest prefix so paths avoid full intent text.
+Artifacts land under `out/sigil-forge/<run-id>/` (`glyph.svg`, `glyph.png`, `forge-packet.json`, `forge-packet.md`; optional `polish_prompt.json`). Run ids use timestamp + digest prefix so paths avoid full intent text.
+
+```bash
+# Geometry-locked polish package (no image API in this skill)
+python3 scripts/sigil_forge.py construct --intent "..." --polish --out out/sigil-forge
+
+# Open a sealed packet
+export SIGIL_FORGE_PASSPHRASE='operator-secret'
+python3 scripts/sigil_forge.py open out/sigil-forge/*/forge-packet.json
+```
 
 More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL.md)
 
@@ -58,9 +67,10 @@ More detail: [QUICKSTART.md](QUICKSTART.md) · Hermes contract: [SKILL.md](SKILL
 
 | Output | Role |
 |--------|------|
-| Master glyph (SVG/PNG) | Spare monogram + kamea path fuse |
+| Master glyph (SVG/PNG) | Spare monogram + kamea path fuse; offline PNG via layout raster |
 | Forge packet | Channels, methods, digests, verify command |
-| Stego carriers | SVG metadata / path residuals; optional PNG LSB (digest-only in v1) |
+| Stego carriers | SVG multi-channel + PNG LSB (digest-only on public PNG) |
+| Optional polish_prompt.json | Geometry-locked host image prompt + `gen_seed` |
 
 Channel set and privacy rules: [references/channels-and-steganography.md](references/channels-and-steganography.md).
 
