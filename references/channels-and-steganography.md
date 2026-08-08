@@ -16,14 +16,16 @@ Order in `scripts/construct.py` (`_CHANNEL_ORDER`):
 3. `kamea_square_choice`  
 4. `bind_runes`  
 5. `rose_cross_path`  
-6. `intent_digest`  
-7. `optional_ciphertext`  
-8. `svg_metadata`  
-9. `path_epsilon`  
-10. `path_order`  
-11. `metric_quantize`  
-12. `png_lsb`  
-13. `gen_seed`  
+6. `planetary_seal` (opt-in)  
+7. `intent_digest`  
+8. `optional_ciphertext`  
+9. `svg_metadata`  
+10. `path_epsilon`  
+11. `path_order`  
+12. `metric_quantize`  
+13. `png_lsb`  
+14. `gen_seed`  
+
 
 ## A. Ancient / classical craft (visible structure)
 
