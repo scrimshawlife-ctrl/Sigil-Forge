@@ -1,0 +1,23 @@
+{
+  "intent": "I speak clearly and keep my word",
+  "normalized_intent": "i speak clearly and keep my word",
+  "spare_letters": "spkclrndmw",
+  "letter_sequence": [
+    "s",
+    "p",
+    "k",
+    "c",
+    "l",
+    "r",
+    "n",
+    "d",
+    "m",
+    "w"
+  ],
+  "intent_digest": "23926a60308d7e12959881df8c3698d86a3d35f3c562d51b8222de3fe7cbb27e",
+  "reduction_rule": {
+    "keep": "a-z",
+    "strip_vowels": "aeiouy",
+    "unique": "first-seen order"
+  }
+}

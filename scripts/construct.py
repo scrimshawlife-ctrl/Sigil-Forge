@@ -94,40 +94,76 @@ def _try_png_lsb(
     svg: str,
     digest_hex: str,
     out_png: Path,
+    *,
+    monogram_points: list[tuple[float, float]] | None = None,
+    kamea_points: list[tuple[float, float]] | None = None,
 ) -> tuple[str | None, dict[str, str]]:
     """Rasterize + LSB embed when possible; else skip with reason.
 
-    v1 PNG payload is digest-only (``pack_payload(digest)``). Full seal blob
-    stays in the local forge packet — never partial ciphertext in the public PNG.
-    """
-    try:
-        from raster_svg import svg_to_png_bytes
-    except ImportError:
-        return None, _ch("png_lsb", "skipped", "no_raster_backend")
+    Prefer stdlib layout raster (filter-0 RGB, always LSB-compatible). Fall
+    back to optional SVG backends, re-encoding when needed.
 
-    try:
-        png_bytes = svg_to_png_bytes(svg)
-    except Exception as exc:  # noqa: BLE001
-        return None, _ch("png_lsb", "skipped", f"raster_error: {exc}")
+    Public PNG payload is digest-only (``pack_payload(digest)``). Full seal
+    blob stays in the local forge packet.
+    """
+    png_bytes: bytes | None = None
+    source = "none"
+
+    # 1. Stdlib layout geometry → filter-0 RGB PNG (Hermes offline default)
+    if monogram_points is not None or kamea_points is not None:
+        try:
+            from layout_raster import layout_to_png_bytes
+
+            png_bytes = layout_to_png_bytes(
+                monogram_points or [],
+                kamea_points or [],
+            )
+            source = "layout_raster"
+        except Exception:  # noqa: BLE001
+            png_bytes = None
+
+    # 2. Optional SVG raster backends
+    if not png_bytes:
+        try:
+            from raster_svg import svg_to_png_bytes
+
+            png_bytes = svg_to_png_bytes(svg)
+            source = "svg_backend" if png_bytes else "none"
+        except Exception as exc:  # noqa: BLE001
+            return None, _ch("png_lsb", "skipped", f"raster_error: {exc}")
 
     if not png_bytes:
         return None, _ch("png_lsb", "skipped", "no_raster_backend")
 
+    # If backend PNG is not filter-0 RGB, re-encode via layout when available
     digest_raw = bytes.fromhex(digest_hex)
-    # Digest-only: sealed intent lives in local packet, not public PNG LSB.
     payload = pack_payload(digest_raw)
     try:
         stego_png = embed_lsb(png_bytes, payload)
-    except Exception as exc:  # noqa: BLE001 — filter/capacity/format
-        # Raster backends often emit filter types stego_png cannot rewrite.
-        # Prefer skip over fake geometry PNG that is not the glyph.
-        return None, _ch("png_lsb", "skipped", f"embed_failed: {exc}")
+    except Exception:
+        # Retry with pure layout raster if external PNG was incompatible
+        if source != "layout_raster" and (
+            monogram_points is not None or kamea_points is not None
+        ):
+            try:
+                from layout_raster import layout_to_png_bytes
+
+                png_bytes = layout_to_png_bytes(
+                    monogram_points or [],
+                    kamea_points or [],
+                )
+                stego_png = embed_lsb(png_bytes, payload)
+                source = "layout_raster_retry"
+            except Exception as exc:  # noqa: BLE001
+                return None, _ch("png_lsb", "skipped", f"embed_failed: {exc}")
+        else:
+            return None, _ch("png_lsb", "skipped", "embed_failed: incompatible_png")
 
     out_png.write_bytes(stego_png)
     return str(out_png), _ch(
         "png_lsb",
         "applied",
-        f"LSB digest-only payload {len(payload)} bytes into glyph.png",
+        f"LSB digest-only {len(payload)} bytes via {source}",
     )
 
 
@@ -139,11 +175,14 @@ def run(
     passphrase: str | None = None,
     square: str | None = None,
     seal_packet: bool = False,
+    write_polish: bool = False,
+    polish_style: str | None = None,
 ) -> dict[str, Any]:
     """Orchestrate full forge: safety → normalize → digest → seal? → fuse → stego → packet.
 
     Writes under ``out_root/<run-id>/``:
-      glyph.svg, optional glyph.png, forge-packet.json, forge-packet.md
+      glyph.svg, glyph.png (when raster ok), forge-packet.json/md,
+      optional polish_prompt.json when ``write_polish``.
 
     Returns the forge-packet dict. Raises ValueError on harmful/empty intent.
     """
@@ -273,12 +312,46 @@ def run(
         svg_path.write_text(stego_svg, encoding="utf-8")
 
         png_path_str, png_channel = _try_png_lsb(
-            stego_svg, digest, staging / "glyph.png"
+            stego_svg,
+            digest,
+            staging / "glyph.png",
+            monogram_points=list(layout.monogram_points),
+            kamea_points=list(layout.kamea_points),
         )
-        extras = [
-            png_channel,
-            _ch("gen_seed", "skipped", "no_ai_polish"),
-        ]
+
+        # Optional geometry-locked AI polish prompt (no image API)
+        gen_seed_channel = _ch("gen_seed", "skipped", "no_ai_polish")
+        polish_path_final: str | None = None
+        if write_polish:
+            import json as _json
+
+            from prompt_polish import build_prompt
+
+            stroke_count = (1 if layout.monogram_points else 0) + (
+                1 if layout.kamea_points else 0
+            )
+            summary = {
+                "intent_digest": digest,
+                "stroke_count": stroke_count,
+                "path_count": stroke_count,
+                "view_box": list(layout.view_box),
+                "bbox": [0.0, 0.0, 100.0, 100.0],
+                "square_name": square_name,
+            }
+            polish_pkg = build_prompt(summary, polish_style)
+            polish_file = staging / "polish_prompt.json"
+            polish_file.write_text(
+                _json.dumps(polish_pkg, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            gen_seed_channel = _ch(
+                "gen_seed",
+                "applied",
+                f"seed={polish_pkg['seed']} polish_prompt.json",
+            )
+            polish_path_final = str(final_dir / "polish_prompt.json")
+
+        extras = [png_channel, gen_seed_channel]
 
         channels = _merge_channels(craft_channels, list(stego_channels), extras)
 
@@ -307,6 +380,8 @@ def run(
             "packet_json": str(packet_json_path),
             "packet_md": str(packet_md_path),
         }
+        if polish_path_final:
+            artifacts["polish_prompt_path"] = polish_path_final
 
         verify_target = str(final_svg)
         verify_cmd = f"python3 scripts/sigil_forge.py verify {verify_target}"

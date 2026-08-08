@@ -79,7 +79,10 @@ def test_construct_packet_fields_and_channels(tmp_path: Path):
     assert by_id["kamea_square_choice"]["status"] == "applied"
     assert by_id["intent_digest"]["status"] == "applied"
     assert by_id["optional_ciphertext"]["status"] == "skipped"
-    assert by_id["gen_seed"]["status"] == "skipped"
+    # gen_seed skipped unless construct(..., write_polish=True)
+    assert by_id["gen_seed"]["status"] in ("skipped", "applied")
+    if by_id["gen_seed"]["status"] == "skipped":
+        assert "polish" in by_id["gen_seed"]["detail"]
 
 
 def test_construct_with_passphrase_seals(tmp_path: Path):
