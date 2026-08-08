@@ -3,7 +3,7 @@ name: sigil-forge
 description: >
   Use when forging sigils, intent glyphs, kamea/Spare stego, or forge packets.
   Offline multi-channel construction; dual creative/practice framing; no efficacy claims.
-version: 0.3.0
+version: 0.4.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]
@@ -88,13 +88,16 @@ Each step ends with a checkable completion criterion.
    python3 scripts/sigil_forge.py construct \
      --intent "I maintain calm focus" \
      --mode creative \
+     --kamea-encoding hebrew_gematria \
      --out out/sigil-forge
    ```
 
-   Optional: `--seal-packet` (with env passphrase), `--polish` (writes
-   `polish_prompt.json`, applies `gen_seed`), `--square venus`.
-   **Done when:** run dir contains `glyph.svg`, `forge-packet.json`, and channel
-   list with every fixed channel `applied` or `skipped(reason)`.
+   Optional: `--kamea-encoding latin_mod9_v1|latin_extended|hebrew_gematria`,
+   `--spare-mode letter_monogram|pictorial|…`, `--planetary-seal`,
+   `--seal-packet`, `--polish`, `--square venus`.
+   **Done when:** run dir contains `glyph.svg`, `forge-packet.json` with
+   `ontology` + kamea `encoding_system` provenance, and every channel
+   `applied` or `skipped(reason)`.
 4. **Dual-mode notes** — Apply profile tone only to narrative / `framing_notes`.
    Construction is identical across modes.
    **Done when:** framing matches mode; no efficacy language.
@@ -137,8 +140,9 @@ claim full embed.
 | `spare_monogram` | Spare letter reduction → monogram silhouette |
 | `kamea_path` | Magic-square path |
 | `kamea_square_choice` | Operator override or digest-derived square |
-| `bind_runes` | Elder Futhark stick bind (centered fusion) |
-| `rose_cross_path` | 22-slot rose letter path |
+| `bind_runes` | Elder Futhark stick bind (**modern_derivation**) |
+| `rose_cross_path` | Hebrew 22-petal Rose Cross name path |
+| `planetary_seal` | Agrippan traditional seal (opt-in; ≠ kamea path) |
 | `intent_digest` | SHA-256 of normalized intent |
 | `optional_ciphertext` | AES-GCM seal when passphrase provided (local packet) |
 | `svg_metadata` | SVG metadata digest / method bits |
@@ -236,8 +240,9 @@ python3 scripts/sigil_forge.py construct \
 |-----|--------|
 | [methods-spare.md](references/methods-spare.md) | Spare reduction |
 | [methods-kamea.md](references/methods-kamea.md) | Kamea tables and path |
-| [methods-bind-runes.md](references/methods-bind-runes.md) | Elder Futhark bind-runes |
-| [methods-rose-cross.md](references/methods-rose-cross.md) | 22-slot rose path |
+| [methods-bind-runes.md](references/methods-bind-runes.md) | Bind-runes (modern_derivation) |
+| [methods-rose-cross.md](references/methods-rose-cross.md) | Hebrew 22-petal Rose Cross |
+| [sigil-ontology.md](references/sigil-ontology.md) | Method taxonomy / families |
 | [receipts-and-ledger.md](references/receipts-and-ledger.md) | Run receipts + PROPOSED ledger |
 | [channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / capacity |
 | [profiles-creative.md](references/profiles-creative.md) | Creative tone |

@@ -47,6 +47,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "scripts/bind_runes.py",
         "scripts/rose_cross.py",
         "scripts/receipt.py",
+        "scripts/ontology.py",
+        "scripts/planetary_seals.py",
         "scripts/validate_hermes_skill.py",
         "scripts/crypto_payload.py",
         "scripts/packet.py",
@@ -96,6 +98,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         "bind_runes",
         "rose_cross",
         "receipt",
+        "ontology",
+        "planetary_seals",
         "crypto_payload",
         "packet",
     )
@@ -183,6 +187,11 @@ def cmd_construct(args: argparse.Namespace) -> int:
             write_polish=bool(getattr(args, "polish", False)),
             polish_style=getattr(args, "polish_style", None),
             write_receipt=not bool(getattr(args, "no_receipt", False)),
+            kamea_encoding=getattr(args, "kamea_encoding", None),
+            spare_mode=getattr(args, "spare_mode", None) or "letter_monogram",
+            planetary_seal=bool(getattr(args, "planetary_seal", False)),
+            planetary_seal_kind=getattr(args, "planetary_seal_kind", None)
+            or "traditional_seal",
         )
     except (ValueError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}), file=sys.stderr)
@@ -387,6 +396,28 @@ def main(argv: list[str] | None = None) -> int:
         "--no-receipt",
         action="store_true",
         help="Skip writing run-receipt.json and receipt log append",
+    )
+    pc.add_argument(
+        "--kamea-encoding",
+        default=None,
+        choices=("hebrew_gematria", "latin_extended", "latin_mod9_v1"),
+        help="Kamea name-path encoding (default: hebrew_gematria)",
+    )
+    pc.add_argument(
+        "--spare-mode",
+        default="letter_monogram",
+        help="Spare family mode (default: letter_monogram)",
+    )
+    pc.add_argument(
+        "--planetary-seal",
+        action="store_true",
+        help="Also emit Agrippan traditional planetary seal (distinct from kamea path)",
+    )
+    pc.add_argument(
+        "--planetary-seal-kind",
+        default="traditional_seal",
+        choices=("traditional_seal", "intelligence_character", "spirit_character"),
+        help="Planetary character class (default: traditional_seal)",
     )
 
     pv = sub.add_parser("verify", help="Verify artifact recovers intent digest")

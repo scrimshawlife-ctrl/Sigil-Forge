@@ -10,8 +10,9 @@ from typing import Any
 
 from crypto_payload import intent_digest, seal_intent
 from fuse import build_layout
-from kamea import KAMEA_SQUARES
+from kamea import DEFAULT_KAMEA_ENCODING, KAMEA_SQUARES
 from normalize import normalize_intent
+from ontology import assert_not_entity_seal_request, default_packet_ontology
 from packet import build_packet, validate_packet, write_packet_files
 from paths import default_out_dir, make_run_id, run_dir as make_run_dir, skill_root
 from safety import check_intent
@@ -33,7 +34,7 @@ def resolve_passphrase(explicit: str | None = None) -> str | None:
         return env
     return None
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 
 _CHANNEL_ORDER = (
     "spare_monogram",
@@ -41,6 +42,7 @@ _CHANNEL_ORDER = (
     "kamea_square_choice",
     "bind_runes",
     "rose_cross_path",
+    "planetary_seal",
     "intent_digest",
     "optional_ciphertext",
     "svg_metadata",
@@ -180,6 +182,10 @@ def run(
     write_polish: bool = False,
     polish_style: str | None = None,
     write_receipt: bool = True,
+    kamea_encoding: str | None = None,
+    spare_mode: str = "letter_monogram",
+    planetary_seal: bool = False,
+    planetary_seal_kind: str = "traditional_seal",
 ) -> dict[str, Any]:
     """Orchestrate full forge: safety → normalize → digest → seal? → fuse → stego → packet.
 
@@ -202,9 +208,11 @@ def run(
     ok, reason = check_intent(intent)
     if not ok:
         raise ValueError(reason or "refused: harmful intent")
+    assert_not_entity_seal_request(intent)
 
     normalized = normalize_intent(intent)
     digest = intent_digest(normalized)
+    enc = (kamea_encoding or DEFAULT_KAMEA_ENCODING).strip().lower()
 
     craft_channels: list[dict[str, str]] = []
     sealed_blob: dict[str, Any] | None = None
@@ -241,7 +249,15 @@ def run(
     )
 
     # --- fuse layout ---
-    layout = build_layout(normalized, digest, square_override=square)
+    layout = build_layout(
+        normalized,
+        digest,
+        square_override=square,
+        kamea_encoding=enc,
+        spare_mode=spare_mode,
+        include_planetary_seal=planetary_seal,
+        planetary_seal_kind=planetary_seal_kind,
+    )
     spare = layout.spare_letters or reduce_letters(normalized)
     square_name = layout.square_name
     order = len(KAMEA_SQUARES[square_name])
@@ -306,17 +322,35 @@ def run(
             _ch("bind_runes", "skipped", "no_runes_after_mapping")
         )
 
-    if layout.rose_points and len(layout.rose_points) >= 2:
+    if layout.rose_points and len(layout.rose_points) >= 1:
         craft_channels.append(
             _ch(
                 "rose_cross_path",
                 "applied",
-                f"slots={len(layout.rose_slots)} points={len(layout.rose_points)}",
+                f"hebrew_petals={len(layout.rose_slots)} points={len(layout.rose_points)}",
             )
         )
     else:
         craft_channels.append(
             _ch("rose_cross_path", "skipped", "no_rose_path_points")
+        )
+
+    if planetary_seal and layout.planetary_seal_path:
+        craft_channels.append(
+            _ch(
+                "planetary_seal",
+                "applied",
+                f"kind={planetary_seal_kind} planet={square_name} "
+                f"points={len(layout.planetary_seal_path)}",
+            )
+        )
+    else:
+        craft_channels.append(
+            _ch(
+                "planetary_seal",
+                "skipped",
+                "not_requested" if not planetary_seal else "empty_seal",
+            )
         )
 
     # --- SVG + stego ---
@@ -407,23 +441,65 @@ def run(
 
         channels = _merge_channels(craft_channels, list(stego_channels), extras)
 
+        kprov = layout.kamea_provenance or {}
         methods = {
             "spare": {
+                "family": "intent_compression",
+                "mode": (layout.spare_result or {}).get("mode", spare_mode),
                 "reduction": "vowels_and_duplicate_collapse_v1",
                 "letter_count": len(spare),
+                "determinism": (layout.spare_result or {}).get("determinism"),
+                "semantic_verification": (layout.spare_result or {}).get(
+                    "semantic_verification"
+                ),
+                "spare_result": layout.spare_result,
             },
             "kamea": {
+                "family": "name_path",
                 "planet": square_name,
                 "order": order,
-                "cipher": "agrippa_reduced_v1",
+                "encoding_system": kprov.get("encoding_system", enc),
+                "transliteration_system": kprov.get("transliteration_system"),
+                "original_numeric_sequence": kprov.get("original_numeric_sequence"),
+                "reduced_numeric_sequence": kprov.get("reduced_numeric_sequence"),
+                "reduction_operations": kprov.get("reduction_operations"),
+                "path": kprov.get("path"),
+                "claimed_historical_status": kprov.get("claimed_historical_status"),
+                # legacy key kept for readers:
+                "cipher": kprov.get("encoding_system", enc),
             },
             "bind_runes": {
+                "family": "alphabetic_ligature",
                 "system": "elder_futhark_stick_v1",
+                "historical_basis": "runic_ligature",
+                "intent_sigil_system": {"status": "modern_derivation"},
+                "claimed_historical_status": "modern_derivation",
                 "runes": list(layout.bind_runes or []),
             },
-            "rose_cross": {
-                "system": "latin_22_slot_rose_v1",
-                "slots": list(layout.rose_slots or []),
+            "rose_cross": layout.rose_provenance
+            or {
+                "method_id": "rose_cross.hebrew_petal_path",
+                "family": "name_path",
+            },
+            "planetary_seal": layout.planetary_seal
+            or {"status": "not_requested"},
+        }
+        ontology = default_packet_ontology(
+            spare_mode=spare_mode,
+            kamea_encoding=enc,
+            include_bind=True,
+            include_rose=True,
+            include_planetary_seal=bool(planetary_seal),
+            planet=square_name if planetary_seal else None,
+        )
+        provenance = {
+            "kamea": kprov,
+            "rose_cross": layout.rose_provenance,
+            "spare": layout.spare_result,
+            "planetary_seal": layout.planetary_seal,
+            "bind_runes": {
+                "claimed_historical_status": "modern_derivation",
+                "historical_basis": "runic_ligature",
             },
         }
 
@@ -461,6 +537,8 @@ def run(
             normalized_intent=normalized if include_normalized else None,
             sealed_blob=sealed_blob if passphrase else None,
             include_normalized=include_normalized,
+            ontology=ontology,
+            provenance=provenance,
         )
         packet["schema_version"] = packet.get("schema_version") or SCHEMA_VERSION
 

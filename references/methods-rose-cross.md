@@ -1,37 +1,23 @@
-# Rose path method (channel `rose_cross_path`)
+# Rose Cross (Hebrew 22-petal path)
 
-## What it is
+Channel: `rose_cross_path`  
+Method id: `rose_cross.hebrew_petal_path`  
+Family: `name_path`
 
-A **22-slot rose** letter path inspired by published Rose Cross talisman
-geometry (petal count matches the traditional Hebrew-letter rose). Latin
-consonants map into slots via a stable reduction; the path connects successive
-slots on a circle.
+## Construction
 
-## What it is not
+1. Transliterate latin name → Hebrew (shared minimal map with kamea gematria).  
+2. Look up each letter on the **22-petal** rose (א…ת).  
+3. Trace ordered coordinates; record **start** and **terminal** markers.  
+4. Public SVG: geometry only (`rose-cross-path`, `rose-start`, `rose-terminal`).  
 
-- Not a full Golden Dawn initiation curriculum or Hebrew lettering system.
-- Not Enochian seals / Watchtower authority markers.
-- Not a claim of supernatural efficacy.
-- Slot indices stay private in the forge packet; public SVG has geometry only.
+## Not
 
-## Pipeline
+- Not a kamea name path  
+- Not a planetary seal  
+- Not Enochian / Goetic entity seals  
+- Not a latin-mod-22 proxy (v0.4 uses real Hebrew petal indices)
 
-1. Prefer Spare-style consonant set from the intent.
-2. Map each letter → slot `(ord(ch)-a) % 22`.
-3. Place slots on a circle (radius ~32 on the 0..100 canvas), start at top.
-4. Polyline through points; soft-close when ≥3 points.
-5. Emit SVG group `id="rose-cross-path"`.
+## Verify
 
-## Channel status
-
-| Status | When |
-|--------|------|
-| `applied` | Path has ≥2 points |
-| `skipped` | No letter material for a path |
-
-## API
-
-```python
-from rose_cross import build_rose_path, letter_to_slot
-pts, slots = build_rose_path("mntclfs")
-```
+Coordinate count matches petal sequence length; markers present in SVG/packet provenance.

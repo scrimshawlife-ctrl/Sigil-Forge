@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.2"
 
 _REQUIRED_KEYS = (
     "schema_version",
@@ -93,8 +93,10 @@ def build_packet(
     sealed_blob: dict[str, Any] | None = None,
     interop: dict[str, Any] | None = None,
     include_normalized: bool = True,
+    ontology: dict[str, Any] | None = None,
+    provenance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a forge-packet dict matching design §9."""
+    """Build a forge-packet dict matching design §9 + ontology/provenance."""
     packet: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "mode": mode,
@@ -106,6 +108,8 @@ def build_packet(
         "verify": verify_cmd,
         "framing_notes": framing_notes(mode),
         "interop": interop if interop is not None else {},
+        "ontology": ontology if ontology is not None else {},
+        "provenance": provenance if provenance is not None else {},
     }
     if include_normalized and normalized_intent is not None:
         packet["normalized_intent"] = normalized_intent
