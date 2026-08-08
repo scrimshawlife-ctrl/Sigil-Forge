@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils\n"
-        "commands: construct | verify | inspect | wallpaper | wizard | open | learn | ledger | "
+        "commands: construct | verify | verify-proof | inspect | wallpaper | wizard | open | learn | ledger | "
         "policy | doctor | eval | check | help\n"
         "See SKILL.md and docs/superpowers/specs/2026-08-07-sigil-forge-design.md"
     )
@@ -321,6 +321,17 @@ def cmd_inspect(args: argparse.Namespace) -> int:
     result = inspect_path(args.artifact)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("ok") else 1
+
+
+def cmd_verify_proof(args: argparse.Namespace) -> int:
+    """Verify proof-of-intent artifacts for a forge run (no plaintext intent out)."""
+    from construct import resolve_passphrase
+    from proofs.verify_run import verify_proof_run
+
+    passphrase = resolve_passphrase(getattr(args, "passphrase", None))
+    result = verify_proof_run(args.run, passphrase=passphrase)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result.get("verified") else 1
 
 
 def cmd_open(args: argparse.Namespace) -> int:
@@ -1183,6 +1194,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     pi.add_argument("artifact", help="Path to glyph.svg, glyph.png, wallpaper, or run dir")
 
+    pvp = sub.add_parser(
+        "verify-proof",
+        help="Verify proof-of-intent for a forge run directory",
+    )
+    pvp.add_argument("run", help="Path to forge run directory")
+    pvp.add_argument(
+        "--passphrase",
+        default=None,
+        help="Optional passphrase to re-open capsule for local_capsule verify",
+    )
+
     po = sub.add_parser(
         "open",
         help="Decrypt sealed_intent from forge-packet.json",
@@ -1388,6 +1410,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_verify(args)
     if args.cmd == "inspect":
         return cmd_inspect(args)
+    if args.cmd == "verify-proof":
+        return cmd_verify_proof(args)
     if args.cmd == "open":
         return cmd_open(args)
     if args.cmd == "learn":
