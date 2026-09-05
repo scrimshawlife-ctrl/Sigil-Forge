@@ -27,7 +27,7 @@ changes tone only. Construction is **offline-first** — no image API required.
 > Methods are craft history, symbolic compression, and steganographic layering —
 > not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
 
-**Packaging:** Hermes **skill** (`SKILL.md` + CLI → `~/.hermes/skills/sigil-forge`), not a plugin.
+**Packaging:** Hermes **skill** (`SKILL.md` + CLI → `${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge`), not a plugin.
 
 ---
 
@@ -57,7 +57,7 @@ changes tone only. Construction is **offline-first** — no image API required.
 # Preview
 bash install.sh --dry-run
 
-# Default → ~/.hermes/skills/sigil-forge
+# Default → ${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge
 bash install.sh
 
 # Custom location
@@ -67,7 +67,7 @@ bash install.sh --target /path/to/skills/sigil-forge
 bash install.sh --version
 ```
 
-Post-install runs `validate_hermes_skill` + `check` (with `HERMES_SKILL_DIR` set to the target).  
+Staged validation runs `validate_hermes_skill` + `check` before activation; contract/version are read back after activation.
 Install is a **lean skill tree**: excludes `.git`, `out/`, `.venv`, caches, `.worktrees`, and `docs/superpowers` (implementation plans are clone-only).
 
 **Requirements:** Python 3.10+ (stdlib). No pip packages for the core path. Optional: `jsonschema` for stricter packet validation; optional `argon2-cffi` for Argon2id sealing.
@@ -81,7 +81,7 @@ python3 scripts/validate_hermes_skill.py  # SKILL.md frontmatter hygiene
 ```
 
 ```bash
-export HERMES_SKILL_DIR="$HOME/.hermes/skills/sigil-forge"
+export HERMES_SKILL_DIR="${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge"
 # Reload Hermes skills if the agent is already running
 ```
 
@@ -100,8 +100,7 @@ python3 scripts/sigil_forge.py wizard --next --session <id> \
   --answers-json '{"intent":"I maintain calm focus"}'
 
 # 3) When next.done is true → forge
-python3 scripts/sigil_forge.py wizard --apply answers.json \
-  --path quick --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session <id> --path quick --out out/sigil-forge
 
 # 4) Verify
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
@@ -119,7 +118,7 @@ Unanswered optional fields use defaults on apply. Bad intents return `refused: t
 
 ```bash
 export SIGIL_FORGE_PASSPHRASE='operator-secret'
-# answers JSON includes "proof": "commitment", "kdf": "auto"
+# First write operator-reviewed answers.json; include "proof": "commitment", "kdf": "auto".
 python3 scripts/sigil_forge.py wizard --apply answers.json \
   --path full --out out/sigil-forge
 # apply result includes intent_capsule, sigil_root, next-hints for open/verify-proof
@@ -454,3 +453,5 @@ Local preview: open `docs/index.html` or serve `docs/` with any static server.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+Source, profile, and migration rules: `references/source-and-upgrades.md`.

@@ -44,7 +44,7 @@ Standalone **Hermes skill** (not a plugin). Hermes loads this directory;
 **Product:** the **wallpaper PNG** is the end deliverable. Corpus methods forge
 immutable glyph geometry; intent + method provenance are **encrypted into the
 image** (SF12 vault). Packets are workspace. Install: `bash install.sh` →
-`~/.hermes/skills/sigil-forge`.
+`${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge`.
 
 ## Overview
 
@@ -105,7 +105,7 @@ python3 scripts/sigil_forge.py wizard --session-new --path quick
 python3 scripts/sigil_forge.py wizard --next --session <id> \
   --answers-json '{"intent":"I maintain calm focus"}'
 # When next.done is true:
-python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session <id> --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
 ```
@@ -238,7 +238,7 @@ python3 scripts/sigil_forge.py construct --intent "…" --wallpaper --surface ph
 python3 scripts/sigil_forge.py wizard --script --path quick
 python3 scripts/sigil_forge.py wizard --session-new --path quick
 python3 scripts/sigil_forge.py wizard --next --session <id> --answers-json '{…}'
-python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session <id> --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py wizard --list-corpus
 python3 scripts/sigil_forge.py verify out/sigil-forge/<run-id>/glyph.svg
 python3 scripts/sigil_forge.py wallpaper --run out/sigil-forge/<run-id> \
@@ -275,7 +275,7 @@ python3 scripts/sigil_forge.py wizard --session-new --path quick
 python3 scripts/sigil_forge.py wizard --next --session <id> \
   --answers-json '{"intent":"I maintain calm focus"}'
 # Save final answers and apply
-python3 scripts/sigil_forge.py wizard --apply answers.json --path quick --out out/sigil-forge
+python3 scripts/sigil_forge.py wizard --session <id> --path quick --out out/sigil-forge
 python3 scripts/sigil_forge.py verify out/sigil-forge/*/glyph.svg
 ```
 
@@ -407,3 +407,5 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
 
 Design: [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md).
+
+Source, profile, and migration rules: `references/source-and-upgrades.md`.
