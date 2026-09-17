@@ -35,7 +35,8 @@ triggers:
 
 Standalone **construction engine** (CLI + `forge_core`). `SKILL.md` is an
 optional **agent contract** any orchestrator can load (Grok, Codex, Claude,
-Hermes, a shell). Deterministic construction lives under `scripts/`; the
+a shell). Hermes may load a copy; that path is last-compat only. Deterministic
+construction lives under `scripts/`; the
 caller owns intake, mode framing, and presentation choices.
 
 **Product:** the **wallpaper PNG** is the end deliverable. Corpus methods forge
@@ -373,7 +374,7 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 - [ ] If AI wallpaper: prompt package present; method/provider honest (no silent fake AI)
 - [ ] Learning entries remain `PROPOSED` unless human ran `ledger promote`
 - [ ] Packet has `intent_commitment` + `sigil_root` when construct succeeds (v0.12+)
-- [ ] `python3 scripts/sigil_forge.py check` → `ok: true` (includes `hermes_ok`, `poi_ok`)
+- [ ] `python3 scripts/sigil_forge.py check` → `ok: true` (includes `agent_contract_ok`, `poi_ok`)
 - [ ] `python3 scripts/validate_hermes_skill.py` → `ok: true` (dev/release/install)
 
 ## References

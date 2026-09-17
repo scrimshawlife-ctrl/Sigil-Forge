@@ -403,10 +403,10 @@ See [references/safety-and-framing.md](references/safety-and-framing.md) ·
 # Tests (pytest; project may use .venv)
 python3 -m pytest -q
 
-# Hermes skill hygiene
+# Optional agent-contract hygiene
 python3 scripts/validate_hermes_skill.py
 
-# Smoke (includes hermes_ok + poi_ok)
+# Smoke (includes agent_contract_ok + poi_ok)
 python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py eval
 ```
