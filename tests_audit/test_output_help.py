@@ -26,7 +26,7 @@ class OutputHelpTests(unittest.TestCase):
                     env=dict(os.environ, HERMES_SKILL_DIR=str(ROOT), COLUMNS="180"),
                 )
                 text = " ".join(result.stdout.split())
-                self.assertIn("$HERMES_HOME/state/sigil-forge/products", text)
+                self.assertIn("~/.sigil-forge/state/products", text)
                 self.assertIn("$SIGIL_FORGE_STATE_DIR/products", text)
                 self.assertNotIn("default: out/sigil-forge", text)
                 self.assertNotIn("under out/wizard-sessions", text)
@@ -34,9 +34,8 @@ class OutputHelpTests(unittest.TestCase):
     def test_runtime_contract_names_external_outputs_and_sessions(self):
         text = (ROOT / "references/hermes-runtime-contract.md").read_text()
         for path in (
-            "$HERMES_HOME/state/sigil-forge/products",
-            "$SIGIL_FORGE_STATE_DIR/products",
-            "$HERMES_HOME/state/sigil-forge/wizard-sessions",
+            "~/.sigil-forge/state",
+            "$SIGIL_FORGE_STATE_DIR",
         ):
             self.assertIn(path, text)
         self.assertNotIn("or skill `out/`", text)

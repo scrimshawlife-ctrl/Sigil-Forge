@@ -1,9 +1,9 @@
 # Sigil-Forge quickstart
 
-Run from the skill root (clone or install dir). **Current version: 0.13.0.**
+Run from the engine root (clone or install dir). **Current version: 0.13.0.**
 
 **Product:** wallpaper PNG with intent + methods sealed in-image (SF12 vault).  
-Hermes packaging: **skill** (not plugin). Default install: `~/.hermes/skills/sigil-forge`.
+Standalone CLI. Optional agent contract (`SKILL.md`). Default install: `~/.sigil-forge`.
 
 ```bash
 # 1. Smoke-check
@@ -53,20 +53,20 @@ python3 scripts/sigil_forge.py inspect out/sigil-forge/*/glyph.svg
 python3 scripts/sigil_forge.py verify-proof out/sigil-forge/*/ \
   --passphrase "$SIGIL_FORGE_PASSPHRASE"
 
-# 6. Policy preflight + Hermes hygiene (dev)
+# 6. Policy preflight + contract hygiene (dev)
 python3 scripts/sigil_forge.py policy check --text "I maintain calm focus"
 python3 -m pytest -q
 python3 scripts/validate_hermes_skill.py
 ```
 
-**Install to Hermes** (skill tree under `~/.hermes/skills/sigil-forge`):
+**Install** (default `~/.sigil-forge`; Hermes is opt-in):
 
 ```bash
-bash install.sh --dry-run    # preview (lean tree; no docs/superpowers)
-bash install.sh              # install + post-check (validate_hermes + check)
-export HERMES_SKILL_DIR="$HOME/.hermes/skills/sigil-forge"
-python3 "$HERMES_SKILL_DIR/scripts/sigil_forge.py" doctor
-# Reload Hermes skills if the agent is already running
+bash install.sh --dry-run
+bash install.sh
+export SIGIL_FORGE_HOME="$HOME/.sigil-forge"
+python3 "$SIGIL_FORGE_HOME/scripts/sigil_forge.py" doctor
+# Optional: bash install.sh --hermes
 ```
 
 Wallpaper outputs live under `<run-id>/wallpaper/` and `<run-id>/receipts/`.  

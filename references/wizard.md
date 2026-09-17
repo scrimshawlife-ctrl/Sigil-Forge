@@ -1,10 +1,10 @@
-# Forge wizard (Hermes)
+# Forge wizard
 
 Guided **step-by-step** interview so operators never memorize CLI flags.
-The engine owns geometry; the agent owns conversation and safety judgment.
+The engine owns geometry; the caller owns conversation and safety judgment.
 
-Hermes has no native multi-page UI — the wizard is a **step runner** the agent
-loops with `wizard --next`.
+Headless agents have no multi-page UI — the wizard is a **step runner** looped
+with `wizard --next`. Interactive TTY is `--interactive`.
 
 ## Paths
 

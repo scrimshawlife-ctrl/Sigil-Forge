@@ -172,7 +172,7 @@ def cmd_check(_: argparse.Namespace) -> int:
             module_errors.append(f"{name}: {exc}")
     modules_ok = not module_errors
 
-    # Hermes SKILL.md frontmatter (packaging gate)
+    # Optional agent-contract SKILL.md frontmatter (packaging gate)
     hermes_ok = False
     hermes_errors: list[str] = []
     try:
@@ -252,6 +252,9 @@ def cmd_check(_: argparse.Namespace) -> int:
                 "module_errors": module_errors,
                 "hermes_ok": hermes_ok,
                 "hermes_errors": hermes_errors,
+                "agent_contract_ok": hermes_ok,
+                "agent_contract_errors": hermes_errors,
+                "packaging": "standalone-engine",
                 "construct_ok": construct_ok,
                 "verify_ok": verify_ok,
                 "poi_ok": poi_ok,
@@ -760,8 +763,12 @@ def cmd_doctor(_: argparse.Namespace) -> int:
         "module_errors": module_errors,
         "hermes_ok": hermes_ok,
         "hermes_errors": hermes_errors,
+        "agent_contract_ok": hermes_ok,
+        "agent_contract_errors": hermes_errors,
         "proof_providers": proof_providers,
-        "packaging": "hermes-skill",
+        "packaging": "standalone-engine",
+        "sigil_forge_home_env": __import__("os").environ.get("SIGIL_FORGE_HOME")
+        or __import__("os").environ.get("SIGIL_FORGE_DIR"),
         "hermes_skill_dir_env": __import__("os").environ.get("HERMES_SKILL_DIR"),
     }
     try:
@@ -1152,13 +1159,14 @@ def cmd_eval(_: argparse.Namespace) -> int:
             bool((p5.get("intent_commitment_zk") or {}).get("value")),
         )
 
-    # Hermes skill packaging (frontmatter + pure core import)
+    # Agent-contract frontmatter + pure core import
     try:
         from forge_core import ForgeConfig, compute_forge
         from normalize import normalize_intent
         from validate_hermes_skill import validate as validate_hermes
 
         hr = validate_hermes()
+        rec("agent_contract", bool(hr.get("ok")), str(hr.get("errors") or ""))
         rec("hermes_frontmatter", bool(hr.get("ok")), str(hr.get("errors") or ""))
         n = normalize_intent("I maintain calm focus")
         core = compute_forge(n, ForgeConfig(kamea_encoding="latin_mod9_v1"))
@@ -1305,7 +1313,7 @@ def main(argv: list[str] | None = None) -> int:
     pc.add_argument(
         "--out",
         default=None,
-        help="Output root (default: $HERMES_HOME/state/sigil-forge/products; override: $SIGIL_FORGE_STATE_DIR/products; HERMES_HOME defaults to ~/.hermes)",
+        help="Output root (default: ~/.sigil-forge/state/products or $SIGIL_FORGE_STATE_DIR/products)",
     )
     pc.add_argument(
         "--passphrase",
@@ -1619,7 +1627,7 @@ def main(argv: list[str] | None = None) -> int:
     pwz.add_argument(
         "--interactive",
         action="store_true",
-        help="Human TTY prompts (not for Hermes)",
+        help="Human TTY prompts (not for headless agents)",
     )
     pwz.add_argument(
         "--validate-only",
@@ -1629,7 +1637,7 @@ def main(argv: list[str] | None = None) -> int:
     pwz.add_argument(
         "--out",
         default=None,
-        help="Output root for --apply (default: $HERMES_HOME/state/sigil-forge/products; override: $SIGIL_FORGE_STATE_DIR/products; HERMES_HOME defaults to ~/.hermes)",
+        help="Output root for --apply (default: ~/.sigil-forge/state/products or $SIGIL_FORGE_STATE_DIR/products)",
     )
     pwz.add_argument(
         "--passphrase",

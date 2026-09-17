@@ -124,6 +124,9 @@ def test_interop_fields(tmp_path: Path):
     )
     assert packet["interop"].get("intent_token")
     assert packet["interop"].get("sigil_glyph")
+    assert "abx-esoteric-intelligence" in packet["interop"].get("related_skills", [])
+    assert packet["interop"].get("specialist_id") == "sigil-forge"
+    assert packet["interop"].get("abraxas_lane") == "SHADOW"
 
 
 def test_doctor_and_eval_cli():

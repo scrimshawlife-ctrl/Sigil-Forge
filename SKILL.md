@@ -1,10 +1,6 @@
 ---
 name: sigil-forge
-description: >
-  Use when forging sigils, intent glyphs, kamea/Spare stego, forge packets, or when
-  the user asks to be guided/wizard through sigil creation. Offline multi-channel
-  construction; dual creative/practice framing; no efficacy claims. Prefer wizard
-  --next step runner for new users.
+description: "Use when forging sigils, intent glyphs, kamea/Spare stego, forge packets, or when the user asks to be guided/wizard through sigil creation. Offline multi-channel construction; dual creative/practice framing; no efficacy claims. Prefer wizard --next step runner for new users."
 version: 0.13.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
@@ -19,7 +15,7 @@ metadata:
       - Steganography
       - SymbolicDesign
     category: creative
-    related_skills: []
+    related_skills: [abx-esoteric-intelligence, abx-familiar-signal-forager, abraxas-ingest]
 triggers:
   - sigil
   - sigil forge
@@ -37,14 +33,15 @@ triggers:
 
 # Sigil-Forge
 
-Standalone **Hermes skill** (not a plugin). Hermes loads this directory;
-`SKILL.md` is the behavior contract. Deterministic construction lives under
-`scripts/`; the agent owns intake, mode framing, and presentation choices.
+Standalone **construction engine** (CLI + `forge_core`). `SKILL.md` is an
+optional **agent contract** any orchestrator can load (Grok, Codex, Claude,
+Hermes, a shell). Deterministic construction lives under `scripts/`; the
+caller owns intake, mode framing, and presentation choices.
 
 **Product:** the **wallpaper PNG** is the end deliverable. Corpus methods forge
 immutable glyph geometry; intent + method provenance are **encrypted into the
 image** (SF12 vault). Packets are workspace. Install: `bash install.sh` →
-`${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge`.
+`${SIGIL_FORGE_HOME:-$HOME/.sigil-forge}` (Hermes: `bash install.sh --hermes`).
 
 ## Overview
 
@@ -88,7 +85,7 @@ or replaces professional help.
 
 - Python 3.10+ with stdlib (no required pip packages for core path)
 - Optional: `jsonschema` for stricter packet validation; external SVG raster if desired
-- Honor `HERMES_SKILL_DIR` when set; write under `--out` or `out/sigil-forge/<run-id>/`
+- Honor `SIGIL_FORGE_HOME` / `SIGIL_FORGE_DIR` when set (`HERMES_SKILL_DIR` is last-compat); write under `--out` or default state products
 - **Never mutate `references/` during ordinary runs**
 
 ## Procedure
@@ -256,10 +253,10 @@ python3 scripts/sigil_forge.py ledger export --limit 20
 python3 scripts/sigil_forge.py ledger promote --index 0 --i-confirm PROMOTE   # human only
 python3 scripts/sigil_forge.py policy check --text "I maintain calm focus"
 python3 scripts/sigil_forge.py policy check --file path/to/text.txt
-python3 scripts/validate_hermes_skill.py   # frontmatter / Hermes hygiene
+python3 scripts/validate_hermes_skill.py   # optional SKILL.md frontmatter hygiene
 ```
 
-Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`
+Env: `SIGIL_FORGE_HOME`, `SIGIL_FORGE_STATE_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`. `HERMES_SKILL_DIR` remains last-compat.
 (host AI background shell template). Prefer env over `--passphrase` (argv is
 visible in process lists). Construct uses atomic staging then promote.
 `policy check` is preflight lint only (efficacy + authority-seal request); it does
@@ -267,7 +264,7 @@ not construct.
 
 ## One-Shot Recipes
 
-### Wizard-guided forge (recommended for Hermes)
+### Wizard-guided forge (recommended for headless agents)
 
 ```bash
 python3 scripts/sigil_forge.py wizard --session-new --path quick
@@ -391,7 +388,7 @@ receipt `geometry_preserved: true`; prompt package forbids glyph invention.
 | [source-manifest.yaml](references/source-manifest.yaml) | Method → source citations |
 | [wallpaper-framework.md](references/wallpaper-framework.md) | Wallpaper carrier pipeline |
 | [wallpaper-prompt-contract.md](references/wallpaper-prompt-contract.md) | Background-only AI prompts |
-| [wizard.md](references/wizard.md) | Hermes guided forge interview |
+| [wizard.md](references/wizard.md) | Guided forge interview (any agent) |
 | [methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit corpus |
 | [planetary-character-corpus.json](references/planetary-character-corpus.json) | Agrippan names + construction flags |
 | [planetary-plate-strokes.json](references/planetary-plate-strokes.json) | Multi-stroke plate digitizations |

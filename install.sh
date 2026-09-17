@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Sigil-Forge — Hermes skill installer
+# Sigil-Forge — standalone engine installer (Hermes optional)
 # Usage:
 #   ./install.sh
 #   ./install.sh --dry-run
 #   ./install.sh --target DIR
+#   ./install.sh --hermes
 #   ./install.sh --version
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_TARGET="${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge"
+NATIVE_TARGET="${SIGIL_FORGE_HOME:-$HOME/.sigil-forge}"
+HERMES_TARGET="${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge"
+DEFAULT_TARGET="$NATIVE_TARGET"
 VERSION="$(tr -d '[:space:]' < "${ROOT}/VERSION" 2>/dev/null || echo "0.0.0")"
 
 DRY_RUN=0
@@ -17,18 +20,20 @@ TARGET="$DEFAULT_TARGET"
 
 usage() {
   cat <<EOF
-Sigil-Forge Hermes skill installer v${VERSION}
+Sigil-Forge standalone installer v${VERSION}
 
 Usage: ./install.sh [options]
 
 Options:
   --dry-run               Show actions without writing
-  --target DIR            Install to DIR (default: ${DEFAULT_TARGET})
+  --target DIR            Install to DIR (default: ${NATIVE_TARGET})
+  --hermes                Install to Hermes skills dir (${HERMES_TARGET})
   --allow-outside-home    Permit --target outside \$HOME
   --version               Print version and exit
   -h, --help              Show this help
 
 Post-install:
+  export SIGIL_FORGE_HOME="\$TARGET"
   python3 "\$TARGET/scripts/sigil_forge.py" check
 EOF
 }
@@ -52,6 +57,7 @@ is_forbidden_prefix() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=1; shift ;;
+    --hermes) TARGET="$HERMES_TARGET"; shift ;;
     --allow-outside-home) ALLOW_OUTSIDE_HOME=1; shift ;;
     --version) echo "$VERSION"; exit 0 ;;
     --target)
@@ -108,7 +114,7 @@ PY
 
 validate_source() {
   log "Validating source at ${ROOT}"
-  # Hermes skill runtime surface (agent contract + offline engine + PoI)
+  # Runtime surface (optional agent contract + offline engine + PoI)
   local required=(
     "SKILL.md"
     "VERSION"
@@ -199,16 +205,15 @@ post_check() {
   local dest="$1"
   if [[ $DRY_RUN -eq 1 ]]; then
     printf '[dry-run] python3 %q/scripts/validate_hermes_skill.py\n' "$dest"
-    printf '[dry-run] HERMES_SKILL_DIR=%q python3 %q/scripts/sigil_forge.py check\n' "$dest" "$dest"
+    printf '[dry-run] SIGIL_FORGE_HOME=%q python3 %q/scripts/sigil_forge.py check\n' "$dest" "$dest"
     return 0
   fi
-  log "Post-install Hermes frontmatter check"
+  log "Post-install agent-contract frontmatter check"
   python3 "${dest}/scripts/validate_hermes_skill.py" \
     || die "post-install validate_hermes_skill failed"
   log "Post-install engine check"
-  # Resolve skill root from install path (not the clone cwd)
-  HERMES_SKILL_DIR="${dest}" python3 "${dest}/scripts/sigil_forge.py" check \
-    || die "post-install check failed: HERMES_SKILL_DIR=${dest} python3 ${dest}/scripts/sigil_forge.py check"
+  SIGIL_FORGE_HOME="${dest}" python3 "${dest}/scripts/sigil_forge.py" check \
+    || die "post-install check failed: SIGIL_FORGE_HOME=${dest} python3 ${dest}/scripts/sigil_forge.py check"
   log "Post-install check OK"
 }
 
@@ -228,9 +233,9 @@ echo ""
 log "Sigil-Forge v${VERSION} installed → ${TARGET}"
 echo ""
 echo "Next:"
-echo "  export HERMES_SKILL_DIR=\"${TARGET}\""
-echo "  python3 \"\$HERMES_SKILL_DIR/scripts/sigil_forge.py\" check"
-echo "  python3 \"\$HERMES_SKILL_DIR/scripts/sigil_forge.py\" construct \\"
+echo "  export SIGIL_FORGE_HOME=\"${TARGET}\""
+echo "  python3 \"\$SIGIL_FORGE_HOME/scripts/sigil_forge.py\" check"
+echo "  python3 \"\$SIGIL_FORGE_HOME/scripts/sigil_forge.py\" construct \\"
 echo "    --intent \"I maintain calm focus\" --out out/sigil-forge"
-echo "  # Reload Hermes skills if the agent is already running"
+echo "  # Optional Hermes: bash install.sh --hermes"
 echo ""

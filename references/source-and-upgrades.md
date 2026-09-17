@@ -8,7 +8,7 @@ claim that organizational, personal, or legacy embedded variants are identical.
 No personal version is deprecated by this change.
 
 Before switching sources, stop runtime writers, record current source/commit,
-review the destination under `${HERMES_HOME:-$HOME/.hermes}`, compare contracts,
+review the destination under `${SIGIL_FORGE_HOME:-$HOME/.sigil-forge}` (or a Hermes skills dir if `--hermes`), compare contracts,
 and retain a separate backup of outputs, sessions, and local customization.
 Do not install two different contracts with the same skill name into one profile.
 A successful compatibility check does not grant deployment/publication authority.
@@ -27,7 +27,7 @@ On a reported recovery failure, retain the printed recovery directory and backup
 do not delete it or retry blindly. Inspect the exact target and restore from the
 named backup only after validating it. No automatic source migration is implied.
 
-New default products: `${HERMES_HOME:-$HOME/.hermes}/state/sigil-forge/products`.
+New default products: `${SIGIL_FORGE_STATE_DIR:-$HOME/.sigil-forge/state}/products`.
 Sessions: the adjacent `wizard-sessions` directory. `SIGIL_FORGE_STATE_DIR` overrides
 that state root; explicit `--out` still controls product output. Legacy installed
 `out/wizard-sessions/<id>.json` is read as a fallback and copied into external state

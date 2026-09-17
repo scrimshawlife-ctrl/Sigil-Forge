@@ -38,6 +38,7 @@ def test_check_reports_hermes_and_poi_ok():
     payload = json.loads(r.stdout)
     assert payload["ok"] is True
     assert payload.get("hermes_ok") is True
+    assert payload.get("agent_contract_ok") is True
     assert payload.get("poi_ok") is True
     assert payload.get("modules_ok") is True
     assert payload.get("missing") == []
@@ -54,7 +55,8 @@ def test_doctor_packaging_and_providers():
     assert r.returncode == 0, r.stderr + r.stdout
     payload = json.loads(r.stdout)
     assert payload["ok"] is True
-    assert payload.get("packaging") == "hermes-skill"
+    assert payload.get("packaging") == "standalone-engine"
+    assert payload.get("agent_contract_ok") is True
     assert payload.get("hermes_ok") is True
     names = {p["name"] for p in payload.get("proof_providers") or []}
     assert "none" in names
@@ -68,13 +70,14 @@ def test_proof_of_intent_ref_present():
     text = (ROOT / "references" / "hermes-runtime-contract.md").read_text(
         encoding="utf-8"
     )
-    assert "not a Hermes plugin" in text or "not a plugin" in text.lower()
+    assert "standalone" in text.lower()
+    assert "not a plugin" in text.lower() or "not a Hermes plugin" in text
     assert "verify-proof" in text
     assert "open" in text and "capsule" in text
 
 
 def test_install_to_temp_and_check(tmp_path: Path):
-    """Full skill install path outside source tree must pass check under HERMES_SKILL_DIR."""
+    """Full install path outside source tree must pass check under SIGIL_FORGE_HOME."""
     dest = tmp_path / "hermes-skills" / "sigil-forge"
     r = subprocess.run(
         [
@@ -105,17 +108,19 @@ def test_install_to_temp_and_check(tmp_path: Path):
         capture_output=True,
         text=True,
         cwd=str(dest),
-        env={**os.environ, "HERMES_SKILL_DIR": str(dest)},
+        env={**os.environ, "SIGIL_FORGE_HOME": str(dest)},
     )
     assert check.returncode == 0, check.stderr + check.stdout
     payload = json.loads(check.stdout)
     assert payload["ok"] is True
     assert payload["poi_ok"] is True
     assert payload["hermes_ok"] is True
+    assert payload["agent_contract_ok"] is True
+    assert payload["packaging"] == "standalone-engine"
     assert Path(payload["root"]).resolve() == dest.resolve()
 
 
-def test_install_dry_run():
+def test_install_dry_run(tmp_path: Path):
     r = subprocess.run(
         [
             "bash",
@@ -123,7 +128,7 @@ def test_install_dry_run():
             "--dry-run",
             "--allow-outside-home",
             "--target",
-            "/tmp/sf-never-written",
+            str(tmp_path / "sf-never-written"),
         ],
         capture_output=True,
         text=True,

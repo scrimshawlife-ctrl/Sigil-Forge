@@ -22,6 +22,9 @@ class StateAudit(unittest.TestCase):
                 HERMES_SKILL_DIR=str(ROOT),
             )
             env.pop("SIGIL_FORGE_STATE_DIR", None)
+            env.pop("SIGIL_FORGE_HOME", None)
+            env.pop("SIGIL_FORGE_ROOT", None)
+            env.pop("SIGIL_FORGE_DIR", None)
             code = "import sys; sys.path.insert(0, sys.argv[1]); from paths import default_out_dir; print(default_out_dir())"
             r = subprocess.run(
                 [sys.executable, "-c", code, str(ROOT / "scripts")],
@@ -33,7 +36,7 @@ class StateAudit(unittest.TestCase):
             )
             self.assertTrue(
                 Path(r.stdout.strip()).is_relative_to(
-                    Path(tmp) / "profile/state/sigil-forge"
+                    Path(tmp) / ".sigil-forge/state"
                 )
             )
 
@@ -114,6 +117,9 @@ class StateAudit(unittest.TestCase):
                 HERMES_SKILL_DIR=str(Path(tmp) / "old"),
             )
             env.pop("SIGIL_FORGE_STATE_DIR", None)
+            env.pop("SIGIL_FORGE_HOME", None)
+            env.pop("SIGIL_FORGE_ROOT", None)
+            env.pop("SIGIL_FORGE_DIR", None)
             r = subprocess.run(
                 check=False,
                 args=[
@@ -139,7 +145,7 @@ class StateAudit(unittest.TestCase):
             self.assertTrue(
                 (
                     Path(tmp)
-                    / "profile/state/sigil-forge/wizard-sessions/legacy-id.json"
+                    / ".sigil-forge/state/wizard-sessions/legacy-id.json"
                 ).exists()
             )
 

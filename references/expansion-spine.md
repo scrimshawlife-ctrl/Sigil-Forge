@@ -28,6 +28,7 @@ compression, name paths, planetary characters, and entity seals.
 | v0.12.5 | Hermes runtime polish: check/eval no skill-out pollution, PoI+hermes eval cases, lean help refs |
 | v0.12.6 | Wizard PoI steps (proof/kdf), apply capsule surfaces, Hermes agent next-hints |
 | v0.13.0 | **Wallpaper product:** SF12 sealed vault (intent+methods in PNG); open --wallpaper |
+| v0.13.0 | Agent-agnostic packaging: default `~/.sigil-forge`; Hermes `--hermes` opt-in; `--interop specialist_id=sigil-forge` SHADOW; no Abraxas import |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)

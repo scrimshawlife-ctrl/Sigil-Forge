@@ -622,7 +622,13 @@ def run(
             interop_block = {
                 "intent_token": digest[:16],
                 "sigil_glyph": f"sf:{rid}",
-                "related_skills": [],
+                "related_skills": [
+                    "abx-esoteric-intelligence",
+                    "abx-familiar-signal-forager",
+                    "abraxas-ingest",
+                ],
+                "specialist_id": "sigil-forge",
+                "abraxas_lane": "SHADOW",
                 "note": "Thin interop export — not Enochian/Goetic authority seals",
             }
 
