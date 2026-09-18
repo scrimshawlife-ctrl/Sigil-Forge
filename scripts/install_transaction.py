@@ -52,7 +52,7 @@ def install(source: Path, target: Path, kind: str, skip_checks: bool = False) ->
     source, target = source.resolve(), target.resolve()
     if source == target or source in target.parents or target in source.parents:
         raise ValueError("source and target must not overlap")
-    home = Path(os.environ.get("HERMES_HOME") or str(Path.home() / ".hermes")).resolve()
+    home = _profile_home()
     if target in (Path("/"), Path.home().resolve(), home, home / "skills"):
         raise ValueError("refusing installation root")
     if target.exists() and not target.is_dir():
@@ -97,9 +97,10 @@ def install(source: Path, target: Path, kind: str, skip_checks: bool = False) ->
         }
         env.update(
             HOME=str(check_home),
+            SIGIL_FORGE_HOME=str(stage),
+            SIGIL_FORGE_STATE_DIR=str(check_home / "state"),
             HERMES_HOME=str(check_home / ".hermes"),
             HERMES_SKILL_DIR=str(stage),
-            SIGIL_FORGE_STATE_DIR=str(check_home / "state"),
             PYTHONDONTWRITEBYTECODE="1",
         )
         if not skip_checks:
@@ -240,11 +241,21 @@ def install(source: Path, target: Path, kind: str, skip_checks: bool = False) ->
         lock.rmdir()
 
 
+def _profile_home() -> Path:
+    """Backup/profile root. Native share dir; Hermes only if HERMES_HOME is set."""
+    raw = os.environ.get("SIGIL_FORGE_BACKUP_DIR")
+    if raw:
+        return Path(raw).expanduser().resolve()
+    if os.environ.get("HERMES_HOME"):
+        return Path(os.environ["HERMES_HOME"]).expanduser().resolve()
+    return (Path.home() / ".local/share/sigil-forge").resolve()
+
+
 def rollback(target: Path, kind: str, skip_checks: bool = False) -> None:
     if any(p.is_symlink() for p in (target.absolute(), *target.absolute().parents)):
         raise ValueError("refusing symlink target")
     target = target.resolve()
-    home = Path(os.environ.get("HERMES_HOME") or str(Path.home() / ".hermes")).resolve()
+    home = _profile_home()
     key = hashlib.sha256(str(target).encode()).hexdigest()[:20]
     backups = home / "backups" / kind / key
     candidates = sorted(

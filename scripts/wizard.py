@@ -1,4 +1,4 @@
-"""Hermes-facing forge wizard — guided interview → construct kwargs.
+"""Agent-agnostic forge wizard — guided interview → construct kwargs.
 
 Modes:
   - ``script``: interview contract (paths, steps, agent rules)
@@ -24,14 +24,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from paths import default_out_dir, skill_root
+from paths import default_out_dir, default_session_dir, skill_root
 from policy_lint import detect_authority_seal_request
 from safety import check_intent
 
 WIZARD_VERSION = "2.1.0"
 PATHS = ("quick", "full")
 
-# Ordered interview steps for Hermes agents and interactive CLI.
+# Ordered interview steps for any agent and interactive CLI.
 STEPS: list[dict[str, Any]] = [
     {
         "id": "intent",
@@ -853,7 +853,7 @@ def load_answers_file(path: Path | str) -> dict[str, Any]:
 # --- Sessions -----------------------------------------------------------------
 
 def session_dir() -> Path:
-    d = default_out_dir().parent / "wizard-sessions"
+    d = default_session_dir()
     d.mkdir(parents=True, exist_ok=True)
     return d
 

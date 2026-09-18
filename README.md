@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>v0.13.0</strong> · Hermes skill · offline-first · wallpaper product · MIT
+  <strong>v0.13.0</strong> · standalone engine · offline-first · wallpaper product · MIT
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ changes tone only. Construction is **offline-first** — no image API required.
 > Methods are craft history, symbolic compression, and steganographic layering —
 > not proof of metaphysics. Never claims the sigil “works” or replaces professional help.
 
-**Packaging:** Hermes **skill** (`SKILL.md` + CLI → `${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge`), not a plugin.
+**Packaging:** standalone CLI + `forge_core`. Optional `SKILL.md` agent contract (any orchestrator). Default install: `~/.sigil-forge`. Hermes: `bash install.sh --hermes`.
 
 ---
 
@@ -45,7 +45,7 @@ changes tone only. Construction is **offline-first** — no image API required.
 | **Ops** | construct, wallpaper, verify, inspect, open (`--wallpaper` / `--capsule`), policy, ledger, doctor, eval, check |
 | **Privacy** | Public digests only; private vault needs passphrase; no plaintext in visible media |
 | **Proof of Intent** | Commitment + `sigil_root` in vault; SF11/SF12 stego; optional Noir/risc0 |
-| **Hermes packaging** | Skill (not plugin); lean install; progressive refs |
+| **Packaging** | Standalone engine; optional agent contract; Hermes installer is opt-in |
 
 **Not included (by design):** Goetic/Enochian authority seals in the default forge (hard refuse via construct/wizard + `policy check`), efficacy claims, auto-canon learning, cloud image APIs inside the skill.
 
@@ -57,8 +57,10 @@ changes tone only. Construction is **offline-first** — no image API required.
 # Preview
 bash install.sh --dry-run
 
-# Default → ${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge
+# Default → ~/.sigil-forge
 bash install.sh
+# Optional Hermes skills dir
+bash install.sh --hermes
 
 # Custom location
 bash install.sh --target /path/to/skills/sigil-forge
@@ -75,21 +77,20 @@ Install is a **lean skill tree**: excludes `.git`, `out/`, `.venv`, caches, `.wo
 From a clone without installing:
 
 ```bash
-python3 scripts/sigil_forge.py check      # files, modules, Hermes frontmatter, dry PoI construct
-python3 scripts/sigil_forge.py doctor     # env + proof providers + packaging: hermes-skill
-python3 scripts/validate_hermes_skill.py  # SKILL.md frontmatter hygiene
+python3 scripts/sigil_forge.py check      # files, modules, agent contract, dry PoI construct
+python3 scripts/sigil_forge.py doctor     # env + proof providers + packaging: standalone-engine
+python3 scripts/validate_hermes_skill.py  # optional SKILL.md frontmatter hygiene
 ```
 
 ```bash
-export HERMES_SKILL_DIR="${HERMES_HOME:-$HOME/.hermes}/skills/sigil-forge"
-# Reload Hermes skills if the agent is already running
+export SIGIL_FORGE_HOME="$HOME/.sigil-forge"
 ```
 
 ---
 
-## Quick start — wizard (recommended for Hermes)
+## Quick start — wizard (recommended for headless agents)
 
-Hermes has no multi-page UI. The wizard is a **step runner**: one question per turn, then apply.
+The wizard is a **step runner** (no multi-page UI): one question per turn, then apply. Works in any agent or a TTY.
 
 ```bash
 # 1) Start a session (quick path: intent → mode → wallpaper)
@@ -365,7 +366,7 @@ python3 scripts/sigil_forge.py doctor
 python3 scripts/sigil_forge.py eval
 ```
 
-Env: `HERMES_SKILL_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`.
+Env: `SIGIL_FORGE_HOME`, `SIGIL_FORGE_STATE_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`. `HERMES_SKILL_DIR` is last-compat.
 
 ---
 
@@ -402,10 +403,10 @@ See [references/safety-and-framing.md](references/safety-and-framing.md) ·
 # Tests (pytest; project may use .venv)
 python3 -m pytest -q
 
-# Hermes skill hygiene
+# Optional agent-contract hygiene
 python3 scripts/validate_hermes_skill.py
 
-# Smoke (includes hermes_ok + poi_ok)
+# Smoke (includes agent_contract_ok + poi_ok)
 python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py eval
 ```

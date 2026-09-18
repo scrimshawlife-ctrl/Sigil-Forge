@@ -1,13 +1,14 @@
-# Hermes runtime contract
+# Agent runtime contract
 
-Version: **v3** (Sigil-Forge v0.12.6+)
+Version: **v4** (Sigil-Forge v0.13+ agent-agnostic)
 
-Sigil-Forge is a **standalone Hermes skill** (not a Hermes plugin).  
-Default install path: `~/.hermes/skills/sigil-forge`. Skill name: `sigil-forge`.
+Sigil-Forge is a **standalone construction engine** (CLI + `forge_core`), not a plugin.  
+`SKILL.md` is an optional agent contract. Hermes may install a copy under
+`~/.hermes/skills/sigil-forge`; that is **not** the product identity.
 
-**Skill vs plugin:** A skill teaches when/how to forge via `SKILL.md` + offline
-CLI. A plugin would inject always-on tools/hooks — not the product shape here.
-Optional thin plugin adapters later must wrap this skill, not replace it.
+**Skill vs plugin vs engine:** The engine is `python3 scripts/sigil_forge.py`.
+An agent contract teaches when/how to call it. A plugin would inject always-on
+tools/hooks — not the product shape here.
 
 ## Two layers
 
@@ -16,23 +17,23 @@ Optional thin plugin adapters later must wrap this skill, not replace it.
 | **Agent contract** (`SKILL.md`, `references/`) | Intake, wizard interview, mode, safety judgment, packet narrative, when to invoke scripts / host image tools | Inventing glyph geometry or fake stego success |
 | **Construction engine** (`scripts/`) | Normalize, digest, optional encrypt, Spare, kamea, fusion, SVG/PNG, stego, wallpaper composite, verify, PoI surfaces | Mystical guarantees, external image APIs, mutating skill `references/` |
 
-## Skill root resolution
+## Root resolution
 
-1. `HERMES_SKILL_DIR` if set  
-2. Else install/clone directory containing this skill  
+1. `SIGIL_FORGE_HOME` / `SIGIL_FORGE_ROOT` / `SIGIL_FORGE_DIR` / `SIGIL_FORGE_SKILL_DIR`  
+2. Else install/clone directory containing this tree  
+3. `HERMES_SKILL_DIR` — last-compat only  
 
-Default out: `$HERMES_HOME/state/sigil-forge/products/<run-id>/`.
-`SIGIL_FORGE_STATE_DIR` overrides the state root, yielding
-`$SIGIL_FORGE_STATE_DIR/products/<run-id>/`; explicit `--out` overrides the product root.
-`HERMES_HOME` defaults to `~/.hermes`.
-Wizard sessions: `$HERMES_HOME/state/sigil-forge/wizard-sessions/<id>.json`
-(or `$SIGIL_FORGE_STATE_DIR/wizard-sessions/<id>.json`).
-Legacy skill-root `out/wizard-sessions` are read for compatibility only.
+Default state: `$SIGIL_FORGE_STATE_DIR` or `~/.sigil-forge/state`.  
+Products: `<state>/products/<run-id>/`.  
+Wizard sessions: `<state>/wizard-sessions/<id>.json`.  
+Legacy `~/.hermes/state/sigil-forge` is used only if that tree already exists
+and the native state dir does not. Explicit `--out` always wins.
+
 `run-id` = timestamp + short digest prefix.
 
 ## Artifact rule
 
-- Write under the user-chosen directory or external state products directory.
+- Write under the user-chosen directory or default state products directory.
 - **Never mutate `references/`** during ordinary runs.  
 - Prefer hash-based run paths so listings do not leak full intent text.
 
@@ -58,17 +59,17 @@ Entry: `python3 scripts/sigil_forge.py …`
 
 ```bash
 bash install.sh --dry-run
-bash install.sh              # → ~/.hermes/skills/sigil-forge
-# post-install sets HERMES_SKILL_DIR for check
-python3 scripts/validate_hermes_skill.py
-python3 scripts/sigil_forge.py check    # files + modules + hermes + dry construct/PoI
-python3 scripts/sigil_forge.py doctor   # env + proof providers + packaging: hermes-skill
+bash install.sh                 # → ~/.sigil-forge
+bash install.sh --hermes        # optional: ~/.hermes/skills/sigil-forge
+export SIGIL_FORGE_HOME="$HOME/.sigil-forge"
+python3 scripts/validate_hermes_skill.py   # optional agent-contract hygiene
+python3 scripts/sigil_forge.py check       # files + modules + contract + dry construct/PoI
+python3 scripts/sigil_forge.py doctor      # packaging: standalone-engine
 ```
 
-Install excludes: `.git`, `out/`, `.venv`, caches, `.worktrees`, `docs/superpowers`
-(implementation plans are not runtime surface).
+Install excludes: `.git`, `out/`, `.venv`, caches, `.worktrees`, `docs/superpowers`.
 
-## Wizard (Hermes default for new users)
+## Wizard (default for new users / headless agents)
 
 1. Prefer `wizard --path quick` + **`--next` step runner** (one question per turn).  
 2. Load `references/wizard.md` only when guiding (progressive disclosure).  
@@ -97,9 +98,12 @@ Under `schemas/` (validate when `jsonschema` available; structural checks always
 3. Point to `references/` for method depth; do not invent cipher tables.  
 4. Report channels honestly (`applied` / `skipped`).  
 5. Never claim efficacy or stego success without verify.  
-6. Standalone: no hard dependency on Kubrick, Orchestra, or ComfyUI.  
+6. Standalone: no hard dependency on Hermes, Kubrick, Orchestra, ComfyUI, or Abraxas core.  
 7. Wallpapers: atmosphere only — never AI-redraw canonical glyph.  
 8. PoI: never put commitment nonce in public media; never claim ZK without dual pass.
+
+Thin `--interop` may name Abraxas skills (`abx-esoteric-intelligence`, `abraxas-ingest`)
+and `specialist_id=sigil-forge`; it does not import Abraxas or grant forecast/canon.
 
 ## Host tools
 
@@ -112,7 +116,7 @@ Under `schemas/` (validate when `jsonschema` available; structural checks always
 Keep agent context lean:
 
 1. Skill index (name/description) at session start  
-2. `SKILL.md` when skill triggers  
+2. `SKILL.md` when the contract triggers  
 3. `references/wizard.md` when guiding  
 4. `references/proof-of-intent.md` when commitments / capsules / proofs arise  
 5. Method refs only when explaining that channel  

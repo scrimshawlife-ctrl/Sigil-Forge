@@ -44,7 +44,8 @@ def test_check_requires_schemas_and_modules():
     assert payload.get("schema_errors") == []
     assert payload.get("module_errors") == []
     assert payload.get("construct_error") in (None, "")
-    assert payload.get("hermes_ok") is True
+    assert payload.get("agent_contract_ok") is True
+    assert payload.get("hermes_ok") is True  # last-compat alias
     assert payload.get("poi_ok") is True
 
 

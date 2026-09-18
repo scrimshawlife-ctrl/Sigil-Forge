@@ -17,6 +17,7 @@ class InstallAudit(unittest.TestCase):
             home.mkdir()
             profile = home / "named profile"
             env = dict(os.environ, HOME=str(home), HERMES_HOME=str(profile))
+            env.pop("SIGIL_FORGE_HOME", None)
             r = subprocess.run(
                 check=False,
                 args=["bash", str(ROOT / "install.sh"), "--dry-run"],
@@ -26,7 +27,8 @@ class InstallAudit(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertIn(str(profile / "skills" / SKILL), r.stdout)
+            self.assertIn(str(home / ".sigil-forge"), r.stdout)
+            self.assertNotIn(str(profile / "skills" / SKILL), r.stdout)
             self.assertEqual(list(home.iterdir()), [])
 
     def test_failed_check_preserves_previous_install(self):
@@ -34,7 +36,7 @@ class InstallAudit(unittest.TestCase):
             home = Path(tmp) / "home"
             home.mkdir()
             profile = home / "profile"
-            dest = profile / "skills" / SKILL
+            dest = home / ".sigil-forge"
             dest.mkdir(parents=True)
             (dest / "SKILL.md").write_text("previous package")
             (dest / "out/wizard-sessions").mkdir(parents=True)
@@ -57,6 +59,7 @@ class InstallAudit(unittest.TestCase):
             }[SKILL]
             (source / "scripts" / script).write_text("import sys\nsys.exit(42)\n")
             env = dict(os.environ, HOME=str(home), HERMES_HOME=str(profile))
+            env.pop("SIGIL_FORGE_HOME", None)
             r = subprocess.run(
                 check=False,
                 args=["bash", str(source / "install.sh")],
@@ -75,13 +78,14 @@ class InstallAudit(unittest.TestCase):
             home = Path(tmp) / "home"
             home.mkdir()
             profile = home / "profile"
-            dest = profile / "skills" / SKILL
+            dest = home / ".sigil-forge"
             (dest / "out/wizard-sessions").mkdir(parents=True)
             sentinel = dest / "out/wizard-sessions/keep.json"
             sentinel.write_text("previous session")
             wallpaper = dest / "out/wallpaper.png"
             wallpaper.write_bytes(b"previous wallpaper")
             env = dict(os.environ, HOME=str(home), HERMES_HOME=str(profile))
+            env.pop("SIGIL_FORGE_HOME", None)
             r = subprocess.run(
                 check=False,
                 args=["bash", str(ROOT / "install.sh")],
@@ -104,8 +108,9 @@ class InstallAudit(unittest.TestCase):
             foreign = home / "profile-b/skills"
             profile.mkdir(parents=True)
             foreign.mkdir(parents=True)
-            (profile / "skills").symlink_to(foreign, target_is_directory=True)
+            (home / ".sigil-forge").symlink_to(foreign, target_is_directory=True)
             env = dict(os.environ, HOME=str(home), HERMES_HOME=str(profile))
+            env.pop("SIGIL_FORGE_HOME", None)
             r = subprocess.run(
                 ["bash", str(ROOT / "install.sh")],
                 cwd=tmp,
@@ -116,7 +121,7 @@ class InstallAudit(unittest.TestCase):
             )
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertEqual(list(foreign.iterdir()), [])
-            self.assertTrue((profile / "skills").is_symlink())
+            self.assertTrue((home / ".sigil-forge").is_symlink())
 
 
 if __name__ == "__main__":

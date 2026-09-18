@@ -172,18 +172,19 @@ def cmd_check(_: argparse.Namespace) -> int:
             module_errors.append(f"{name}: {exc}")
     modules_ok = not module_errors
 
-    # Hermes SKILL.md frontmatter (packaging gate)
-    hermes_ok = False
-    hermes_errors: list[str] = []
+    # Optional agent-contract SKILL.md frontmatter (packaging gate).
+    # hermes_ok is a last-compat alias of agent_contract_ok.
+    agent_contract_ok = False
+    agent_contract_errors: list[str] = []
     try:
         from validate_hermes_skill import validate as validate_hermes
 
         hermes_report = validate_hermes(root / "SKILL.md")
-        hermes_ok = bool(hermes_report.get("ok"))
-        hermes_errors = list(hermes_report.get("errors") or [])
+        agent_contract_ok = bool(hermes_report.get("ok"))
+        agent_contract_errors = list(hermes_report.get("errors") or [])
     except Exception as exc:  # noqa: BLE001
-        hermes_errors = [str(exc)]
-        hermes_ok = False
+        agent_contract_errors = [str(exc)]
+        agent_contract_ok = False
 
     # Dry construct + verify into a temp directory (no persistent out/)
     construct_ok = False
@@ -195,8 +196,8 @@ def cmd_check(_: argparse.Namespace) -> int:
         from verify import run as verify_run
 
         with tempfile.TemporaryDirectory(prefix="sigil-forge-check-") as tmp:
-            # write_receipt=False: never append skill-root receipt logs during check
-            # (install post-check must not pollute ~/.hermes/skills/sigil-forge/out/)
+            # write_receipt=False: never append engine-root receipt logs during check
+            # (install post-check must not pollute ~/.sigil-forge/out/)
             packet = construct_run(
                 "I maintain calm focus while shipping Sigil-Forge",
                 mode="creative",
@@ -235,7 +236,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         not missing
         and schemas_ok
         and modules_ok
-        and hermes_ok
+        and agent_contract_ok
         and construct_ok
         and verify_ok
         and poi_ok
@@ -250,8 +251,11 @@ def cmd_check(_: argparse.Namespace) -> int:
                 "schema_errors": schema_errors,
                 "modules_ok": modules_ok,
                 "module_errors": module_errors,
-                "hermes_ok": hermes_ok,
-                "hermes_errors": hermes_errors,
+                "agent_contract_ok": agent_contract_ok,
+                "agent_contract_errors": agent_contract_errors,
+                "hermes_ok": agent_contract_ok,
+                "hermes_errors": agent_contract_errors,
+                "packaging": "standalone-engine",
                 "construct_ok": construct_ok,
                 "verify_ok": verify_ok,
                 "poi_ok": poi_ok,
@@ -735,19 +739,19 @@ def cmd_doctor(_: argparse.Namespace) -> int:
     except Exception as exc:  # noqa: BLE001
         module_errors.append(f"proofs.registry.list_providers: {exc}")
 
-    hermes_ok = False
-    hermes_errors: list[str] = []
+    agent_contract_ok = False
+    agent_contract_errors: list[str] = []
     try:
         from validate_hermes_skill import validate as validate_hermes
 
         hr = validate_hermes(root / "SKILL.md")
-        hermes_ok = bool(hr.get("ok"))
-        hermes_errors = list(hr.get("errors") or [])
+        agent_contract_ok = bool(hr.get("ok"))
+        agent_contract_errors = list(hr.get("errors") or [])
     except Exception as exc:  # noqa: BLE001
-        hermes_errors = [str(exc)]
+        agent_contract_errors = [str(exc)]
 
     report: dict = {
-        "ok": not missing and not module_errors and hermes_ok,
+        "ok": not missing and not module_errors and agent_contract_ok,
         "python": sys.version.split()[0],
         "platform": platform.platform(),
         "skill_root": str(root),
@@ -758,10 +762,14 @@ def cmd_doctor(_: argparse.Namespace) -> int:
         "layout_raster": True,
         "missing": missing,
         "module_errors": module_errors,
-        "hermes_ok": hermes_ok,
-        "hermes_errors": hermes_errors,
+        "agent_contract_ok": agent_contract_ok,
+        "agent_contract_errors": agent_contract_errors,
+        "hermes_ok": agent_contract_ok,
+        "hermes_errors": agent_contract_errors,
         "proof_providers": proof_providers,
-        "packaging": "hermes-skill",
+        "packaging": "standalone-engine",
+        "sigil_forge_home_env": __import__("os").environ.get("SIGIL_FORGE_HOME")
+        or __import__("os").environ.get("SIGIL_FORGE_DIR"),
         "hermes_skill_dir_env": __import__("os").environ.get("HERMES_SKILL_DIR"),
     }
     try:
@@ -1152,13 +1160,14 @@ def cmd_eval(_: argparse.Namespace) -> int:
             bool((p5.get("intent_commitment_zk") or {}).get("value")),
         )
 
-    # Hermes skill packaging (frontmatter + pure core import)
+    # Agent-contract frontmatter + pure core import
     try:
         from forge_core import ForgeConfig, compute_forge
         from normalize import normalize_intent
         from validate_hermes_skill import validate as validate_hermes
 
         hr = validate_hermes()
+        rec("agent_contract", bool(hr.get("ok")), str(hr.get("errors") or ""))
         rec("hermes_frontmatter", bool(hr.get("ok")), str(hr.get("errors") or ""))
         n = normalize_intent("I maintain calm focus")
         core = compute_forge(n, ForgeConfig(kamea_encoding="latin_mod9_v1"))
@@ -1305,7 +1314,7 @@ def main(argv: list[str] | None = None) -> int:
     pc.add_argument(
         "--out",
         default=None,
-        help="Output root (default: $HERMES_HOME/state/sigil-forge/products; override: $SIGIL_FORGE_STATE_DIR/products; HERMES_HOME defaults to ~/.hermes)",
+        help="Output root (default: ~/.sigil-forge/state/products or $SIGIL_FORGE_STATE_DIR/products)",
     )
     pc.add_argument(
         "--passphrase",
@@ -1619,7 +1628,7 @@ def main(argv: list[str] | None = None) -> int:
     pwz.add_argument(
         "--interactive",
         action="store_true",
-        help="Human TTY prompts (not for Hermes)",
+        help="Human TTY prompts (not for headless agents)",
     )
     pwz.add_argument(
         "--validate-only",
@@ -1629,7 +1638,7 @@ def main(argv: list[str] | None = None) -> int:
     pwz.add_argument(
         "--out",
         default=None,
-        help="Output root for --apply (default: $HERMES_HOME/state/sigil-forge/products; override: $SIGIL_FORGE_STATE_DIR/products; HERMES_HOME defaults to ~/.hermes)",
+        help="Output root for --apply (default: ~/.sigil-forge/state/products or $SIGIL_FORGE_STATE_DIR/products)",
     )
     pwz.add_argument(
         "--passphrase",
