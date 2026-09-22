@@ -1672,8 +1672,12 @@ def main(argv: list[str] | None = None) -> int:
     _add_wallpaper_options(pw, require_run=True)
 
     # Optional non-audio extension commands (basic implementations)
-    sub.add_parser("plate-import", help="Import external MS plate (SVG/JSON)")
-    sub.add_parser("storyboard", help="Build multi-frame storyboard carriers")
+    ppi = sub.add_parser("plate-import", help="Import external MS plate (SVG/JSON)")
+    ppi.add_argument("--source", default="references/planetary-plate-strokes.json", help="Source file (SVG or JSON)")
+
+    psb = sub.add_parser("storyboard", help="Build multi-frame storyboard carriers")
+    psb.add_argument("--intent", action="append", default=[], help="Add frame intent (repeatable)")
+
     sub.add_parser("adapters", help="List / use rich external adapters")
     sub.add_parser("steganalysis", help="Deeper geometric multi-channel analysis")
     sub.add_parser("comfyui", help="List optional local ComfyUI templates")
@@ -1722,24 +1726,26 @@ def main(argv: list[str] | None = None) -> int:
 
 # --- Optional non-audio extension commands (basic implementations) ---
 
-def cmd_plate_import(_: argparse.Namespace) -> int:
+def cmd_plate_import(args: argparse.Namespace) -> int:
     from plate_import import import_and_save
     from pathlib import Path
     print("plate-import: basic MS plate importer")
-    ref = Path("references/planetary-plate-strokes.json")
-    if ref.exists():
-        out = import_and_save(ref, "/tmp/plate_import_cli.json")
-        print("demo:", out)
+    source = Path(args.source)
+    if source.exists():
+        out = import_and_save(source, "/tmp/plate_import_cli.json")
+        print("imported:", out)
+    else:
+        print(f"source not found: {source}")
     return 0
 
 
-def cmd_storyboard(_: argparse.Namespace) -> int:
+def cmd_storyboard(args: argparse.Namespace) -> int:
     from storyboard import create_storyboard
+    from pathlib import Path
     print("storyboard: multi-frame carrier builder")
-    idx = create_storyboard(
-        [{"intent": "I maintain calm focus"}, {"intent": "I build durable systems"}],
-        Path("/tmp/storyboard_cli"),
-    )
+    intents = args.intent or ["I maintain calm focus", "I build durable systems"]
+    frames = [{"intent": i} for i in intents]
+    idx = create_storyboard(frames, Path("/tmp/storyboard_cli"))
     print("created:", idx)
     return 0
 

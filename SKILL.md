@@ -255,6 +255,13 @@ python3 scripts/sigil_forge.py ledger promote --index 0 --i-confirm PROMOTE   # 
 python3 scripts/sigil_forge.py policy check --text "I maintain calm focus"
 python3 scripts/sigil_forge.py policy check --file path/to/text.txt
 python3 scripts/validate_hermes_skill.py   # optional SKILL.md frontmatter hygiene
+
+# Optional extensions (v0.13+ basic impls, non-core)
+python3 scripts/sigil_forge.py plate-import --source references/planetary-plate-strokes.json
+python3 scripts/sigil_forge.py storyboard --intent "frame one" --intent "frame two"
+python3 scripts/sigil_forge.py adapters
+python3 scripts/sigil_forge.py steganalysis
+python3 scripts/sigil_forge.py comfyui
 ```
 
 Env: `SIGIL_FORGE_HOME`, `SIGIL_FORGE_STATE_DIR`, `SIGIL_FORGE_PASSPHRASE`, optional `SIGIL_FORGE_BG_COMMAND`. `HERMES_SKILL_DIR` remains last-compat.
