@@ -26,18 +26,13 @@ Analysis performed via clone, graft, graphify, full test runs, E2E verification,
 No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_forge.py for bare imports).
 
 ## v0.14 Planned / Upgrades (from expansion-spine + analysis)
-**From expansion-spine "Remaining":**
-- Scanned unique MS plate import pipeline (current: scholarly vectorization)
-- Multi-frame storyboard carriers
-
-- Plate import stub: references/plate-import-plan.md added (planned)
-- Storyboard stub: references/storyboard-plan.md added (planned)
-- Rich adapters stub: references/rich-adapters-plan.md added (planned)
-- Steganalysis stub: references/steganalysis-plan.md added (planned)
-- ComfyUI templates stub: references/comfyui-plan.md added (planned)
-- Richer adapters (Orchestra / Kubrick / ComfyUI beyond thin --interop fields)
-- Deeper geometric multi-channel steganalysis
-- Optional bundled ComfyUI workflow templates (keep no cloud APIs)
+**From expansion-spine "Remaining" (non-audio stubs added):**
+- Scanned unique MS plate import pipeline — stub: references/plate-import-plan.md
+- Multi-frame storyboard carriers — stub: references/storyboard-plan.md
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
+- Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
+- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — stub: references/comfyui-plan.md
+- Full Goetic/Enochian geometry (separate skill or opt-in — not default forge) [explicit non-goal]
 
 **Explicit non-goals (preserve):**
 - Goetic/Enochian/authority seals in default forge

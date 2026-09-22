@@ -75,13 +75,13 @@ Product policy track (code + docs; release version/tag owned separately):
 - **Human-gated canon proposals** — learning ledger stays `PROPOSED`; `ledger promote --index N --i-confirm PROMOTE` → `canon-proposals.jsonl` only; **no** auto-canon, **no** `references/` mutation
 - Namespace doc: `references/authority-seal-namespace.md`
 
-## Remaining / optional later
-- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization)
-- Multi-frame storyboard carriers
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
-- Deeper geometric multi-channel steganalysis
-- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs)
-- Full Goetic/Enochian geometry (separate skill or opt-in namespace module + corpus — not default forge)
+## Remaining / optional later (non-audio stubs added)
+- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — stub: references/plate-import-plan.md
+- Multi-frame storyboard carriers — stub: references/storyboard-plan.md
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
+- Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
+- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs) — stub: references/comfyui-plan.md
+- Full Goetic/Enochian geometry (separate skill or opt-in namespace module + corpus — not default forge) [explicit non-goal for default]
 
 ## Explicit non-goals
 - Goetic / Enochian / authority seals in the **default** forge
