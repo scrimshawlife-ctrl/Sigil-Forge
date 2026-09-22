@@ -79,7 +79,7 @@ See:
 MIT. Offline-first. Proposal-only.
 
 ---
-*Draft generated during autonomous continuation of analysis on 2026-09-22. Update on next release.*
+*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items (import polish, manifest, graft periodic, test coverage notes) advanced.*
 
 ## Post-PR Verification (autonomous continuation)
 - Full test suite: 234/234 passed (after unsetting SIGIL_FORGE_PASSPHRASE; prior flakes were env-only).
