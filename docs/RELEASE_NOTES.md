@@ -77,3 +77,11 @@ MIT. Offline-first. Proposal-only.
 
 ---
 *Draft generated during autonomous continuation of analysis on 2026-09-22. Update on next release.*
+
+## Post-PR Verification (autonomous continuation)
+- Full test suite: 234/234 passed (after unsetting SIGIL_FORGE_PASSPHRASE; prior flakes were env-only).
+- PR #26 force-updated to clean diff (only 138 additions: CI, RELEASE_NOTES, .gitignore).
+- Comment posted on PR with status.
+- Local graft/graphify artifacts cleaned (regenerable via `graft build` / `graphify . --code-only`).
+
+**PR**: https://github.com/scrimshawlife-ctrl/Sigil-Forge/pull/26
