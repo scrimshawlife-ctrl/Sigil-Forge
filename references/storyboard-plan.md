@@ -3,19 +3,19 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Not implemented in v0.13.0. Current is single image (glyph + wallpaper).
+Not implemented. Stubs only. No audio (deferred).
 
-## Plan Outline
-- Support multi-frame sequences for storyboards or animations.
-- Extend channels to include frame sequences or time-based.
-- Output formats: animated SVG, GIF, or multi-PNG with manifest.
-- Bind to sigil_root and intent.
-- Optional with --multi-frame or in wizard.
-- Keep offline, no cloud.
+Basic plan + skeleton to be added next.
 
-## References
-- references/wallpaper-framework.md
-- references/channels-and-steganography.md
-- scripts/wallpaper/
+## Plan
+- Multi-frame carriers for sequential intent (storyboard as sequence of sigils/glyphs).
+- Output: animated SVG/PNG or multi-page PDF-like in vault.
+- Bind to sigil_root + frame index.
+- Reuse core forge for each frame.
+- Offline, no cloud.
 
-To implement: new scripts/storyboard.py or extend wallpaper/pipeline.py.
+## Next
+- Add scripts/storyboard.py skeleton.
+- Integrate via --storyboard or wizard.
+- See references/wallpaper-framework.md for carrier ideas.
+
