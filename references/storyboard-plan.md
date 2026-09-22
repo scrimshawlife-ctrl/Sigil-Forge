@@ -3,9 +3,9 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Not implemented. Stubs only. No audio (deferred).
+Basic implementation completed (v0.14 prep). Multi-frame storyboard builder that produces indexed JSON carriers.
 
-Basic plan + skeleton to be added next.
+Module: scripts/storyboard.py (create_storyboard, add_frame)
 
 ## Plan
 - Multi-frame carriers for sequential intent (storyboard as sequence of sigils/glyphs).

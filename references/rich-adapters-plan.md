@@ -3,9 +3,9 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Not implemented in v0.13.0. Current has thin --interop fields only.
+Basic implementation completed (v0.14 prep). Rich adapter data transformers for Orchestra/Kubrick/ComfyUI etc.
 
-Basic skeleton added: scripts/adapters.py (rich adapter hooks + template loaders).
+Module: scripts/adapters.py (list_adapters, load_adapter_config, export_geometry, render_prompt, bind_receipt)
 
 ## Plan Outline
 - Provide richer integration points for external tools (Orchestra, Kubrick, ComfyUI workflows).

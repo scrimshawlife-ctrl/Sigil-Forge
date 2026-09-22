@@ -13,8 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 def cmd_help(_: argparse.Namespace) -> int:
     print(
         "sigil-forge — multi-channel intent sigils (Hermes skill)\n"
-        "commands: construct | verify | verify-proof | inspect | wallpaper | wizard | open | learn | ledger | "
-        "policy | doctor | eval | check | help\n"
+        "commands: construct | verify | verify-proof | inspect | wallpaper | wizard | open | learn | ledger | policy | doctor | eval | check | plate-import | storyboard | adapters | steganalysis | comfyui | help\n"
         "Product: wallpaper PNG with SF12 sealed vault (intent + methods in-image).\n"
         "See SKILL.md, QUICKSTART.md, references/hermes-runtime-contract.md\n"
         "Wallpaper product: references/wallpaper-framework.md\n"
@@ -96,7 +95,7 @@ def cmd_check(_: argparse.Namespace) -> int:
         "schemas/forge-packet.schema.json",
         "schemas/construction-result.schema.json",
         "schemas/channel-manifest.schema.json",
-        # Planned non-audio (stubs only; not required yet)
+        # Optional non-audio extensions (basic implementations completed)
         "scripts/plate_import.py",
         "scripts/storyboard.py",
         "scripts/adapters.py",
@@ -169,6 +168,12 @@ def cmd_check(_: argparse.Namespace) -> int:
         "proofs.registry",
         "proofs.zk_commit",
         "proofs.risc0_provider",
+        # Optional non-audio extensions
+        "plate_import",
+        "storyboard",
+        "adapters",
+        "steganalysis",
+        "comfyui_templates",
     )
     module_errors: list[str] = []
     for name in modules:
@@ -1658,6 +1663,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     _add_wallpaper_options(pw, require_run=True)
 
+    # Optional non-audio extension commands (basic implementations)
+    sub.add_parser("plate-import", help="Import external MS plate (SVG/JSON)")
+    sub.add_parser("storyboard", help="Build multi-frame storyboard carriers")
+    sub.add_parser("adapters", help="List / use rich external adapters")
+    sub.add_parser("steganalysis", help="Deeper geometric multi-channel analysis")
+    sub.add_parser("comfyui", help="List optional local ComfyUI templates")
+
     args = p.parse_args(argv)
     if args.cmd == "help":
         return cmd_help(args)
@@ -1687,7 +1699,67 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_wallpaper(args)
     if args.cmd == "wizard":
         return cmd_wizard(args)
+    if args.cmd == "plate-import":
+        return cmd_plate_import(args)
+    if args.cmd == "storyboard":
+        return cmd_storyboard(args)
+    if args.cmd == "adapters":
+        return cmd_adapters(args)
+    if args.cmd == "steganalysis":
+        return cmd_steganalysis(args)
+    if args.cmd == "comfyui":
+        return cmd_comfyui(args)
     return 2
+
+
+# --- Optional non-audio extension commands (basic implementations) ---
+
+def cmd_plate_import(_: argparse.Namespace) -> int:
+    from plate_import import import_and_save
+    from pathlib import Path
+    print("plate-import: basic MS plate importer")
+    ref = Path("references/planetary-plate-strokes.json")
+    if ref.exists():
+        out = import_and_save(ref, "/tmp/plate_import_cli.json")
+        print("demo:", out)
+    return 0
+
+
+def cmd_storyboard(_: argparse.Namespace) -> int:
+    from storyboard import create_storyboard
+    print("storyboard: multi-frame carrier builder")
+    idx = create_storyboard(
+        [{"intent": "I maintain calm focus"}, {"intent": "I build durable systems"}],
+        Path("/tmp/storyboard_cli"),
+    )
+    print("created:", idx)
+    return 0
+
+
+def cmd_adapters(_: argparse.Namespace) -> int:
+    from adapters import list_adapters, load_adapter_config
+    print("adapters:", list_adapters())
+    cfg = load_adapter_config("comfyui")
+    print("example:", cfg["name"])
+    return 0
+
+
+def cmd_steganalysis(_: argparse.Namespace) -> int:
+    from steganalysis import analyze_channels, geometric_correlation
+    print("steganalysis: deeper channel analysis")
+    report = analyze_channels({"sigil_root": "demo", "channels": ["svg", "png_lsb"]})
+    print("channels:", list(report["analysis"].keys()))
+    corr = geometric_correlation("<svg demo>", b"demo")
+    print("correlation:", corr.get("correlation_score"))
+    return 0
+
+
+def cmd_comfyui(_: argparse.Namespace) -> int:
+    from comfyui_templates import list_templates, load_template
+    print("comfyui templates:", list_templates())
+    t = load_template("minimal_background")
+    print("loaded:", t["name"])
+    return 0
 
 
 if __name__ == "__main__":

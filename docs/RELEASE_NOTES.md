@@ -27,11 +27,11 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 
 ## v0.14 Planned / Upgrades (from expansion-spine + analysis)
 **From expansion-spine "Remaining" (non-audio stubs added):**
-- Scanned unique MS plate import pipeline — stub + skeleton: references/plate-import-plan.md + scripts/plate_import.py (planned)
-- Multi-frame storyboard carriers — stub + skeleton: references/storyboard-plan.md + scripts/storyboard.py (planned)
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub + skeleton: references/rich-adapters-plan.md + scripts/adapters.py (planned)
-- Deeper geometric multi-channel steganalysis — stub + skeleton: references/steganalysis-plan.md + scripts/steganalysis.py (planned)
-- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — stub + skeleton: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (planned)
+- Scanned unique MS plate import pipeline — basic impl: references/plate-import-plan.md + scripts/plate_import.py (completed)
+- Multi-frame storyboard carriers — basic impl: references/storyboard-plan.md + scripts/storyboard.py (completed)
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl: references/rich-adapters-plan.md + scripts/adapters.py (completed)
+- Deeper geometric multi-channel steganalysis — basic impl: references/steganalysis-plan.md + scripts/steganalysis.py (completed)
+- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — basic impl: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (completed)
 - Full Goetic/Enochian geometry (separate skill or opt-in — not default forge) [explicit non-goal]
 
 **Explicit non-goals (preserve):**

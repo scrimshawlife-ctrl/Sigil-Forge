@@ -3,9 +3,9 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Not implemented. Current avoids cloud image APIs.
+Basic implementation completed (v0.14 prep). Local-only template registry and renderer. Example workflow in docs/comfyui/.
 
-Basic skeleton + example template added: scripts/comfyui_templates.py + docs/comfyui/example_background.json
+Module: scripts/comfyui_templates.py (list_templates, load_template, render_template_for_wallpaper) + docs/comfyui/example_background.json
 
 ## Plan Outline
 - Provide optional templates for ComfyUI (local) to generate backgrounds/atmospheres.

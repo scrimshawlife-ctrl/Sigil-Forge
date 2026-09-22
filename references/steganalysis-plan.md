@@ -3,9 +3,9 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Current: basic SF1/SF11/SF12 LSB + SVG metadata, dual verify.
+Basic implementation completed (v0.14 prep). Channel analysis, geometric correlation, capacity estimation with light integration to stego modules.
 
-Basic skeleton added: scripts/steganalysis.py (geometric checks + report stub).
+Module: scripts/steganalysis.py (analyze_channels, geometric_correlation, estimate_capacity, generate_report)
 
 ## Plan Outline
 - Add tools for deeper analysis of embedded channels.

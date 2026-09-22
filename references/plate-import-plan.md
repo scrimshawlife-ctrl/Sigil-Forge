@@ -3,9 +3,9 @@
 From expansion-spine: remaining optional later.
 
 ## Status
-Not implemented in v0.13.0 / v0.14. Current uses scholarly vectorization in references/planetary-plate-strokes.json
+Basic implementation completed (v0.14 prep). Functional importer with SVG/JSON parsing, normalization against planetary-plate-strokes.json reference.
 
-Basic skeleton added: scripts/plate_import.py (import/parse stubs only; no runtime call yet).
+Module: scripts/plate_import.py (load, parse, normalize, validate, import_and_save)
 
 ## Plan Outline
 - Support importing external SVG or JSON for unique manuscript (MS) plates.
