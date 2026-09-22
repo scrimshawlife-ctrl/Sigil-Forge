@@ -46,7 +46,7 @@ changes tone only. Construction is **offline-first** — no image API required.
 | **Stego** | SVG multi-channel + PNG LSB (digest-only; SF1 + SF11 dual verify) |
 | **Product** | **Wallpaper PNG** — composite + SF12 sealed vault (intent + methods in-image) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, wallpaper, verify, inspect, open (`--wallpaper` / `--capsule`), policy, ledger, doctor, eval, check |
+| **Ops** | construct, wallpaper, verify, inspect, open (`--wallpaper` / `--capsule`), policy, ledger, doctor, eval, check, plate-import, storyboard, adapters, steganalysis, comfyui |
 | **Privacy** | Public digests only; private vault needs passphrase; no plaintext in visible media |
 | **Proof of Intent** | Commitment + `sigil_root` in vault; SF11/SF12 stego; optional Noir/risc0 |
 | **Packaging** | Standalone engine; optional agent contract; Hermes installer is opt-in |
