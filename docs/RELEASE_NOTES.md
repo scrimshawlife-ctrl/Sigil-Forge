@@ -85,3 +85,8 @@ MIT. Offline-first. Proposal-only.
 - Local graft/graphify artifacts cleaned (regenerable via `graft build` / `graphify . --code-only`).
 
 **PR**: https://github.com/scrimshawlife-ctrl/Sigil-Forge/pull/26
+
+
+## Release
+- GitHub release created for v0.13.0: https://github.com/scrimshawlife-ctrl/Sigil-Forge/releases/tag/v0.13.0
+- Tag v0.13.0 points to wallpaper merge; CI/docs added on top.
