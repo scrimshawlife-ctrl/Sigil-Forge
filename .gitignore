@@ -13,3 +13,7 @@ __pycache__/
 # Analysis / tool artifacts
 graphify-out/
 
+
+# Tool outputs
+.hallmark/
+
