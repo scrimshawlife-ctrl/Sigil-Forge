@@ -17,3 +17,6 @@ graphify-out/
 # Tool outputs
 .hallmark/
 
+
+# Generated intent examples from test runs
+examples/intents/*.json
