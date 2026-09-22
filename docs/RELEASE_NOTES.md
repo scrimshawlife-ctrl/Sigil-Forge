@@ -82,8 +82,16 @@ MIT. Offline-first. Proposal-only.
 
 ---
 
-*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items advanced (import robustness, source-manifest, periodic graphs, expanded test coverage for host-AI/PoI + extensions CLI/flows).*
+*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items advanced (import robustness, source-manifest, periodic graphs, expanded test coverage for host-AI/PoI + extensions CLI/flows). Current: 241 tests, check/doctor green, graft 126 communities.*
 
-Current verification uses `python3 scripts/sigil_forge.py check && python3 -m pytest tests/ -q`.
+Current verification:
+```bash
+python3 scripts/sigil_forge.py check
+python3 scripts/sigil_forge.py doctor
+python3 -m pytest tests/ -q
+# New extensions
+python3 scripts/sigil_forge.py plate-import --source ...
+python3 scripts/sigil_forge.py adapters
+```
 
 All high-priority analysis items from this pass addressed or explicitly noted as optional/in-progress. Goetic remains explicit non-goal.
