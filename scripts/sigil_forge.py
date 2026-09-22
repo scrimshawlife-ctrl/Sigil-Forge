@@ -99,6 +99,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         # Planned non-audio (stubs only; not required yet)
         "scripts/plate_import.py",
         "scripts/storyboard.py",
+        "scripts/adapters.py",
+        "scripts/steganalysis.py",
+        "scripts/comfyui_templates.py",
     ]
     missing = [p for p in required if not (root / p).is_file()]
 

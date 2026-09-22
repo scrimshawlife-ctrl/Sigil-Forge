@@ -1,0 +1,10 @@
+{
+  "template": "minimal_background",
+  "description": "Example local ComfyUI workflow for glyph-compatible background. User executes in their own ComfyUI instance.",
+  "nodes": {
+    "latent": {"type": "EmptyLatentImage", "width": 1024, "height": 1024},
+    "prompt": {"text": "ethereal geometry, subtle sigil influence, high detail"},
+    "decode": {"type": "VAEDecode"}
+  },
+  "binding": "respect immutable glyph; do not alter core sigil"
+}

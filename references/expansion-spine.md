@@ -78,9 +78,9 @@ Product policy track (code + docs; release version/tag owned separately):
 ## Remaining / optional later (non-audio stubs added)
 - Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — stub: references/plate-import-plan.md + basic skeleton scripts/plate_import.py (planned)
 - Multi-frame storyboard carriers — stub: references/storyboard-plan.md + basic skeleton scripts/storyboard.py (planned)
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
-- Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
-- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs) — stub: references/comfyui-plan.md
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md + basic skeleton scripts/adapters.py (planned)
+- Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md + basic skeleton scripts/steganalysis.py (planned)
+- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs) — stub: references/comfyui-plan.md + basic skeleton scripts/comfyui_templates.py + docs/comfyui/example (planned)
 - Full Goetic/Enochian geometry (separate skill or opt-in namespace module + corpus — not default forge) [explicit non-goal for default]
 
 ## Explicit non-goals

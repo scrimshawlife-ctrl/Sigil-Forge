@@ -29,9 +29,9 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 **From expansion-spine "Remaining" (non-audio stubs added):**
 - Scanned unique MS plate import pipeline — stub + skeleton: references/plate-import-plan.md + scripts/plate_import.py (planned)
 - Multi-frame storyboard carriers — stub + skeleton: references/storyboard-plan.md + scripts/storyboard.py (planned)
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
-- Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
-- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — stub: references/comfyui-plan.md
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub + skeleton: references/rich-adapters-plan.md + scripts/adapters.py (planned)
+- Deeper geometric multi-channel steganalysis — stub + skeleton: references/steganalysis-plan.md + scripts/steganalysis.py (planned)
+- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — stub + skeleton: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (planned)
 - Full Goetic/Enochian geometry (separate skill or opt-in — not default forge) [explicit non-goal]
 
 **Explicit non-goals (preserve):**
