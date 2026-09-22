@@ -76,7 +76,7 @@ Product policy track (code + docs; release version/tag owned separately):
 - Namespace doc: `references/authority-seal-namespace.md`
 
 ## Remaining / optional later (non-audio stubs added)
-- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — stub: references/plate-import-plan.md
+- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — stub: references/plate-import-plan.md + basic skeleton scripts/plate_import.py (planned)
 - Multi-frame storyboard carriers — stub: references/storyboard-plan.md
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
 - Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
