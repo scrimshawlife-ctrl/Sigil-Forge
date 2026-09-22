@@ -28,7 +28,6 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 ## v0.14 Planned / Upgrades (from expansion-spine + analysis)
 **From expansion-spine "Remaining":**
 - Scanned unique MS plate import pipeline (current: scholarly vectorization)
-- Audio/MIDI for mantric carriers
 - Multi-frame storyboard carriers
 - Richer adapters (Orchestra / Kubrick / ComfyUI beyond thin --interop fields)
 - Deeper geometric multi-channel steganalysis

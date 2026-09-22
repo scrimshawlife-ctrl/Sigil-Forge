@@ -77,7 +77,6 @@ Product policy track (code + docs; release version/tag owned separately):
 
 ## Remaining / optional later
 - Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization)
-- Audio/MIDI for mantric carriers
 - Multi-frame storyboard carriers
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields
 - Deeper geometric multi-channel steganalysis
@@ -95,5 +94,3 @@ Product policy track (code + docs; release version/tag owned separately):
 2. New channels append; unknown IDs report applied/skipped honestly.  
 3. Offline path works without optional pip packages.  
 4. Never mutate `references/` at run time.
-
-- Audio/MIDI stub: references/audio-and-midi.md added (planned)
