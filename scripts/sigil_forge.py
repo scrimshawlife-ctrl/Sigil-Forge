@@ -96,6 +96,9 @@ def cmd_check(_: argparse.Namespace) -> int:
         "schemas/forge-packet.schema.json",
         "schemas/construction-result.schema.json",
         "schemas/channel-manifest.schema.json",
+        # Planned non-audio (stubs only; not required yet)
+        "scripts/plate_import.py",
+        "scripts/storyboard.py",
     ]
     missing = [p for p in required if not (root / p).is_file()]
 
