@@ -32,6 +32,9 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 
 - Plate import stub: references/plate-import-plan.md added (planned)
 - Storyboard stub: references/storyboard-plan.md added (planned)
+- Rich adapters stub: references/rich-adapters-plan.md added (planned)
+- Steganalysis stub: references/steganalysis-plan.md added (planned)
+- ComfyUI templates stub: references/comfyui-plan.md added (planned)
 - Richer adapters (Orchestra / Kubrick / ComfyUI beyond thin --interop fields)
 - Deeper geometric multi-channel steganalysis
 - Optional bundled ComfyUI workflow templates (keep no cloud APIs)

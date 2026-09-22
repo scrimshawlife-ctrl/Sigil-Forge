@@ -97,3 +97,6 @@ Product policy track (code + docs; release version/tag owned separately):
 
 - Plate import stub: references/plate-import-plan.md added (planned)
 - Storyboard stub: references/storyboard-plan.md added (planned)
+- Rich adapters stub: references/rich-adapters-plan.md added (planned)
+- Steganalysis stub: references/steganalysis-plan.md added (planned)
+- ComfyUI templates stub: references/comfyui-plan.md added (planned)
