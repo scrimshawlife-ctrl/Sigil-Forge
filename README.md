@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/scrimshawlife-ctrl/Sigil-Forge/actions/workflows/ci.yml"><img src="https://github.com/scrimshawlife-ctrl/Sigil-Forge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
+
+<p align="center">
   <a href="https://scrimshawlife-ctrl.github.io/Sigil-Forge/"><strong>Project site →</strong></a>
   ·
   <a href="https://scrimshawlife-ctrl.github.io/Sigil-Forge/">scrimshawlife-ctrl.github.io/Sigil-Forge</a>
