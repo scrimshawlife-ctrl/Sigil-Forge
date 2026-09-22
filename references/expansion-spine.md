@@ -94,9 +94,3 @@ Product policy track (code + docs; release version/tag owned separately):
 2. New channels append; unknown IDs report applied/skipped honestly.  
 3. Offline path works without optional pip packages.  
 4. Never mutate `references/` at run time.
-
-- Plate import stub: references/plate-import-plan.md added (planned)
-- Storyboard stub: references/storyboard-plan.md added (planned)
-- Rich adapters stub: references/rich-adapters-plan.md added (planned)
-- Steganalysis stub: references/steganalysis-plan.md added (planned)
-- ComfyUI templates stub: references/comfyui-plan.md added (planned)
