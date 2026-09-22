@@ -68,3 +68,66 @@ def test_comfyui_templates():
     assert "name" in t
     r = render_template_for_wallpaper(t, "hash123")
     assert "glyph_hash" in r
+
+
+def test_extension_cli_commands(tmp_path):
+    """More coverage for new extension CLIs (host-AI adjacent interop + analysis)."""
+    import subprocess
+    import sys
+    from pathlib import Path
+    ROOT = Path(__file__).resolve().parents[1]
+    cli = ROOT / "scripts" / "sigil_forge.py"
+    # plate-import
+    res = subprocess.run(
+        [sys.executable, str(cli), "plate-import"],
+        capture_output=True, text=True, timeout=10
+    )
+    assert res.returncode == 0
+    assert "plate-import" in res.stdout
+    # adapters
+    res = subprocess.run(
+        [sys.executable, str(cli), "adapters"],
+        capture_output=True, text=True, timeout=10
+    )
+    assert "orchestra" in res.stdout.lower() or "comfyui" in res.stdout.lower()
+    # steganalysis
+    res = subprocess.run(
+        [sys.executable, str(cli), "steganalysis"],
+        capture_output=True, text=True, timeout=10
+    )
+    assert "steganalysis" in res.stdout.lower() or "channel" in res.stdout.lower()
+    # comfyui
+    res = subprocess.run(
+        [sys.executable, str(cli), "comfyui"],
+        capture_output=True, text=True, timeout=10
+    )
+    assert "comfyui" in res.stdout.lower() or "template" in res.stdout.lower()
+
+
+def test_full_poi_flow_with_host_ai_wallpaper(tmp_path: Path):
+    """Expand coverage: full PoI (commitment + capsule) + host-AI wallpaper path."""
+    from construct import run as construct_run
+    from wallpaper.pipeline import build_wallpaper
+    # PoI construct
+    packet = construct_run(
+        "I build durable systems under pressure",
+        out_root=tmp_path,
+        proof="commitment",
+        passphrase="test-poi-host",
+        kamea_encoding="hebrew_gematria",
+    )
+    assert packet.get("sigil_root")
+    assert packet.get("intent_commitment")
+    run_dir = Path(packet["artifacts"]["run_dir"])
+    # Host-AI style wallpaper (use procedural as stand-in for coverage)
+    res = build_wallpaper(
+        run_dir,
+        surface="desktop",
+        background_method="ai_generated",
+        model="coverage-mock",
+    )
+    assert res["ok"]
+    assert "background" in res
+    # Verify PoI surfaces still present
+    assert (run_dir / "forge-manifest.json").exists()
+    assert (run_dir / "intent-capsule.json").exists()

@@ -7,8 +7,15 @@ import sys
 from pathlib import Path
 
 # Allow `python scripts/sigil_forge.py` without install (standalone robustness).
-# Uses sibling paths.py for root logic after bootstrap.
+# Bootstrap path for bare imports; then delegate root logic to paths.py.
+# This is intentional for script-direct execution; packaged installs use the skill root.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# Post-bootstrap: prefer paths.skill_root() for consistency in check/doctor etc.
+try:
+    from paths import skill_root  # noqa: F401
+except Exception:
+    pass  # fallback to inserted path; checked explicitly in cmd_check
 
 
 def cmd_help(_: argparse.Namespace) -> int:

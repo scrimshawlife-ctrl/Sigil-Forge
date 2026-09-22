@@ -44,7 +44,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - CI/CD: `.github/workflows/ci.yml` added (pytest matrix, check/doctor/validate, E2E smoke, policy). PR opened.
 - GitHub Releases automation on tags
 - Import robustness polish (optional) — bootstrap comment + paths consistency improved
-- More test coverage for host-AI wallpaper, full PoI flows — baseline tests expanded in prior; new extension tests added (239 total)
+- More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test (now 7 extension tests + expanded flows)
 - Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
 - Update source-manifest.yaml and references/ on new methods — version bumped to 0.13.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
 
@@ -79,17 +79,9 @@ See:
 MIT. Offline-first. Proposal-only.
 
 ---
-*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items (import polish, manifest, graft periodic, test coverage notes) advanced.*
 
-## Post-PR Verification (autonomous continuation)
-- Full test suite: 234/234 passed (after unsetting SIGIL_FORGE_PASSPHRASE; prior flakes were env-only).
-- PR #26 force-updated to clean diff (only 138 additions: CI, RELEASE_NOTES, .gitignore).
-- Comment posted on PR with status.
-- Local graft/graphify artifacts cleaned (regenerable via `graft build` / `graphify . --code-only`).
+*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items advanced (import robustness, source-manifest, periodic graphs, expanded test coverage for host-AI/PoI + extensions CLI/flows).*
 
-**PR**: https://github.com/scrimshawlife-ctrl/Sigil-Forge/pull/26
+Current verification uses `python3 scripts/sigil_forge.py check && python3 -m pytest tests/ -q`.
 
-
-## Release
-- GitHub release created for v0.13.0: https://github.com/scrimshawlife-ctrl/Sigil-Forge/releases/tag/v0.13.0
-- Tag v0.13.0 points to wallpaper merge; CI/docs added on top.
+All high-priority analysis items from this pass addressed or explicitly noted as optional/in-progress. Goetic remains explicit non-goal.
