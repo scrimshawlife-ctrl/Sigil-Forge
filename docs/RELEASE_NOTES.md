@@ -29,6 +29,8 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 **From expansion-spine "Remaining":**
 - Scanned unique MS plate import pipeline (current: scholarly vectorization)
 - Multi-frame storyboard carriers
+
+- Plate import stub: references/plate-import-plan.md added (planned)
 - Richer adapters (Orchestra / Kubrick / ComfyUI beyond thin --interop fields)
 - Deeper geometric multi-channel steganalysis
 - Optional bundled ComfyUI workflow templates (keep no cloud APIs)
