@@ -6,7 +6,8 @@ import json
 import sys
 from pathlib import Path
 
-# Allow `python scripts/sigil_forge.py` without install
+# Allow `python scripts/sigil_forge.py` without install (standalone robustness).
+# Uses sibling paths.py for root logic after bootstrap.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 

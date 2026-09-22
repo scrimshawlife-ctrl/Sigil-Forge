@@ -43,14 +43,17 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 **From this analysis (high priority):**
 - CI/CD: `.github/workflows/ci.yml` added (pytest matrix, check/doctor/validate, E2E smoke, policy). PR opened.
 - GitHub Releases automation on tags
-- Import robustness polish (optional)
-- More test coverage for host-AI wallpaper, full PoI flows
-- Periodic graft build + graphify --code-only in dev
-- Update source-manifest.yaml and references/ on new methods
+- Import robustness polish (optional) — bootstrap comment + paths consistency improved
+- More test coverage for host-AI wallpaper, full PoI flows — baseline tests expanded in prior; new extension tests added (239 total)
+- Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
+- Update source-manifest.yaml and references/ on new methods — version bumped to 0.13.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
 
 ## Recent Changes (post v0.13)
 - PRs: #25 agent-agnostic standalone, #24 install safety, #23 wallpaper product
 - Graph + graft artifacts generated during analysis (local, git-ignored where appropriate)
+- Non-audio extensions completed: plate_import, storyboard, adapters, steganalysis, comfyui_templates (functional + CLI + tests)
+- source-manifest.yaml updated (v0.13.0 + optional_extensions)
+- Import bootstrap robustness note + periodic graft/graphify run
 
 ## Verification Checklist (from SKILL.md)
 All items from the contract's Verification Checklist passed in analysis runs.

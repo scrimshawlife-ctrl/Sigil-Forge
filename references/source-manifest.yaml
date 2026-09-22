@@ -1,7 +1,7 @@
 # Historical / methodological source manifest for Sigil-Forge methods.
 # Citations are pointers for provenance honesty, not endorsement of efficacy.
 
-version: "0.9.0"
+version: "0.13.0"
 
 methods:
   spare.letter_monogram:
@@ -83,3 +83,24 @@ excluded_default_forge:
     note: "Authority/placement seals — separate namespace"
   goetic_seal:
     note: "Entity identifier seals — separate namespace"
+
+# Optional extensions (v0.13+ basic impls, non-core channels)
+optional_extensions:
+  plate_import:
+    family: external_corpus
+    note: "Scanned MS plate import (SVG/JSON normalization to scholarly vectors)"
+    sources:
+      - title: "references/planetary-plate-strokes.json"
+        note: "Core reference for normalization"
+  storyboard:
+    family: multi_frame_carrier
+    note: "Multi-frame sequential intent carriers (offline JSON)"
+  adapters:
+    family: interop
+    note: "Rich data adapters for Orchestra/Kubrick/ComfyUI etc."
+  steganalysis:
+    family: analysis
+    note: "Geometric multi-channel steganalysis (offline)"
+  comfyui_templates:
+    family: template
+    note: "Optional local ComfyUI workflow templates (no execution)"
