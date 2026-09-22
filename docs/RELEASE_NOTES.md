@@ -27,8 +27,8 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 
 ## v0.14 Planned / Upgrades (from expansion-spine + analysis)
 **From expansion-spine "Remaining" (non-audio stubs added):**
-- Scanned unique MS plate import pipeline — stub: references/plate-import-plan.md + basic skeleton scripts/plate_import.py (planned)
-- Multi-frame storyboard carriers — stub: references/storyboard-plan.md + basic skeleton scripts/storyboard.py (planned)
+- Scanned unique MS plate import pipeline — stub + skeleton: references/plate-import-plan.md + scripts/plate_import.py (planned)
+- Multi-frame storyboard carriers — stub + skeleton: references/storyboard-plan.md + scripts/storyboard.py (planned)
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — stub: references/rich-adapters-plan.md
 - Deeper geometric multi-channel steganalysis — stub: references/steganalysis-plan.md
 - Optional bundled ComfyUI workflow templates (keep no cloud APIs) — stub: references/comfyui-plan.md
