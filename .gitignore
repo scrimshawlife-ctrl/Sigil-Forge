@@ -20,3 +20,7 @@ graphify-out/
 
 # Generated intent examples from test runs
 examples/intents/*.json
+
+# Generated test artifacts
+examples/intents/*.json
+.hallmark/log.json
