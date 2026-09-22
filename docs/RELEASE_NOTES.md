@@ -31,6 +31,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - Multi-frame storyboard carriers
 
 - Plate import stub: references/plate-import-plan.md added (planned)
+- Storyboard stub: references/storyboard-plan.md added (planned)
 - Richer adapters (Orchestra / Kubrick / ComfyUI beyond thin --interop fields)
 - Deeper geometric multi-channel steganalysis
 - Optional bundled ComfyUI workflow templates (keep no cloud APIs)

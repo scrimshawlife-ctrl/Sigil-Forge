@@ -96,3 +96,4 @@ Product policy track (code + docs; release version/tag owned separately):
 4. Never mutate `references/` at run time.
 
 - Plate import stub: references/plate-import-plan.md added (planned)
+- Storyboard stub: references/storyboard-plan.md added (planned)
