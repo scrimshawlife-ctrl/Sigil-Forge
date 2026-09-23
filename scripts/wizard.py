@@ -295,6 +295,57 @@ STEPS: list[dict[str, Any]] = [
             "_poi_or_seal": True,
         },
     },
+    # Optional extensions (completed in this continuation; full path only)
+    {
+        "id": "use_plate_import",
+        "prompt": "Use external MS plate import (scanned scholarly vectors) for planetary geometry?",
+        "type": "bool",
+        "default": False,
+        "help": "Enables plate-import CLI extension for custom SVG/JSON plates.",
+        "why": "Extends beyond built-in planetary-plate-strokes.json.",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
+    {
+        "id": "use_storyboard",
+        "prompt": "Build multi-frame storyboard carriers (sequence of intents)?",
+        "type": "bool",
+        "default": False,
+        "help": "Uses storyboard extension for multi-frame JSON carriers.",
+        "why": "For sequential or narrative sigil sets.",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
+    {
+        "id": "use_adapters",
+        "prompt": "Use rich adapters for external tools (Orchestra / Kubrick / ComfyUI)?",
+        "type": "bool",
+        "default": False,
+        "help": "Exposes geometry/prompts via adapters extension.",
+        "why": "Interop layer for host pipelines (data only, no execution).",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
+    {
+        "id": "run_steganalysis",
+        "prompt": "Run deeper geometric multi-channel steganalysis after forge?",
+        "type": "bool",
+        "default": False,
+        "help": "Post-forge analysis via steganalysis extension (capacity, correlation).",
+        "why": "Deeper inspection of channels without breaking privacy.",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
+    {
+        "id": "use_comfyui_templates",
+        "prompt": "Include optional local ComfyUI workflow templates?",
+        "type": "bool",
+        "default": False,
+        "help": "Bundles comfyui_templates extension (user runs locally).",
+        "why": "For host AI background generation; no cloud in core.",
+        "skip_ok": True,
+        "paths": ["full"],
+    },
 ]
 
 
@@ -322,7 +373,7 @@ def wizard_script(path: str = "full") -> dict[str, Any]:
         "path": p,
         "paths": {
             "quick": "intent + optional mode/wallpaper; defaults fill the rest",
-            "full": "complete interview (expert options)",
+            "full": "complete interview (expert options + optional extensions: plate-import, storyboard, adapters, steganalysis, comfyui)",
         },
         "purpose": (
             "Guide an operator from intent to a verified multi-channel sigil "
@@ -334,6 +385,7 @@ def wizard_script(path: str = "full") -> dict[str, Any]:
             "After each user answer, merge into answers and call --next again.",
             "When next.done is true, run wizard --apply (or offer verify after apply).",
             "Run safety on intent early; refuse harmful intents with no artifacts.",
+            "Optional extensions (plate-import, storyboard, adapters, steganalysis, comfyui) are in full path only; use their CLIs post-apply as guided.",
             "Never invent monogram/kamea paths — only call scripts via construct/wizard apply.",
             "Do not claim the sigil works or replaces professional help.",
             "Wallpapers never AI-redraw the canonical glyph.",

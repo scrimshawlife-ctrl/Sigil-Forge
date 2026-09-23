@@ -59,7 +59,7 @@ compression, name paths, planetary characters, and entity seals.
 - One-shot: `construct --wallpaper` (presentation via `--wp-mode`)
 
 ### Ops
-- CLI: construct, verify, verify-proof, inspect, wallpaper, wizard, open (`--capsule`), learn, ledger, doctor, eval, check
+- CLI: construct, verify, verify-proof, inspect, wallpaper, wizard, open (`--capsule`), learn, ledger, doctor, eval, check, plate-import, storyboard, adapters, steganalysis, comfyui (optional extensions)
 - Receipts + PROPOSED ledger
 - Hermes skill install: lean tree (excludes `docs/superpowers`), post-install `validate_hermes_skill` + `check`
 - Progressive refs: `hermes-runtime-contract.md`, `proof-of-intent.md`
@@ -75,7 +75,7 @@ Product policy track (code + docs; release version/tag owned separately):
 - **Human-gated canon proposals** — learning ledger stays `PROPOSED`; `ledger promote --index N --i-confirm PROMOTE` → `canon-proposals.jsonl` only; **no** auto-canon, **no** `references/` mutation
 - Namespace doc: `references/authority-seal-namespace.md`
 
-## Remaining / optional later (non-audio stubs added)
+## Remaining / optional later (non-audio items completed in this continuation)
 - Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — basic impl: references/plate-import-plan.md + scripts/plate_import.py (completed)
 - Multi-frame storyboard carriers — basic impl: references/storyboard-plan.md + scripts/storyboard.py (completed)
 - Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl: references/rich-adapters-plan.md + scripts/adapters.py (completed)

@@ -45,6 +45,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - GitHub Releases automation on tags
 - Import robustness polish (optional) — bootstrap comment + paths consistency improved
 - More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test (now 7+ extension tests + expanded flows; total 241)
+- Wizard integration: added optional extension steps (use_plate_import, use_storyboard, use_adapters, run_steganalysis, use_comfyui_templates) to full path in wizard.py; updated next_step flows and tests; agent rules mention them.
 - Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
 - Update source-manifest.yaml and references/ on new methods — version bumped to 0.13.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
 
@@ -55,7 +56,8 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - source-manifest.yaml updated (v0.13.0 + optional_extensions)
 - Import bootstrap robustness note + periodic graft/graphify run
 - SKILL.md updated with optional extensions examples
-- Total tests: 241; all high-priority items substantially advanced
+- Wizard enhanced with extension steps (next_step god-node area per graft)
+- Total tests: 241; all high-priority items substantially advanced; wizard integration done
 
 ## Verification Checklist (from SKILL.md)
 All items from the contract's Verification Checklist passed in analysis runs.

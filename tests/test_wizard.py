@@ -341,6 +341,11 @@ def test_next_skips_kdf_when_proof_none():
         "wallpaper": False,
         "seal_packet": False,
         "proof": "none",
+        "use_plate_import": False,
+        "use_storyboard": False,
+        "use_adapters": False,
+        "run_steganalysis": False,
+        "use_comfyui_templates": False,
     }
     nxt = next_step(answers, path="full")
     assert nxt["done"] is True
