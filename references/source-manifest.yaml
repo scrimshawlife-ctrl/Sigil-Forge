@@ -84,23 +84,72 @@ excluded_default_forge:
   goetic_seal:
     note: "Entity identifier seals — separate namespace"
 
-# Optional extensions (v0.13+ basic impls, non-core channels)
+# Optional extensions (v0.14.0 shipped + deeper wizard integration)
+# Non-core, opt-in. All run offline; no cloud APIs. Integrated via CLI and wizard full path.
 optional_extensions:
   plate_import:
     family: external_corpus
-    note: "Scanned MS plate import (SVG/JSON normalization to scholarly vectors)"
+    note: "Scanned unique MS plate import (SVG/JSON normalization to scholarly vectors)"
+    modules: ["scripts/plate_import.py"]
+    entrypoints: ["load_plate", "parse_svg_strokes", "normalize_to_plate", "validate_plate", "import_and_save"]
     sources:
       - title: "references/planetary-plate-strokes.json"
-        note: "Core reference for normalization"
+        note: "Scholarly stroke vectorizations (unit_box); primary normalization target"
+      - title: "references/plate-import-plan.md"
+        note: "Implementation plan and status (shipped v0.14.0 + wizard post-apply)"
+      - title: "references/planetary-character-corpus.json"
+        note: "Cross-reference for name/geometry fidelity"
+    integration: "CLI: plate-import --source ...; wizard full path (use_plate_import); post-apply in apply_answers"
+    status: "shipped v0.14.0"
+
   storyboard:
     family: multi_frame_carrier
     note: "Multi-frame sequential intent carriers (offline JSON)"
+    modules: ["scripts/storyboard.py"]
+    entrypoints: ["create_storyboard", "add_frame"]
+    sources:
+      - title: "references/storyboard-plan.md"
+        note: "Implementation plan (shipped v0.14.0 + wizard post-apply)"
+    integration: "CLI: storyboard; wizard full path (use_storyboard); post-apply creates storyboard/ dir bound to run"
+    status: "shipped v0.14.0"
+
   adapters:
     family: interop
-    note: "Rich data adapters for Orchestra/Kubrick/ComfyUI etc."
+    note: "Rich data adapters for Orchestra/Kubrick/ComfyUI etc. (geometry, prompts, receipts)"
+    modules: ["scripts/adapters.py"]
+    entrypoints: ["list_adapters", "load_adapter_config", "export_geometry", "render_prompt", "bind_receipt"]
+    sources:
+      - title: "references/rich-adapters-plan.md"
+        note: "Implementation plan (shipped v0.14.0 + wizard post-apply)"
+      - title: "references/wallpaper-prompt-contract.md"
+        note: "Prompt and geometry contracts respected by adapters"
+    integration: "CLI: adapters; wizard full path (use_adapters); post-apply lists + exports"
+    status: "shipped v0.14.0"
+
   steganalysis:
     family: analysis
-    note: "Geometric multi-channel steganalysis (offline)"
+    note: "Geometric multi-channel steganalysis (offline); reports presence, capacity, correlation"
+    modules: ["scripts/steganalysis.py"]
+    entrypoints: ["analyze_channels", "geometric_correlation", "estimate_capacity", "generate_report"]
+    sources:
+      - title: "references/steganalysis-plan.md"
+        note: "Implementation plan (shipped v0.14.0 + wizard post-apply)"
+      - title: "scripts/stego_png.py"
+        note: "LSB channel integration (light coupling only)"
+      - title: "scripts/stego_svg.py"
+        note: "SVG path channel support"
+    integration: "CLI: steganalysis; wizard full path (run_steganalysis); post-apply on SVG + channels when flagged"
+    status: "shipped v0.14.0"
+
   comfyui_templates:
     family: template
-    note: "Optional local ComfyUI workflow templates (no execution)"
+    note: "Optional local ComfyUI workflow templates (no execution in core)"
+    modules: ["scripts/comfyui_templates.py"]
+    entrypoints: ["list_templates", "load_template", "render_template_for_wallpaper"]
+    sources:
+      - title: "references/comfyui-plan.md"
+        note: "Implementation plan (shipped v0.14.0 + wizard post-apply)"
+      - title: "docs/comfyui/example_background.json"
+        note: "Example template (minimal_background, atmospheric, sigil_influenced)"
+    integration: "CLI: comfyui; wizard full path (use_comfyui_templates); post-apply lists templates; compatible with --background-method"
+    status: "shipped v0.14.0"

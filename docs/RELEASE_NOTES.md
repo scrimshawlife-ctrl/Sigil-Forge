@@ -47,13 +47,13 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test + deeper extension execution in apply_answers (plate/storyboard etc. now run post-construct when flagged; 241 tests)
 - Wizard integration: added optional extension steps (use_plate_import, use_storyboard, use_adapters, run_steganalysis, use_comfyui_templates) to full path in wizard.py; updated next_step flows and tests; agent rules mention them.
 - Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
-- Update source-manifest.yaml and references/ on new methods — version bumped to 0.14.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
+- Update source-manifest.yaml and references/ on new methods — version bumped to 0.14.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates (polished in v0.14.0 with modules, entrypoints, integration notes, richer sources)
 
 ## Recent Changes (post v0.13)
 - PRs: #25 agent-agnostic standalone, #24 install safety, #23 wallpaper product
 - Graph + graft artifacts generated during analysis (local, git-ignored where appropriate)
 - Non-audio extensions completed + enhanced + wizard-integrated: plate_import, storyboard, adapters, steganalysis, comfyui_templates
-- source-manifest.yaml updated (v0.14.0 + optional_extensions)
+- source-manifest.yaml updated (v0.14.0 + optional_extensions polished with modules/entrypoints/integration/sources for all 5)
 - Import bootstrap robustness note + periodic graft/graphify run
 - SKILL.md updated with optional extensions examples
 - Wizard enhanced with extension steps (next_step god-node area per graft)
