@@ -1,7 +1,7 @@
 ---
 name: sigil-forge
 description: "Use when forging sigils, intent glyphs, kamea/Spare stego, forge packets, or when the user asks to be guided/wizard through sigil creation. Offline multi-channel construction; dual creative/practice framing; no efficacy claims. Prefer wizard --next step runner for new users."
-version: 0.13.0
+version: 0.14.0
 author: Applied Alchemy Labs / scrimshawlife-ctrl
 license: MIT
 platforms: [linux, macos, windows]

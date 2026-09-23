@@ -1,6 +1,6 @@
 # Sigil-Forge Release Notes & Upgrades
 
-**Current: v0.13.0** (standalone engine, offline-first wallpaper product)
+**Current: v0.14.0** (standalone engine, offline-first wallpaper product + optional extensions)
 
 Analysis performed via clone, graft, graphify, full test runs, E2E verification, code reads, and gh.
 
@@ -25,13 +25,13 @@ Analysis performed via clone, graft, graphify, full test runs, E2E verification,
 
 No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_forge.py for bare imports).
 
-## v0.14 Planned / Upgrades (from expansion-spine + analysis)
-**From expansion-spine "Remaining" (non-audio stubs added):**
-- Scanned unique MS plate import pipeline — basic impl: references/plate-import-plan.md + scripts/plate_import.py (completed)
-- Multi-frame storyboard carriers — basic impl: references/storyboard-plan.md + scripts/storyboard.py (completed)
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl: references/rich-adapters-plan.md + scripts/adapters.py (completed)
-- Deeper geometric multi-channel steganalysis — basic impl: references/steganalysis-plan.md + scripts/steganalysis.py (completed)
-- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — basic impl: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (completed)
+## v0.14.0 Shipped (extensions + wizard integration)
+**From expansion-spine "Remaining" (now shipped):**
+- Scanned unique MS plate import pipeline — basic impl + wizard step + CLI
+- Multi-frame storyboard carriers — basic impl + wizard step + CLI
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl + wizard step + CLI
+- Deeper geometric multi-channel steganalysis — basic impl + wizard step + CLI
+- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — basic impl + wizard step + CLI
 - Full Goetic/Enochian geometry (separate skill or opt-in — not default forge) [explicit non-goal]
 
 **Explicit non-goals (preserve):**
@@ -47,13 +47,13 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test (now 7+ extension tests + expanded flows; total 241)
 - Wizard integration: added optional extension steps (use_plate_import, use_storyboard, use_adapters, run_steganalysis, use_comfyui_templates) to full path in wizard.py; updated next_step flows and tests; agent rules mention them.
 - Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
-- Update source-manifest.yaml and references/ on new methods — version bumped to 0.13.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
+- Update source-manifest.yaml and references/ on new methods — version bumped to 0.14.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
 
 ## Recent Changes (post v0.13)
 - PRs: #25 agent-agnostic standalone, #24 install safety, #23 wallpaper product
 - Graph + graft artifacts generated during analysis (local, git-ignored where appropriate)
-- Non-audio extensions completed + enhanced: plate_import, storyboard, adapters, steganalysis, comfyui_templates (functional + CLI with args + tests)
-- source-manifest.yaml updated (v0.13.0 + optional_extensions)
+- Non-audio extensions completed + enhanced + wizard-integrated: plate_import, storyboard, adapters, steganalysis, comfyui_templates
+- source-manifest.yaml updated (v0.14.0 + optional_extensions)
 - Import bootstrap robustness note + periodic graft/graphify run
 - SKILL.md updated with optional extensions examples
 - Wizard enhanced with extension steps (next_step god-node area per graft)

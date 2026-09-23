@@ -1,6 +1,6 @@
 # Sigil-Forge quickstart
 
-Run from the engine root (clone or install dir). **Current version: 0.13.0.**
+Run from the engine root (clone or install dir). **Current version: 0.14.0.**
 
 **Product:** wallpaper PNG with intent + methods sealed in-image (SF12 vault).  
 Standalone CLI. Optional agent contract (`SKILL.md`). Default install: `~/.sigil-forge`.

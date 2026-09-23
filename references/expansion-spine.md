@@ -1,6 +1,6 @@
 # Expansion spine
 
-**Current release: v0.13.0** (this file tracks shipped vs remaining).
+**Current release: v0.14.0** (this file tracks shipped vs remaining).
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
@@ -27,9 +27,9 @@ compression, name paths, planetary characters, and entity seals.
 | v0.12.4 | Hermes skill packaging: install/check/doctor gates, lean install, progressive PoI ref |
 | v0.12.5 | Hermes runtime polish: check/eval no skill-out pollution, PoI+hermes eval cases, lean help refs |
 | v0.12.6 | Wizard PoI steps (proof/kdf), apply capsule surfaces, Hermes agent next-hints |
-| v0.13.0 | **Wallpaper product:** SF12 sealed vault (intent+methods in PNG); open --wallpaper |
-| v0.13.0 | Agent-agnostic packaging: default `~/.sigil-forge`; Hermes `--hermes` opt-in; `--interop specialist_id=sigil-forge` SHADOW; no Abraxas import |
-| v0.13.0 | CI automation + docs: GitHub Actions (pytest matrix + check/doctor/validate/smoke); pip cache; RELEASE_NOTES.md; badge |
+| v0.14.0 | **Wallpaper product:** SF12 sealed vault (intent+methods in PNG); open --wallpaper |
+| v0.14.0 | Agent-agnostic packaging: default `~/.sigil-forge`; Hermes `--hermes` opt-in; `--interop specialist_id=sigil-forge` SHADOW; no Abraxas import |
+| v0.14.0 | CI automation + docs: GitHub Actions (pytest matrix + check/doctor/validate/smoke); pip cache; RELEASE_NOTES.md; badge |
 
 ### Craft / methods
 - Encodings: `hebrew_gematria` (default; native Hebrew + latin translit), `latin_extended`, `latin_mod9_v1` (compat)
@@ -75,12 +75,12 @@ Product policy track (code + docs; release version/tag owned separately):
 - **Human-gated canon proposals** — learning ledger stays `PROPOSED`; `ledger promote --index N --i-confirm PROMOTE` → `canon-proposals.jsonl` only; **no** auto-canon, **no** `references/` mutation
 - Namespace doc: `references/authority-seal-namespace.md`
 
-## Remaining / optional later (non-audio items completed in this continuation)
-- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — basic impl: references/plate-import-plan.md + scripts/plate_import.py (completed)
-- Multi-frame storyboard carriers — basic impl: references/storyboard-plan.md + scripts/storyboard.py (completed)
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl: references/rich-adapters-plan.md + scripts/adapters.py (completed)
-- Deeper geometric multi-channel steganalysis — basic impl: references/steganalysis-plan.md + scripts/steganalysis.py (completed)
-- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs) — basic impl: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (completed)
+## Remaining / optional later (non-audio items completed + deeper integration)
+- Scanned unique MS plate import pipeline (external SVG/JSON; plate v1 is scholarly vectorization) — basic impl + wizard post-apply: references/plate-import-plan.md + scripts/plate_import.py (completed)
+- Multi-frame storyboard carriers — basic impl + wizard post-apply: references/storyboard-plan.md + scripts/storyboard.py (completed)
+- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl + wizard post-apply: references/rich-adapters-plan.md + scripts/adapters.py (completed)
+- Deeper geometric multi-channel steganalysis — basic impl + wizard post-apply: references/steganalysis-plan.md + scripts/steganalysis.py (completed)
+- Optional bundled ComfyUI workflow templates (skill still does not call cloud image APIs) — basic impl + wizard post-apply: references/comfyui-plan.md + scripts/comfyui_templates.py + docs/comfyui/example (completed)
 - Full Goetic/Enochian geometry (separate skill or opt-in namespace module + corpus — not default forge) [explicit non-goal for default]
 
 ## Explicit non-goals

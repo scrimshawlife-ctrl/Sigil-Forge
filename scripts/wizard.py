@@ -28,7 +28,7 @@ from paths import default_out_dir, default_session_dir, skill_root
 from policy_lint import detect_authority_seal_request
 from safety import check_intent
 
-WIZARD_VERSION = "2.1.0"
+WIZARD_VERSION = "2.2.0"
 PATHS = ("quick", "full")
 
 # Ordered interview steps for any agent and interactive CLI.
@@ -714,7 +714,14 @@ def answers_to_construct_kwargs(answers: dict[str, Any]) -> dict[str, Any]:
         "mode": answers.get("wp_mode") or "focus",
         "theme": answers.get("wp_theme") or "neutral",
     }
-    return {"intent": answers["intent"], "construct": kwargs, "wallpaper": wallpaper}
+    extensions = {
+        "plate_import": bool(answers.get("use_plate_import")),
+        "storyboard": bool(answers.get("use_storyboard")),
+        "adapters": bool(answers.get("use_adapters")),
+        "steganalysis": bool(answers.get("run_steganalysis")),
+        "comfyui_templates": bool(answers.get("use_comfyui_templates")),
+    }
+    return {"intent": answers["intent"], "construct": kwargs, "wallpaper": wallpaper, "extensions": extensions}
 
 
 def apply_answers(
@@ -830,6 +837,53 @@ def apply_answers(
         result["next"].append(
             f"python3 scripts/sigil_forge.py verify-proof {result['run_dir']}"
         )
+
+    # Deeper: optional extensions post-construct (if flagged in wizard answers)
+    ext = mapped.get("extensions", {})
+    run_dir = result.get("run_dir")
+    if run_dir and ext.get("plate_import"):
+        try:
+            from plate_import import import_and_save
+            ref = Path("references/planetary-plate-strokes.json")
+            if ref.exists():
+                p = import_and_save(ref, Path(run_dir) / "plate_imported.json")
+                result.setdefault("extensions", {})["plate_import"] = str(p)
+                result["next"].append(f"plate import: {p}")
+        except Exception as e:  # noqa: BLE001
+            result.setdefault("extensions", {})["plate_import_error"] = str(e)
+
+    if run_dir and ext.get("storyboard"):
+        try:
+            from storyboard import create_storyboard
+            frames = [{"intent": intent}, {"intent": "follow up frame"}]
+            sb = create_storyboard(frames, Path(run_dir) / "storyboard")
+            result.setdefault("extensions", {})["storyboard"] = str(sb)
+            result["next"].append(f"storyboard: {sb}")
+        except Exception as e:  # noqa: BLE001
+            result.setdefault("extensions", {})["storyboard_error"] = str(e)
+
+    if ext.get("adapters"):
+        try:
+            from adapters import list_adapters
+            result.setdefault("extensions", {})["adapters"] = list_adapters()
+        except Exception as e:
+            result.setdefault("extensions", {})["adapters_error"] = str(e)
+
+    if ext.get("steganalysis") and result.get("svg"):
+        try:
+            from steganalysis import analyze_channels
+            rep = analyze_channels({"sigil_root": result.get("sigil_root"), "channels": ["svg", "png_lsb"]})
+            result.setdefault("extensions", {})["steganalysis"] = rep
+        except Exception as e:
+            result.setdefault("extensions", {})["steganalysis_error"] = str(e)
+
+    if ext.get("comfyui_templates"):
+        try:
+            from comfyui_templates import list_templates
+            result.setdefault("extensions", {})["comfyui_templates"] = list_templates()
+        except Exception as e:
+            result.setdefault("extensions", {})["comfyui_templates_error"] = str(e)
+
     return result
 
 

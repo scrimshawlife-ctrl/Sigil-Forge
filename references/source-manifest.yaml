@@ -1,7 +1,7 @@
 # Historical / methodological source manifest for Sigil-Forge methods.
 # Citations are pointers for provenance honesty, not endorsement of efficacy.
 
-version: "0.13.0"
+version: "0.14.0"
 
 methods:
   spare.letter_monogram:
