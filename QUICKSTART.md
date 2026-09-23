@@ -73,8 +73,19 @@ Wallpaper outputs live under `<run-id>/wallpaper/` and `<run-id>/receipts/`.
 Canonical `glyph.svg` is never rewritten by wallpaper generation.  
 Every construct also emits `intent_commitment` + `sigil_root` (capsule only with passphrase + proof/seal).
 
+# Optional extensions (v0.14.0)
+python3 scripts/sigil_forge.py plate-import --source references/planetary-plate-strokes.json
+python3 scripts/sigil_forge.py storyboard --intent "frame one"
+python3 scripts/sigil_forge.py adapters
+python3 scripts/sigil_forge.py steganalysis
+python3 scripts/sigil_forge.py comfyui
+
+# Via wizard full path (extensions execute post-apply when flagged)
+# See wizard --next and --apply examples above; set use_* flags.
+
 See [README.md](README.md), [SKILL.md](SKILL.md),
 [references/hermes-runtime-contract.md](references/hermes-runtime-contract.md),
 [references/wizard.md](references/wizard.md),
-[references/proof-of-intent.md](references/proof-of-intent.md), and
+[references/proof-of-intent.md](references/proof-of-intent.md),
+[references/source-manifest.yaml](references/source-manifest.yaml), and
 [references/wallpaper-framework.md](references/wallpaper-framework.md).

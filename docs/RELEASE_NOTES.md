@@ -56,6 +56,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - Graph + graft artifacts generated during analysis (local, git-ignored where appropriate)
 - Non-audio extensions completed + enhanced + wizard-integrated: plate_import, storyboard, adapters, steganalysis, comfyui_templates
 - source-manifest.yaml updated (v0.14.0 + optional_extensions polished with modules/entrypoints/integration/sources for all 5)
+- README.md + QUICKSTART.md + SKILL.md updated: added Optional Extensions section, CLI list, wizard v2.2 notes, examples, source-manifest docs link
 - Import bootstrap robustness note + periodic graft/graphify run
 - SKILL.md updated with optional extensions examples
 - Wizard enhanced with extension steps (next_step god-node area per graft)

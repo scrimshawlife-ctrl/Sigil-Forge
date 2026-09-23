@@ -39,14 +39,14 @@ changes tone only. Construction is **offline-first** — no image API required.
 
 | Area | What ships |
 |------|------------|
-| **Wizard** | Step runner (`--next`), quick/full paths, sessions, PoI `proof`/`kdf` on full path (v2.1) |
+|| **Wizard** | Step runner (`--next`), quick/full paths, sessions, PoI `proof`/`kdf` on full path (v2.2); optional extensions steps + post-apply execution |
 | **Craft** | Spare monogram, kamea paths, Hebrew Rose Cross, bind-runes (`modern_derivation`) |
 | **Encodings** | `hebrew_gematria` (default), `latin_extended`, `latin_mod9_v1` |
 | **Planetary** | Traditional seal + intelligence/spirit; plate → name_on_kamea → reconstruct |
 | **Stego** | SVG multi-channel + PNG LSB (digest-only; SF1 + SF11 dual verify) |
 | **Product** | **Wallpaper PNG** — composite + SF12 sealed vault (intent + methods in-image) |
 | **Wallpapers** | Immutable glyph + atmosphere; procedural / operator / host AI |
-| **Ops** | construct, wallpaper, verify, inspect, open (`--wallpaper` / `--capsule`), policy, ledger, doctor, eval, check, plate-import, storyboard, adapters, steganalysis, comfyui |
+|| **Ops** | construct, wallpaper, verify, inspect, open, policy, ledger, doctor, eval, check + **optional extensions** (plate-import, storyboard, adapters, steganalysis, comfyui) |
 | **Privacy** | Public digests only; private vault needs passphrase; no plaintext in visible media |
 | **Proof of Intent** | Commitment + `sigil_root` in vault; SF11/SF12 stego; optional Noir/risc0 |
 | **Packaging** | Standalone engine; optional agent contract; Hermes installer is opt-in |
@@ -136,6 +136,33 @@ python3 scripts/sigil_forge.py wizard --interactive --path quick  # human TTY
 ```
 
 Details: [references/wizard.md](references/wizard.md) · agent contract: [SKILL.md](SKILL.md)
+
+---
+
+## Optional Extensions (v0.14.0)
+
+Non-core, opt-in modules for advanced carriers and interop. All offline, no cloud. Integrated in wizard full path and direct CLI.
+
+```bash
+# Plate import (normalize external MS plates to reference format)
+python3 scripts/sigil_forge.py plate-import --source my-plate.svg
+
+# Storyboard (multi-frame JSON carriers)
+python3 scripts/sigil_forge.py storyboard --intent "frame 1" --intent "frame 2"
+
+# Adapters (list/export for external tools)
+python3 scripts/sigil_forge.py adapters
+
+# Steganalysis (channel reports)
+python3 scripts/sigil_forge.py steganalysis --run out/sigil-forge/<id>
+
+# ComfyUI templates (local only)
+python3 scripts/sigil_forge.py comfyui
+```
+
+In wizard full path: set `use_plate_import`, `use_storyboard`, etc. They execute post-construct and appear in result + next hints.
+
+See: `references/source-manifest.yaml` (polished provenance), individual `references/*-plan.md`, and `scripts/` for each.
 
 ---
 
@@ -360,8 +387,13 @@ learn         Append PROPOSED ledger observation
 ledger        List / export / promote (human --i-confirm PROMOTE only)
 doctor        Environment / skill health (packaging: hermes-skill)
 eval          Offline behavioral + PoI + Hermes packaging evals
-check         Smoke-check tree, schemas, Hermes, dry construct/PoI
-help          Command overview
+|check         Smoke-check tree, schemas, Hermes, dry construct/PoI
+|help          Command overview
+|plate-import  Import/normalize external SVG/JSON plates (optional)
+|storyboard    Multi-frame sequential carriers (optional)
+|adapters      Rich interop export (Orchestra/Kubrick/ComfyUI etc.)
+|steganalysis  Geometric channel analysis (optional)
+|comfyui       List local ComfyUI templates (optional)
 ```
 
 ```bash
@@ -432,8 +464,9 @@ Version: [`VERSION`](VERSION) · roadmap: [references/expansion-spine.md](refere
 | [references/methods-planetary-characters.md](references/methods-planetary-characters.md) | Seals / intelligence / spirit |
 | [references/methods-spare.md](references/methods-spare.md) · [methods-kamea.md](references/methods-kamea.md) | Craft methods |
 | [references/channels-and-steganography.md](references/channels-and-steganography.md) | Channel IDs / privacy |
-| [references/expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
-| [references/authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
+|| [references/expansion-spine.md](references/expansion-spine.md) | Shipped vs remaining |
+|| [references/source-manifest.yaml](references/source-manifest.yaml) | Method provenance + optional extensions (v0.14.0 polished) |
+|| [references/authority-seal-namespace.md](references/authority-seal-namespace.md) | Authority-seal boundary (no geometry) |
 | [references/safety-and-framing.md](references/safety-and-framing.md) | Refusals, efficacy lint, policy check |
 | [docs/superpowers/specs/2026-08-07-sigil-forge-design.md](docs/superpowers/specs/2026-08-07-sigil-forge-design.md) | Product design *(clone only; not in Hermes install)* |
 
