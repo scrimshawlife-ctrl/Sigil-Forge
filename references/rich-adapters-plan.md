@@ -1,9 +1,10 @@
-# Rich Orchestra/Kubrick/ComfyUI Adapters (Planned)
+# Rich Adapters Shipped (v0.14.0 + deeper)
 
-From expansion-spine: remaining optional later.
+
+From expansion-spine: completed in v0.14.0 + deeper wizard integration.
 
 ## Status
-Basic implementation completed (v0.14 prep). Rich adapter data transformers for Orchestra/Kubrick/ComfyUI etc.
+Shipped in v0.14.0 with wizard post-apply execution. Rich adapter data transformers for Orchestra/Kubrick/ComfyUI etc.
 
 Module: scripts/adapters.py (list_adapters, load_adapter_config, export_geometry, render_prompt, bind_receipt)
 
@@ -14,20 +15,3 @@ Module: scripts/adapters.py (list_adapters, load_adapter_config, export_geometry
 - Support for host AI backgrounds already partial; extend to full pipelines.
 - No cloud image APIs in core.
 - Examples for prompt exchange, geometry export (SVG/JSON), receipt binding.
-
-## Skeleton Functions (in scripts/adapters.py)
-- load_adapter_config(name: str) -> dict
-- export_geometry_for_adapter(sigil: dict, adapter: str) -> dict
-- render_adapter_prompt(intent: str, adapter: str) -> str
-- bind_receipt_to_adapter(receipt: dict, adapter_data: dict) -> dict
-
-## References
-- references/wallpaper-prompt-contract.md
-- references/wallpaper-framework.md
-- scripts/wallpaper/
-- --interop flag in construct/wizard
-- references/hermes-runtime-contract.md
-
-To implement: new references/adapters/ or extend scripts/adapters.py with example configs. Wire via wizard interop.
-
-See also graphify/graft for integration points.

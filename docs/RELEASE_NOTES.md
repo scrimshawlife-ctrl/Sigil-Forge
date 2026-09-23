@@ -25,7 +25,7 @@ Analysis performed via clone, graft, graphify, full test runs, E2E verification,
 
 No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_forge.py for bare imports).
 
-## v0.14.0 Shipped (extensions + wizard integration)
+## v0.14.0 Shipped (extensions + wizard integration + deeper execution)
 **From expansion-spine "Remaining" (now shipped):**
 - Scanned unique MS plate import pipeline — basic impl + wizard step + CLI
 - Multi-frame storyboard carriers — basic impl + wizard step + CLI
@@ -44,7 +44,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - CI/CD: `.github/workflows/ci.yml` added (pytest matrix, check/doctor/validate, E2E smoke, policy). PR opened.
 - GitHub Releases automation on tags
 - Import robustness polish (optional) — bootstrap comment + paths consistency improved
-- More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test (now 7+ extension tests + expanded flows; total 241)
+- More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test + deeper extension execution in apply_answers (plate/storyboard etc. now run post-construct when flagged; 241 tests)
 - Wizard integration: added optional extension steps (use_plate_import, use_storyboard, use_adapters, run_steganalysis, use_comfyui_templates) to full path in wizard.py; updated next_step flows and tests; agent rules mention them.
 - Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
 - Update source-manifest.yaml and references/ on new methods — version bumped to 0.14.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates
@@ -57,7 +57,7 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - Import bootstrap robustness note + periodic graft/graphify run
 - SKILL.md updated with optional extensions examples
 - Wizard enhanced with extension steps (next_step god-node area per graft)
-- Total tests: 241; all high-priority items substantially advanced; wizard integration done
+- Total tests: 241; all high-priority items addressed (import robustness, test coverage host-AI+PoI+extensions, periodic graft, source-manifest, wizard + deeper); bump + deeper complete
 
 ## Verification Checklist (from SKILL.md)
 All items from the contract's Verification Checklist passed in analysis runs.
@@ -84,9 +84,9 @@ MIT. Offline-first. Proposal-only.
 
 ---
 
-*Draft updated during continuation on 2026-09-22: non-audio stubs completed; high-priority items advanced (import robustness, source-manifest, periodic graphs, expanded test coverage for host-AI/PoI + extensions CLI/flows). Current: 241 tests, check/doctor green, graft 126 communities.*
+*Draft updated: v0.14.0 bump + deeper wizard extension execution shipped. All non-audio slices completed (impl + wizard post-apply). Plan files + source-and-upgrades + RELEASE_NOTES polished. All high-priority addressed. 241 tests, check/doctor green, graft refreshed.*
 
-Current verification:
+Current verification (post v0.14.0 bump + deeper):
 ```bash
 python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py doctor

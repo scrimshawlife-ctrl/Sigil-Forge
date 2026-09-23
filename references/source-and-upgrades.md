@@ -1,7 +1,7 @@
 # Source identity and upgrades
 
-This distribution is `scrimshawlife-ctrl/Sigil-Forge`, version `0.13.0`, based on commit
-`8b6b981d3cd76a33e872ddd7eeb3ff46a1d22c6f` before the local audit-fix commit. Record the actual installed commit
+This distribution is `scrimshawlife-ctrl/Sigil-Forge`, version `0.14.0`, based on commit
+`8b6b981d3cd76a33e872ddd7eeb3ff46a1d22c6f` before the v0.14.0 bump + deeper commit. Record the actual installed commit
 with `git rev-parse HEAD` before installation; do not use a version string alone
 as a source identity. Root and hub packaging are distribution surfaces, not a
 claim that organizational, personal, or legacy embedded variants are identical.

@@ -1,9 +1,10 @@
-# Multi-frame Storyboard Carriers (Planned)
+# Storyboard Shipped (v0.14.0 + deeper)
 
-From expansion-spine: remaining optional later.
+
+From expansion-spine: completed in v0.14.0 + deeper wizard integration.
 
 ## Status
-Basic implementation completed (v0.14 prep). Multi-frame storyboard builder that produces indexed JSON carriers.
+Shipped in v0.14.0 with wizard post-apply execution. Multi-frame storyboard builder that produces indexed JSON carriers.
 
 Module: scripts/storyboard.py (create_storyboard, add_frame)
 
@@ -13,9 +14,3 @@ Module: scripts/storyboard.py (create_storyboard, add_frame)
 - Bind to sigil_root + frame index.
 - Reuse core forge for each frame.
 - Offline, no cloud.
-
-## Next
-- Add scripts/storyboard.py skeleton.
-- Integrate via --storyboard or wizard.
-- See references/wallpaper-framework.md for carrier ideas.
-
