@@ -6,7 +6,7 @@
 
 Analysis performed via clone, graft, graphify, full test runs, E2E verification, code reads, and gh.
 
-## v0.13.0 Completion Status (Shipped)
+## Previous: v0.13.0 Completion Status (Shipped)
 - All features from README table and expansion-spine.md delivered and verified:
   - Wizard step runner (quick/full paths, --next, sessions, PoI proof/kdf)
   - Craft methods: Spare, kamea (encodings), Rose Cross, bind-runes, planetary (plate corpus)
@@ -27,13 +27,13 @@ Analysis performed via clone, graft, graphify, full test runs, E2E verification,
 
 No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_forge.py for bare imports).
 
-## v0.14.0 Shipped (extensions + wizard integration + deeper execution)
+## v0.14.0 Shipped (extensions + wizard integration + deeper execution + docs polish)
 **From expansion-spine "Remaining" (now shipped):**
-- Scanned unique MS plate import pipeline — basic impl + wizard step + CLI
-- Multi-frame storyboard carriers — basic impl + wizard step + CLI
-- Rich Orchestra/Kubrick/ComfyUI adapters beyond thin interop fields — basic impl + wizard step + CLI
-- Deeper geometric multi-channel steganalysis — basic impl + wizard step + CLI
-- Optional bundled ComfyUI workflow templates (keep no cloud APIs) — basic impl + wizard step + CLI
+- Scanned unique MS plate import pipeline — basic impl + wizard step + CLI + post-apply execution in apply_answers
+- Multi-frame storyboard carriers — basic impl + wizard step + CLI + post-apply execution
+- Rich Orchestra/Kubrick/ComfyUI adapters — basic impl + wizard step + CLI + post-apply
+- Deeper geometric multi-channel steganalysis — basic impl + wizard step + CLI + post-apply
+- Optional bundled ComfyUI workflow templates (local only, no cloud) — basic impl + wizard step + CLI + post-apply
 - Full Goetic/Enochian geometry (separate skill or opt-in — not default forge) [explicit non-goal]
 
 **Explicit non-goals (preserve):**
@@ -46,12 +46,12 @@ No critical bugs found. Minor hygiene only (intentional path bootstrap in sigil_
 - CI/CD: `.github/workflows/ci.yml` added (pytest matrix, check/doctor/validate, E2E smoke, policy). PR opened.
 - GitHub Releases automation on tags
 - Import robustness polish (optional) — bootstrap comment + paths consistency improved
-- More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI (commitment/capsule) + host-AI wallpaper flow test + deeper extension execution in apply_answers (plate/storyboard etc. now run post-construct when flagged; 241 tests)
+- More test coverage for host-AI wallpaper, full PoI flows — added CLI invocation tests for extensions + integrated full PoI + host-AI wallpaper flow test + deeper extension execution in apply_answers (241 tests)
 - Wizard integration: added optional extension steps (use_plate_import, use_storyboard, use_adapters, run_steganalysis, use_comfyui_templates) to full path in wizard.py; updated next_step flows and tests; agent rules mention them.
-- Periodic graft build + graphify --code-only in dev — run during continuation (126 communities)
+- Periodic graft build + graphify — run during continuation (current: 776 nodes / 2153 edges)
 - Update source-manifest.yaml and references/ on new methods — version bumped to 0.14.0 + optional_extensions section for plate_import, storyboard, adapters, steganalysis, comfyui_templates (polished in v0.14.0 with modules, entrypoints, integration notes, richer sources)
 
-## Recent Changes (post v0.13)
+## Recent Changes (v0.14.0)
 - PRs: #25 agent-agnostic standalone, #24 install safety, #23 wallpaper product
 - Graph + graft artifacts generated during analysis (local, git-ignored where appropriate)
 - Non-audio extensions completed + enhanced + wizard-integrated: plate_import, storyboard, adapters, steganalysis, comfyui_templates
@@ -87,16 +87,19 @@ MIT. Offline-first. Proposal-only.
 
 ---
 
-*Draft updated: v0.14.0 bump + deeper wizard extension execution shipped. All non-audio slices completed (impl + wizard post-apply). Plan files + source-and-upgrades + RELEASE_NOTES polished. All high-priority addressed. 241 tests, check/doctor green, graft refreshed.*
+*Draft updated for v0.14.0 release: extensions shipped with deeper wizard integration (apply_answers), source-manifest polished, README/QUICKSTART/SKILL.md updated, release tag + GitHub release created. 241/241 tests, check/doctor green, graft 776 nodes/2153 edges.*
 
-Current verification (post v0.14.0 bump + deeper):
+Current verification (v0.14.0):
 ```bash
 python3 scripts/sigil_forge.py check
 python3 scripts/sigil_forge.py doctor
 python3 -m pytest tests/ -q
-# New extensions
-python3 scripts/sigil_forge.py plate-import --source ...
+# Extensions
+python3 scripts/sigil_forge.py plate-import --source references/planetary-plate-strokes.json
+python3 scripts/sigil_forge.py storyboard
 python3 scripts/sigil_forge.py adapters
+python3 scripts/sigil_forge.py steganalysis
+python3 scripts/sigil_forge.py comfyui
 ```
 
-All high-priority analysis items from this pass addressed or explicitly noted as optional/in-progress. Goetic remains explicit non-goal.
+Graft: 776 nodes / 2153 edges. All high-priority items addressed. Goetic/Enochian explicit non-goal.
