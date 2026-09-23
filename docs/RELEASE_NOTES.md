@@ -2,6 +2,8 @@
 
 **Current: v0.14.0** (standalone engine, offline-first wallpaper product + optional extensions)
 
+**Release:** https://github.com/scrimshawlife-ctrl/Sigil-Forge/releases/tag/v0.14.0
+
 Analysis performed via clone, graft, graphify, full test runs, E2E verification, code reads, and gh.
 
 ## v0.13.0 Completion Status (Shipped)

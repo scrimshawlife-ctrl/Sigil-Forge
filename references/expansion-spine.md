@@ -1,6 +1,7 @@
 # Expansion spine
 
 **Current release: v0.14.0** (this file tracks shipped vs remaining).
+Release: https://github.com/scrimshawlife-ctrl/Sigil-Forge/releases/tag/v0.14.0
 
 Sigil-Forge is a standalone Hermes skill with a lean install tree, additive
 channels, and an explicit method ontology so “sigil” never collapses intent
